@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V10.1</title>
+    <title>Inferno Admin | V10.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -17,11 +17,17 @@
         .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
         .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
         .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; height: 42px; }
+        .btn-save { background: #222; color: #ea580c; width: 100%; padding: 10px; border-radius: 8px; font-weight: 900; font-size: 11px; text-transform: uppercase; margin-top: 20px; border: 1px solid #ea580c33; transition: 0.3s; }
+        .btn-save:hover { background: #ea580c; color: white; }
         .hidden { display: none !important; }
-        
-        /* Drag & Drop Visuals */
         .drop-zone { border: 2px dashed #333; border-radius: 12px; padding: 10px; transition: 0.3s; background: #000; }
         .drop-zone.dragover { border-color: #ea580c; background: #ea580c10; }
+        
+        /* Activity Log Colors */
+        .log-entry { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 6px 0; border-bottom: 1px solid #222; }
+        .log-time { color: #555; }
+        .log-user { color: #3b82f6; font-weight: bold; }
+        .log-action { color: #22c55e; }
     </style>
 </head>
 <body>
@@ -47,53 +53,54 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="section-box">
                     <h2 class="section-title">Visual Branding</h2>
-                    
-                    <label>Background Image (Drop file here)</label>
+                    <label>Background Image (Drop file)</label>
                     <div class="drop-zone" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'bgImageUrl')">
-                        <input type="text" id="bgImageUrl" onchange="syncField('bgImageUrl')" placeholder="Paste URL or Drop Image">
+                        <input type="text" id="bgImageUrl" placeholder="Paste URL or Drop Image">
                     </div>
-
-                    <label>Logo Icon (Drop file here)</label>
+                    <label>Logo Icon (Drop file)</label>
                     <div class="drop-zone" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'logoUrl')">
-                        <input type="text" id="logoUrl" onchange="syncField('logoUrl')" placeholder="Paste URL or Drop Image">
+                        <input type="text" id="logoUrl" placeholder="Paste URL or Drop Image">
                     </div>
-                    
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                        <div><label>Nav BG</label><input type="color" id="navBg" onchange="syncField('navBg')"></div>
-                        <div><label>Logo Col</label><input type="color" id="navLogoCol" onchange="syncField('navLogoCol')"></div>
-                        <div><label>Hero Text</label><input type="color" id="heroTitleCol" onchange="syncField('heroTitleCol')"></div>
-                        <div><label>Accent/Btn</label><input type="color" id="heroBtnBg" onchange="syncField('heroBtnBg')"></div>
+                        <div><label>Nav BG</label><input type="color" id="navBg"></div>
+                        <div><label>Logo Col</label><input type="color" id="navLogoCol"></div>
+                        <div><label>Hero Text</label><input type="color" id="heroTitleCol"></div>
+                        <div><label>Accent</label><input type="color" id="heroBtnBg"></div>
                     </div>
+                    <button onclick="saveBranding()" class="btn-save">Save Visuals</button>
                 </div>
 
                 <div class="section-box">
                     <h2 class="section-title">Hero & Media</h2>
-                    <label>Hero Title</label><input type="text" id="heroTitle" onchange="syncField('heroTitle')">
-                    <label>Server IP</label><input type="text" id="serverIp" onchange="syncField('serverIp')">
-                    <label>Media</label>
+                    <label>Hero Title</label><input type="text" id="heroTitle">
+                    <label>Server IP</label><input type="text" id="serverIp">
+                    <button onclick="saveHeroInfo()" class="btn-save mb-6">Save Hero Info</button>
+                    
+                    <label class="mt-4">Media Carousel</label>
                     <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Add Link..."><button id="mediaAdd" class="btn-add">+</button></div>
                     <div id="media-list" class="sort-list"></div>
-                    <button onclick="syncList('media-list', 'mediaUrls')" class="btn-add w-full mt-2 text-[10px]">SAVE MEDIA LIST</button>
+                    <button onclick="syncList('media-list', 'mediaUrls')" class="btn-save">Save Media Order</button>
                 </div>
             </div>
 
             <div class="section-box">
                 <h2 class="section-title">Partner & Social</h2>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label>Sponsor Name</label><input type="text" id="sponsorName" onchange="syncField('sponsorName')"></div>
-                    <div><label>Sponsor URL</label><input type="text" id="sponsorUrl" onchange="syncField('sponsorUrl')"></div>
-                    <div><label>Promo Code</label><input type="text" id="promoCode" onchange="syncField('promoCode')"></div>
-                    <div><label>Discord Link</label><input type="text" id="discordLink" onchange="syncField('discordLink')"></div>
-                    <div class="col-span-2"><label>Patreon Link</label><input type="text" id="patreonBtnLink" onchange="syncField('patreonBtnLink')"></div>
+                    <div><label>Sponsor Name</label><input type="text" id="sponsorName"></div>
+                    <div><label>Sponsor URL</label><input type="text" id="sponsorUrl"></div>
+                    <div><label>Promo Code</label><input type="text" id="promoCode"></div>
+                    <div><label>Discord Link</label><input type="text" id="discordLink"></div>
+                    <div class="col-span-2"><label>Patreon Link</label><input type="text" id="patreonBtnLink"></div>
                 </div>
+                <button onclick="savePartnerSocial()" class="btn-save">Save Partner & Social</button>
             </div>
 
             <div class="section-box">
                 <h2 class="section-title">Public Lists</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div><label>SMPs</label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div><button onclick="syncList('smp-list', 'smpList')" class="w-full mt-2 bg-zinc-800 text-[10px] py-1 rounded">Save</button></div>
-                    <div><label>Events</label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div><button onclick="syncList('event-list', 'eventList')" class="w-full mt-2 bg-zinc-800 text-[10px] py-1 rounded">Save</button></div>
-                    <div><label>Staff</label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div><button onclick="syncList('staff-list', 'staffList')" class="w-full mt-2 bg-zinc-800 text-[10px] py-1 rounded">Save</button></div>
+                    <div><label>SMPs</label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div><button onclick="syncList('smp-list', 'smpList')" class="btn-save">Save SMPs</button></div>
+                    <div><label>Events</label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div><button onclick="syncList('event-list', 'eventList')" class="btn-save">Save Events</button></div>
+                    <div><label>Staff</label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div><button onclick="syncList('staff-list', 'staffList')" class="btn-save">Save Staff</button></div>
                 </div>
             </div>
         </div>
@@ -106,12 +113,15 @@
                     <div><label>URL</label><div class="flex gap-2"><input type="text" id="voteInput"><button id="voteAdd" class="btn-add">ADD</button></div></div>
                 </div>
                 <div id="vote-list" class="sort-list"></div>
-                <button onclick="syncList('vote-list', 'voteLinks')" class="btn-add w-full mt-4">SAVE VOTES</button>
+                <button onclick="syncList('vote-list', 'voteLinks')" class="btn-save">Save Votes</button>
             </div>
         </div>
 
         <div id="page-logs" class="hidden">
-            <div id="log-container" class="bg-black p-4 rounded-xl border border-zinc-800 h-96 overflow-y-auto font-mono text-xs"></div>
+            <div class="section-box">
+                <h2 class="section-title">Activity Log</h2>
+                <div id="log-container" class="bg-black p-6 rounded-xl border border-zinc-800 h-[500px] overflow-y-auto mt-4"></div>
+            </div>
         </div>
 
         <div id="page-access" class="hidden">
@@ -119,14 +129,14 @@
                 <h2 class="section-title">Admin Access</h2>
                 <div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="email@gmail.com"><button id="emailAdd" class="btn-add">+</button></div>
                 <div id="email-list" class="sort-list"></div>
-                <button onclick="syncList('email-list', 'trustedEmails')" class="btn-add w-full mt-4">SAVE WHITELIST</button>
+                <button onclick="syncList('email-list', 'trustedEmails')" class="btn-save">Save Whitelist</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get, push, onValue, limitToLast, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, get, update, push, onValue, limitToLast, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -159,7 +169,49 @@
             }
         });
 
-        // UPLOAD LOGIC
+        // MASS SAVE FUNCTIONS
+        window.saveBranding = async () => {
+            const data = {
+                bgImageUrl: document.getElementById('bgImageUrl').value,
+                logoUrl: document.getElementById('logoUrl').value,
+                navBg: document.getElementById('navBg').value,
+                navLogoCol: document.getElementById('navLogoCol').value,
+                heroTitleCol: document.getElementById('heroTitleCol').value,
+                heroBtnBg: document.getElementById('heroBtnBg').value
+            };
+            await update(ref(db, 'absoluteConfigV3'), data);
+            logAction("Updated Visual Branding");
+            alert("Visuals Saved!");
+        };
+
+        window.saveHeroInfo = async () => {
+            const data = {
+                heroTitle: document.getElementById('heroTitle').value,
+                serverIp: document.getElementById('serverIp').value
+            };
+            await update(ref(db, 'absoluteConfigV3'), data);
+            logAction("Updated Hero Info");
+            alert("Hero Info Saved!");
+        };
+
+        window.savePartnerSocial = async () => {
+            const data = {
+                sponsorName: document.getElementById('sponsorName').value,
+                sponsorUrl: document.getElementById('sponsorUrl').value,
+                promoCode: document.getElementById('promoCode').value,
+                discordLink: document.getElementById('discordLink').value,
+                patreonBtnLink: document.getElementById('patreonBtnLink').value
+            };
+            await update(ref(db, 'absoluteConfigV3'), data);
+            logAction("Updated Partner & Social");
+            alert("Partner/Social Saved!");
+        };
+
+        const logAction = (action) => {
+            push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: action, time: new Date().toISOString() });
+        };
+
+        // DRAG DROP
         window.hOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('dragover'); };
         window.hLeave = (e) => { e.preventDefault(); e.currentTarget.classList.remove('dragover'); };
         window.hDrop = async (e, id) => {
@@ -173,14 +225,7 @@
                 const res = await fetch('https://api.cloudinary.com/v1_1/demo/image/upload', { method: 'POST', body: formData });
                 const data = await res.json();
                 document.getElementById(id).value = data.secure_url;
-                syncField(id);
             } catch (err) { alert("Upload failed."); }
-        };
-
-        window.syncField = async (id) => {
-            const val = document.getElementById(id).value;
-            await set(ref(db, `absoluteConfigV3/${id}`), val);
-            await push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: `Set ${id}`, time: new Date().toISOString() });
         };
 
         window.syncList = async (listId, key) => {
@@ -189,7 +234,8 @@
                 return siteName ? `${siteName.innerText}|${item.querySelector('.site-url').innerText}` : item.querySelector('span').innerText;
             }).join(',');
             await set(ref(db, `absoluteConfigV3/${key}`), items);
-            alert("Saved!");
+            logAction(`Updated List: ${key}`);
+            alert("List Saved!");
         };
 
         const addItem = (listId, val) => {
@@ -204,7 +250,8 @@
         const syncEverything = async () => {
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const d = snap.val(); if (!d) return;
-            ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "discordLink"].forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
+            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "discordLink"];
+            fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
             const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks' };
             Object.entries(listMap).forEach(([id, key]) => {
                 document.getElementById(id).innerHTML = "";
@@ -217,7 +264,13 @@
                 const container = document.getElementById('log-container');
                 container.innerHTML = "";
                 if (snap.val()) Object.values(snap.val()).reverse().forEach(log => {
-                    container.innerHTML += `<div>[${new Date(log.time).toLocaleTimeString()}] ${log.user.split('@')[0]}: ${log.action}</div>`;
+                    const time = new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    container.innerHTML += `
+                        <div class="log-entry">
+                            <span class="log-time">[${time}]</span> 
+                            <span class="log-user">${log.user.split('@')[0]}</span> 
+                            <span class="log-action">→ ${log.action}</span>
+                        </div>`;
                 });
             });
         };
