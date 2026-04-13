@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V9.6</title>
+    <title>Inferno Admin | V9.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -153,7 +153,7 @@
                     document.getElementById('main-content').classList.remove('hidden');
                     syncEverything();
                     setupLogs();
-                } else { alert("Unauthorized Email."); auth.signOut(); }
+                } else { alert("Unauthorized."); auth.signOut(); }
             }
         });
 
@@ -162,7 +162,7 @@
             await push(ref(db, 'absoluteConfigV3/logs'), {
                 user: currentUser.email,
                 action: action,
-                time: new Date().toLocaleString()
+                time: new Date().toISOString() // Standard format for cross-timezone conversion
             });
         };
 
@@ -173,7 +173,9 @@
                 const data = snap.val();
                 if (data) {
                     Object.values(data).reverse().forEach(log => {
-                        container.innerHTML += `<div class="log-entry"><span class="log-time">[${log.time}]</span> <span class="log-user">${log.user.split('@')[0]}</span>: <span class="text-zinc-300">${log.action}</span></div>`;
+                        // LOCAL TIME FIX HERE
+                        const localTime = new Date(log.time).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+                        container.innerHTML += `<div class="log-entry"><span class="log-time">[${localTime}]</span> <span class="log-user">${log.user.split('@')[0]}</span>: <span class="text-zinc-300">${log.action}</span></div>`;
                     });
                 }
             });
@@ -182,7 +184,7 @@
         window.syncField = async (id) => {
             const val = document.getElementById(id).value;
             await set(ref(db, `absoluteConfigV3/${id}`), val);
-            addLog(`Updated ${id}`);
+            addLog(`Changed ${id}`);
             alert("Saved!");
         };
 
@@ -194,8 +196,8 @@
                 items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
             }
             await set(ref(db, `absoluteConfigV3/${key}`), items);
-            addLog(`Updated ${key} list`);
-            alert("List Saved!");
+            addLog(`Updated ${key}`);
+            alert("Saved!");
         };
 
         const addItem = (listId, val) => {
@@ -206,7 +208,7 @@
                 const [n, u] = val.split('|');
                 display = `<span class="site-name font-bold text-orange-500">${n}</span> <span class="site-url opacity-40 ml-2">${u}</span>`;
             } else if (listId === 'vote-list') {
-                display = `<span class="site-name font-bold text-orange-500">Legacy Site</span> <span class="site-url opacity-40 ml-2">${val}</span>`;
+                display = `<span class="site-name font-bold text-orange-500">Legacy</span> <span class="site-url opacity-40 ml-2">${val}</span>`;
             } else { display = `<span>${val}</span>`; }
             div.innerHTML = `<div>${display}</div><button class="text-red-500 font-bold px-2" onclick="this.parentElement.remove()">×</button>`;
             document.getElementById(listId).appendChild(div);
