@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V9.1</title>
+    <title>Inferno Admin | V9.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -10,7 +10,7 @@
         .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
         .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
         label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
-        input[type="text"], input[type="number"], select { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="text"], input[type="number"] { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; cursor: pointer; background: none; }
         .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; color: #555; }
         .nav-tab.active { background: #ea580c; color: white; }
@@ -86,12 +86,12 @@
         <div id="page-vote" class="hidden">
             <div class="section-box">
                 <h2 class="section-title">Vote Site Management</h2>
-                <label>Add New Voting Link</label>
+                <label>Paste Voting Link</label>
                 <div class="flex gap-2 mb-6">
                     <input type="text" id="voteInput" placeholder="https://...">
                     <button id="voteAdd" class="btn-add">ADD SITE</button>
                 </div>
-                <label>Active Links <span class="mini-refresh" onclick="syncList('vote-list', 'voteLinks')">↻ SAVE LIST</span></label>
+                <label>Active Sites <span class="mini-refresh" onclick="syncList('vote-list', 'voteLinks')">↻ SAVE VOTES</span></label>
                 <div id="vote-list" class="sort-list"></div>
             </div>
         </div>
@@ -136,26 +136,54 @@
         window.syncField = async (id) => {
             const val = document.getElementById(id).value;
             await set(ref(db, `absoluteConfigV3/${id}`), val);
-            alert("Saved " + id);
+            alert("Saved!");
         };
 
         window.syncList = async (listId, key) => {
-            const items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
+            let items;
+            if (listId === 'vote-list') {
+                items = Array.from(document.getElementById(listId).querySelectorAll('.sort-item')).map(item => {
+                    const name = item.querySelector('.site-name').innerText;
+                    const url = item.querySelector('.site-url').innerText;
+                    return `${name}|${url}`;
+                }).join(',');
+            } else {
+                items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
+            }
             await set(ref(db, `absoluteConfigV3/${key}`), items);
-            alert("List Updated!");
+            alert("Updated!");
         };
 
         const addItem = (listId, val) => {
             const div = document.createElement('div');
             div.className = 'sort-item';
-            div.innerHTML = `<span>${val}</span><button class="text-red-500 font-bold px-2" onclick="this.parentElement.remove()">×</button>`;
+            let display = val;
+            
+            if (listId === 'vote-list' && val.includes('|')) {
+                const [n, u] = val.split('|');
+                display = `<span class="site-name font-bold text-orange-500">${n}</span> <span class="site-url opacity-40 ml-2">${u}</span>`;
+            } else {
+                display = `<span>${val}</span>`;
+            }
+
+            div.innerHTML = `<div>${display}</div><button class="text-red-500 font-bold px-2" onclick="this.parentElement.remove()">×</button>`;
             document.getElementById(listId).appendChild(div);
         };
 
-        ['media', 'smp', 'event', 'staff', 'email', 'vote'].forEach(x => {
+        ['media', 'smp', 'event', 'staff', 'email'].forEach(x => {
             const btn = document.getElementById(x + 'Add');
             if(btn) btn.onclick = () => { addItem(x + '-list', document.getElementById(x + 'Input').value); document.getElementById(x + 'Input').value = ''; };
         });
+
+        document.getElementById('voteAdd').onclick = () => {
+            const url = document.getElementById('voteInput').value;
+            if(!url) return;
+            const name = prompt("Enter Site Name (e.g. Minecraft MP):");
+            if(name) {
+                addItem('vote-list', `${name}|${url}`);
+                document.getElementById('voteInput').value = '';
+            }
+        };
 
         const syncEverything = async () => {
             const snap = await get(ref(db, 'absoluteConfigV3'));
