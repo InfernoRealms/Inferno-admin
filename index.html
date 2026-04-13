@@ -26,8 +26,11 @@
     <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
         <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 text-center shadow-2xl">
             <h2 class="text-3xl font-black italic text-orange-600 mb-6 uppercase">Inferno Auth</h2>
-            <input type="password" id="userInput" class="mb-4 text-center" placeholder="Email or System Password">
-            <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase">Access Control</button>
+            <p class="text-zinc-500 text-xs mb-6 font-bold uppercase tracking-widest">Administrative Access Only</p>
+            <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase flex items-center justify-center gap-3">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" class="w-5 h-5 bg-white rounded-full p-0.5">
+                Sign in with Google
+            </button>
         </div>
     </div>
 
@@ -109,6 +112,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
@@ -122,27 +126,57 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        let currentUser = sessionStorage.getItem('infernoUser') || null;
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-        const unlock = (user) => {
-            currentUser = user; sessionStorage.setItem('infernoUser', user);
+        let currentUserEmail = null;
+
+        const getHaifaTime = () => {
+            return new Date().toLocaleTimeString("en-GB", {
+                timeZone: "Asia/Jerusalem",
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        };
+
+        const unlock = (email) => {
+            currentUserEmail = email;
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
         };
 
-        if(currentUser) unlock(currentUser);
-
         document.getElementById('loginBtn').onclick = async () => {
-            const input = document.getElementById('userInput').value;
-            const snap = await get(ref(db, 'absoluteConfigV3'));
-            const trusted = snap.val()?.trustedEmails?.split(',') || [];
-            if (input === "INFERNO2026" || trusted.includes(input)) {
-                unlock(input);
-                await push(ref(db, 'systemLogs'), { user: input, time: new Date().toLocaleTimeString(), action: "Logged in" });
-            } else {
-                alert("Unauthorized Access Attempt Recorded.");
-            }
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
+                const trusted = (snap.val() || "").split(',').filter(e => e);
+
+                if (user.email === "abeedwehbe@gmail.com" || trusted.includes(user.email)) {
+                    unlock(user.email);
+                    await push(ref(db, 'systemLogs'), { 
+                        user: user.email, 
+                        time: getHaifaTime(), 
+                        action: "Logged in" 
+                    });
+                } else {
+                    alert("Unauthorized Email: " + user.email);
+                    auth.signOut();
+                }
+            } catch (e) { alert("Error: " + e.message); }
         };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                get(ref(db, 'absoluteConfigV3/trustedEmails')).then(snap => {
+                    const trusted = (snap.val() || "").split(',').filter(e => e);
+                    if (user.email === "abeedwehbe@gmail.com" || trusted.includes(user.email)) unlock(user.email);
+                });
+            }
+        });
 
         window.switchTab = (id) => {
             ['config', 'logs', 'access'].forEach(t => {
@@ -168,7 +202,6 @@
 
         const fields = ["bgImageUrl","logoUrl","navBg","navLogoCol","heroTitleCol","heroBtnBg","heroTitle","serverIp","shuffleDelay","sponsorName","sponsorUrl","promoCode","patreonBtnLink"];
 
-        // Initial Load
         get(ref(db, 'absoluteConfigV3')).then(s => {
             const d = s.val(); if(!d) return;
             fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
@@ -176,7 +209,6 @@
             parse('media-list', 'mediaUrls'); parse('smp-list', 'smpList'); parse('event-list', 'eventList'); parse('staff-list', 'staffList'); parse('email-list', 'trustedEmails');
         });
 
-        // Save Logic
         document.getElementById('saveBtn').onclick = async () => {
             const payload = {};
             fields.forEach(f => payload[f] = document.getElementById(f).value);
@@ -188,28 +220,23 @@
             payload.trustedEmails = collect('email-list');
             
             await set(ref(db, 'absoluteConfigV3'), payload);
-            await push(ref(db, 'systemLogs'), { user: currentUser, time: new Date().toLocaleTimeString(), action: "Saved Global Config" });
-            alert("🔥 Changes Pushed to Main Site!");
+            await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: "Pushed Config Updates" });
+            alert("🔥 Changes Pushed Live!");
         };
 
-        // Live Log Listener
         onValue(ref(db, 'systemLogs'), (snapshot) => {
             const data = snapshot.val();
             const logBox = document.getElementById('log-container');
-            if (!data) {
-                logBox.innerHTML = `<div class="opacity-30 italic">No activity recorded...</div>`;
-                return;
-            }
+            if (!data) return;
             const logs = Object.values(data).reverse().slice(0, 50);
             logBox.innerHTML = logs.map(log => `
                 <div class="border-b border-white/5 py-2 flex justify-between items-center">
                     <span class="text-orange-500 font-bold">[${log.time || '00:00'}]</span>
-                    <span class="text-zinc-300 flex-1 px-4">${log.user} ${log.action || 'performed an action'}</span>
+                    <span class="text-zinc-300 flex-1 px-4">${log.user} ${log.action}</span>
                 </div>
             `).join('');
         });
 
-        // Draggable Sorting
         ['media','smp','event','staff'].forEach(id => new Sortable(document.getElementById(id+'-list'), { animation: 150 }));
     </script>
 </body>
