@@ -1,127 +1,241 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Inferno Control | V7.0 Gold</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        body { background: #050505; color: white; font-family: sans-serif; padding: 40px; }
+        .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
+        .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
+        label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
+        input[type="text"], input[type="number"] { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; cursor: pointer; background: none; }
+        .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; }
+        .nav-tab.active { background: #ea580c; color: white; }
+        .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
+        .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
+        .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+        .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; transition: 0.3s; vertical-align: middle; }
+        .mini-refresh:hover { transform: rotate(180deg); color: white; }
+        .hidden { display: none; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
+        <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 text-center shadow-2xl">
+            <h2 class="text-3xl font-black italic text-orange-600 mb-6 uppercase">Inferno Auth</h2>
+            <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase flex items-center justify-center gap-3">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" class="w-5 h-5 bg-white rounded-full p-0.5">
+                Sign in with Google
+            </button>
+        </div>
+    </div>
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
-    authDomain: "inferno-realms.firebaseapp.com",
-    databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/",
-    projectId: "inferno-realms",
-    storageBucket: "inferno-realms.firebasestorage.app",
-    messagingSenderId: "669014530995",
-    appId: "1:669014530995:web:41fd088f6255118c9e89c6"
-};
+    <div id="main-content" class="hidden">
+        <div class="flex justify-between items-center mb-10">
+            <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
+            <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
+                <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
+                <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab">ACTIVITY</button>
+                <button onclick="switchTab('access')" id="tab-access" class="nav-tab">EMAILS</button>
+            </div>
+        </div>
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+        <div id="page-config">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="section-box">
+                    <h2 class="section-title">Visual Branding</h2>
+                    <label>Background URL <span class="mini-refresh" onclick="refreshField('bgImageUrl')">↻</span></label><input type="text" id="bgImageUrl">
+                    <label>Logo Icon URL <span class="mini-refresh" onclick="refreshField('logoUrl')">↻</span></label><input type="text" id="logoUrl">
+                    <div class="grid grid-cols-4 gap-2 mt-4 text-center">
+                        <div><label>Nav</label><input type="color" id="navBg"></div>
+                        <div><label>Logo</label><input type="color" id="navLogoCol"></div>
+                        <div><label>Hero</label><input type="color" id="heroTitleCol"></div>
+                        <div><label>Button</label><input type="color" id="heroBtnBg"></div>
+                    </div>
+                </div>
 
-let currentUserEmail = null;
-const fields = ["bgImageUrl","logoUrl","navBg","navLogoCol","heroTitleCol","heroBtnBg","heroTitle","serverIp","shuffleDelay","sponsorName","sponsorUrl","promoCode","patreonBtnLink"];
+                <div class="section-box">
+                    <h2 class="section-title">Hero & Media Shuffle</h2>
+                    <label>Hero Title <span class="mini-refresh" onclick="refreshField('heroTitle')">↻</span></label><input type="text" id="heroTitle">
+                    <label>Server IP <span class="mini-refresh" onclick="refreshField('serverIp')">↻</span></label><input type="text" id="serverIp">
+                    <label>Shuffle Delay <span class="mini-refresh" onclick="refreshField('shuffleDelay')">↻</span></label><input type="number" id="shuffleDelay">
+                    <label>Media Gallery <span class="mini-refresh" onclick="refreshList('media-list', 'mediaUrls')">↻</span></label>
+                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Link..."><button id="mediaAdd" class="btn-add">+</button></div>
+                    <div id="media-list" class="sort-list"></div>
+                </div>
+            </div>
 
-const getHaifaTime = () => new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Jerusalem", hour12: false });
+            <div class="section-box mt-6">
+                <h2 class="section-title">Public Lists</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <div><label>SMP Realms <span class="mini-refresh" onclick="refreshList('smp-list', 'smpList')">↻</span></label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
+                    <div><label>Events <span class="mini-refresh" onclick="refreshList('event-list', 'eventList')">↻</span></label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div></div>
+                    <div><label>Staff <span class="mini-refresh" onclick="refreshList('staff-list', 'staffList')">↻</span></label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div></div>
+                </div>
+            </div>
 
-// --- AUTH ---
-const unlock = (email) => {
-    currentUserEmail = email;
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('main-content').classList.remove('hidden');
-    syncEverything(); // Initial load
-};
+            <div class="section-box">
+                <h2 class="section-title">Sponsorships & Store</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label>Sponsor Name <span class="mini-refresh" onclick="refreshField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
+                    <div><label>Sponsor URL <span class="mini-refresh" onclick="refreshField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
+                    <div><label>Promo Code <span class="mini-refresh" onclick="refreshField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
+                    <div><label>Patreon <span class="mini-refresh" onclick="refreshField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
+                </div>
+            </div>
+            <button id="saveBtn" class="w-full py-8 bg-orange-600 rounded-2xl font-black uppercase text-2xl mt-4 shadow-xl">Push Changes Live 🔥</button>
+        </div>
 
-document.getElementById('loginBtn').onclick = async () => {
-    try {
-        const result = await signInWithPopup(auth, provider);
-        const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
-        const trusted = (snap.val() || "").split(',').filter(e => e);
-        if (result.user.email === "abeedwehbe@gmail.com" || trusted.includes(result.user.email)) {
-            unlock(result.user.email);
-        } else { alert("Unauthorized"); auth.signOut(); }
-    } catch (e) { alert(e.message); }
-};
+        <div id="page-logs" class="hidden">
+            <div class="section-box">
+                <h2 class="section-title mb-4">Live System Activity</h2>
+                <div id="log-container" class="space-y-2 font-mono text-[11px] h-96 overflow-y-auto pr-2"></div>
+            </div>
+        </div>
 
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        get(ref(db, 'absoluteConfigV3/trustedEmails')).then(snap => {
-            const trusted = (snap.val() || "").split(',').filter(e => e);
-            if (user.email === "abeedwehbe@gmail.com" || trusted.includes(user.email)) unlock(user.email);
+        <div id="page-access" class="hidden">
+            <div class="section-box">
+                <h2 class="section-title">Whitelisted Access <span class="mini-refresh" onclick="refreshList('email-list', 'trustedEmails')">↻</span></h2>
+                <div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="Email..."><button id="emailAdd" class="btn-add">+</button></div>
+                <div id="email-list" class="sort-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
+            authDomain: "inferno-realms.firebaseapp.com",
+            databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/",
+            projectId: "inferno-realms",
+            storageBucket: "inferno-realms.firebasestorage.app",
+            messagingSenderId: "669014530995",
+            appId: "1:669014530995:web:41fd088f6255118c9e89c6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUserEmail = null;
+        const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink"];
+
+        const getHaifaTime = () => new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Jerusalem", hour12: false });
+
+        const unlock = (email) => {
+            currentUserEmail = email;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            syncEverything();
+        };
+
+        document.getElementById('loginBtn').onclick = async () => {
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
+                const trusted = (snap.val() || "").split(',').filter(e => e);
+                if (result.user.email === "abeedwehbe@gmail.com" || trusted.includes(result.user.email)) {
+                    unlock(result.user.email);
+                } else { alert("Unauthorized"); auth.signOut(); }
+            } catch (e) { alert(e.message); }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                get(ref(db, 'absoluteConfigV3/trustedEmails')).then(snap => {
+                    const trusted = (snap.val() || "").split(',').filter(e => e);
+                    if (user.email === "abeedwehbe@gmail.com" || trusted.includes(user.email)) unlock(user.email);
+                });
+            }
         });
-    }
-});
 
-// --- REFRESH LOGIC ---
-window.refreshField = async (id) => {
-    const snap = await get(ref(db, `absoluteConfigV3/${id}`));
-    if (snap.exists()) document.getElementById(id).value = snap.val();
-};
+        window.refreshField = async (id) => {
+            const snap = await get(ref(db, `absoluteConfigV3/${id}`));
+            if (snap.exists()) document.getElementById(id).value = snap.val();
+        };
 
-window.refreshList = async (listId, key) => {
-    const snap = await get(ref(db, `absoluteConfigV3/${key}`));
-    const listElement = document.getElementById(listId);
-    listElement.innerHTML = ""; // This is the crucial fix for the "nothing happened" bug
-    if (snap.exists() && snap.val()) {
-        snap.val().split(',').forEach(v => {
-            if(v.trim()) addItem(listId, v.trim());
+        window.refreshList = async (listId, key) => {
+            const snap = await get(ref(db, `absoluteConfigV3/${key}`));
+            const listElement = document.getElementById(listId);
+            listElement.innerHTML = ""; 
+            if (snap.exists() && snap.val()) {
+                snap.val().split(',').forEach(v => {
+                    if(v.trim()) addItem(listId, v.trim());
+                });
+            }
+        };
+
+        const syncEverything = async () => {
+            const snap = await get(ref(db, 'absoluteConfigV3'));
+            const d = snap.val();
+            if (!d) return;
+            fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
+            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails' };
+            Object.entries(listMap).forEach(([listId, key]) => refreshList(listId, key));
+        };
+
+        window.switchTab = (id) => {
+            ['config', 'logs', 'access'].forEach(t => {
+                document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
+                document.getElementById('tab-'+t).classList.toggle('active', t === id);
+            });
+        };
+
+        const addItem = (listId, val) => {
+            const div = document.createElement('div');
+            div.className = 'sort-item';
+            div.innerHTML = `<span>${val}</span><button class="text-red-500 font-bold" onclick="this.parentElement.remove()">×</button>`;
+            document.getElementById(listId).appendChild(div);
+        };
+
+        ['media', 'smp', 'event', 'staff', 'email'].forEach(x => {
+            const btn = document.getElementById(x + 'Add');
+            if (btn) {
+                btn.onclick = () => {
+                    addItem(x + '-list', document.getElementById(x + 'Input').value);
+                    document.getElementById(x + 'Input').value = '';
+                };
+            }
         });
-    }
-};
 
-const syncEverything = async () => {
-    const snap = await get(ref(db, 'absoluteConfigV3'));
-    const d = snap.val();
-    if (!d) return;
-    fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
-    const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails' };
-    Object.entries(listMap).forEach(([listId, key]) => refreshList(listId, key));
-};
+        document.getElementById('saveBtn').onclick = async () => {
+            const payload = {};
+            fields.forEach(f => payload[f] = document.getElementById(f).value);
+            const collect = (id) => Array.from(document.getElementById(id).querySelectorAll('span')).map(s => s.innerText).join(',');
+            payload.mediaUrls = collect('media-list');
+            payload.smpList = collect('smp-list');
+            payload.eventList = collect('event-list');
+            payload.staffList = collect('staff-list');
+            payload.trustedEmails = collect('email-list');
+            await set(ref(db, 'absoluteConfigV3'), payload);
+            await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: "🔥 Pushed Config Update" });
+            alert("Changes Live!");
+        };
 
-// --- UI HELPERS ---
-window.switchTab = (id) => {
-    ['config', 'logs', 'access'].forEach(t => {
-        document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
-        document.getElementById('tab-'+t).classList.toggle('active', t === id);
-    });
-};
+        onValue(ref(db, 'systemLogs'), (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+            document.getElementById('log-container').innerHTML = Object.values(data).reverse().slice(0, 50).map(log => `
+                <div class="border-b border-white/5 py-2 flex justify-between items-center text-[10px]">
+                    <span class="text-orange-500 font-bold">[${log.time}]</span>
+                    <span class="text-zinc-300 flex-1 px-4">${log.user} ${log.action}</span>
+                </div>`).join('');
+        });
 
-const addItem = (listId, val) => {
-    const div = document.createElement('div');
-    div.className = 'sort-item';
-    div.innerHTML = `<span>${val}</span><button class="text-red-500 font-bold" onclick="this.parentElement.remove()">×</button>`;
-    document.getElementById(listId).appendChild(div);
-};
-
-['media','smp','event','staff','email'].forEach(x => {
-    document.getElementById(x+'Add').onclick = () => {
-        addItem(x+'-list', document.getElementById(x+'Input').value);
-        document.getElementById(x+'Input').value = '';
-    };
-});
-
-// --- SAVE ---
-document.getElementById('saveBtn').onclick = async () => {
-    const payload = {};
-    fields.forEach(f => payload[f] = document.getElementById(f).value);
-    const collect = (id) => Array.from(document.getElementById(id).querySelectorAll('span')).map(s=>s.innerText).join(',');
-    payload.mediaUrls = collect('media-list'); 
-    payload.smpList = collect('smp-list'); 
-    payload.eventList = collect('event-list'); 
-    payload.staffList = collect('staff-list'); 
-    payload.trustedEmails = collect('email-list');
-    await set(ref(db, 'absoluteConfigV3'), payload);
-    await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: "🔥 Pushed Config Update" });
-    alert("Changes Live!");
-};
-
-// --- LOGS ---
-onValue(ref(db, 'systemLogs'), (snapshot) => {
-    const data = snapshot.val();
-    if (!data) return;
-    document.getElementById('log-container').innerHTML = Object.values(data).reverse().slice(0, 50).map(log => `
-        <div class="border-b border-white/5 py-2 flex justify-between items-center text-[10px]">
-            <span class="text-orange-500 font-bold">[${log.time}]</span>
-            <span class="text-zinc-300 flex-1 px-4">${log.user} ${log.action}</span>
-        </div>`).join('');
-});
-
-['media','smp','event','staff'].forEach(id => new Sortable(document.getElementById(id+'-list'), { animation: 150 }));
+        ['media', 'smp', 'event', 'staff'].forEach(id => {
+            const el = document.getElementById(id + '-list');
+            if (el) new Sortable(el, { animation: 150 });
+        });
+    </script>
+</body>
+</html>
