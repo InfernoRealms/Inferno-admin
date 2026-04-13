@@ -26,9 +26,7 @@
     <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center text-center">
         <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 shadow-2xl">
             <h2 class="text-3xl font-black italic text-orange-600 mb-6 uppercase">Inferno Auth</h2>
-            <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase flex items-center justify-center gap-3">
-                Sign in with Google
-            </button>
+            <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase">Sign in with Google</button>
         </div>
     </div>
 
@@ -70,7 +68,17 @@
                 </div>
             </div>
 
-            <div class="section-box mt-6">
+            <div class="section-box">
+                <h2 class="section-title">Sponsorships & Store</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label>Sponsor Name (Sylant) <span class="mini-refresh" onclick="refreshField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
+                    <div><label>Sponsor URL <span class="mini-refresh" onclick="refreshField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
+                    <div><label>Promo Code <span class="mini-refresh" onclick="refreshField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
+                    <div><label>Patreon Link <span class="mini-refresh" onclick="refreshField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
+                </div>
+            </div>
+
+            <div class="section-box">
                 <h2 class="section-title">Public Lists</h2>
                 <div class="grid grid-cols-3 gap-6">
                     <div><label>SMP <span class="mini-refresh" onclick="refreshList('smp-list', 'smpList')">↻</span></label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
@@ -85,7 +93,7 @@
         <div id="page-logs" class="hidden">
             <div class="section-box">
                 <h2 class="section-title mb-4">Live Activity</h2>
-                <div id="log-container" class="space-y-2 font-mono text-[11px] h-96 overflow-y-auto"></div>
+                <div id="log-container" class="space-y-2 font-mono text-[11px] h-96 overflow-y-auto pr-2"></div>
             </div>
         </div>
 
@@ -124,17 +132,12 @@
         let currentUserEmail = null;
 
         const getHaifaTime = () => new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Jerusalem", hour12: false });
-
-        const logAction = async (action) => {
-            await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: action });
-        };
+        const logAction = async (action) => await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: action });
 
         const unlock = (email) => {
             currentUserEmail = email;
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
-            
-            // SECURITY: Hide access tab content if not owner
             if (email !== ownerEmail) {
                 document.getElementById('access-content').classList.add('hidden');
                 document.getElementById('admin-only-warning').classList.remove('hidden');
@@ -150,11 +153,20 @@
             else { alert("Unauthorized"); auth.signOut(); }
         };
 
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                get(ref(db, 'absoluteConfigV3/trustedEmails')).then(snap => {
+                    const trusted = (snap.val() || "").split(',').filter(e => e);
+                    if (user.email === ownerEmail || trusted.includes(user.email)) unlock(user.email);
+                });
+            }
+        });
+
         window.refreshField = async (id) => {
             const snap = await get(ref(db, `absoluteConfigV3/${id}`));
             if (snap.exists()) {
                 document.getElementById(id).value = snap.val();
-                logAction(`Refreshed field: ${id}`);
+                await logAction(`Refreshed field: ${id}`);
             }
         };
 
@@ -163,14 +175,14 @@
             document.getElementById(listId).innerHTML = "";
             if (snap.exists() && snap.val()) {
                 snap.val().split(',').forEach(v => v.trim() && addItem(listId, v.trim()));
-                logAction(`Refreshed list: ${key}`);
+                await logAction(`Refreshed list: ${key}`);
             }
         };
 
         const syncEverything = async () => {
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const d = snap.val(); if (!d) return;
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay"];
+            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink"];
             fields.forEach(f => d[f] && (document.getElementById(f).value = d[f]));
             const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails' };
             Object.entries(listMap).forEach(([listId, key]) => refreshList(listId, key));
@@ -200,7 +212,7 @@
 
         document.getElementById('saveBtn').onclick = async () => {
             const payload = {};
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay"];
+            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink"];
             fields.forEach(f => payload[f] = document.getElementById(f).value);
             const collect = (id) => Array.from(document.getElementById(id).querySelectorAll('span')).map(s => s.innerText).join(',');
             payload.mediaUrls = collect('media-list');
@@ -209,14 +221,14 @@
             payload.staffList = collect('staff-list');
             payload.trustedEmails = collect('email-list');
             await set(ref(db, 'absoluteConfigV3'), payload);
-            logAction("🔥 Bulk Saved Config");
+            await logAction("🔥 Bulk Saved Config");
             alert("Changes Live!");
         };
 
         onValue(ref(db, 'systemLogs'), (snapshot) => {
             const data = snapshot.val(); if (!data) return;
             document.getElementById('log-container').innerHTML = Object.values(data).reverse().slice(0, 50).map(log => `
-                <div class="border-b border-white/5 py-2 flex justify-between items-center">
+                <div class="border-b border-white/5 py-2 flex justify-between items-center text-[10px]">
                     <span class="text-orange-500 font-bold">[${log.time}]</span>
                     <span class="text-zinc-300 flex-1 px-4">${log.user} ${log.action}</span>
                 </div>`).join('');
