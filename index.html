@@ -17,7 +17,7 @@
         .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
         .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
         .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
-        .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; transition: 0.3s; vertical-align: middle; }
+        .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; transition: 0.3s; }
         .mini-refresh:hover { transform: rotate(180deg); color: white; }
         .hidden { display: none; }
         ::-webkit-scrollbar { width: 5px; }
@@ -135,7 +135,6 @@
             currentUserEmail = email;
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
-            loadAll(); // Only load when authorized
         };
 
         document.getElementById('loginBtn').onclick = async () => {
@@ -160,6 +159,7 @@
             }
         });
 
+        // Global Refresh Functions
         window.refreshField = async (id) => {
             const snap = await get(ref(db, `absoluteConfigV3/${id}`));
             if (snap.exists()) document.getElementById(id).value = snap.val();
@@ -201,11 +201,16 @@
             get(ref(db, 'absoluteConfigV3')).then(s => {
                 const d = s.val(); if(!d) return;
                 fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
-                ['media-list','smp-list','event-list','staff-list','email-list'].forEach(id => document.getElementById(id).innerHTML = "");
+                document.getElementById('media-list').innerHTML = ""; 
+                document.getElementById('smp-list').innerHTML = ""; 
+                document.getElementById('event-list').innerHTML = ""; 
+                document.getElementById('staff-list').innerHTML = ""; 
+                document.getElementById('email-list').innerHTML = "";
                 const parse = (list, key) => (d[key]||"").split(',').filter(v=>v).forEach(v => addItem(list, v));
                 parse('media-list', 'mediaUrls'); parse('smp-list', 'smpList'); parse('event-list', 'eventList'); parse('staff-list', 'staffList'); parse('email-list', 'trustedEmails');
             });
         };
+        loadAll();
 
         document.getElementById('saveBtn').onclick = async () => {
             const payload = {};
