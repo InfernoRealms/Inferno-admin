@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V9.7</title>
+    <title>Inferno Admin | V9.9 Secure</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -10,18 +10,17 @@
         .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
         .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
         label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
-        input[type="text"], input[type="number"] { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
-        input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; cursor: pointer; background: none; }
+        input[type="text"] { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="color"] { -webkit-appearance: none; border: 2px solid #333; width: 100%; height: 40px; cursor: pointer; background: #000; border-radius: 8px; padding: 2px; }
         .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; color: #555; }
         .nav-tab.active { background: #ea580c; color: white; }
         .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
         .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
         .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; height: 42px; }
         .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; vertical-align: middle; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .log-entry { font-family: monospace; font-size: 11px; padding: 8px; border-bottom: 1px solid #222; }
         .log-user { color: #ea580c; font-weight: bold; }
-        .log-time { color: #555; margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -39,7 +38,7 @@
                 <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
                 <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab">VOTING</button>
                 <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab">ACTIVITY</button>
-                <button onclick="switchTab('access')" id="tab-access" class="nav-tab">EMAILS</button>
+                <button onclick="switchTab('access')" id="tab-access" class="nav-tab hidden">EMAILS</button>
             </div>
         </div>
 
@@ -49,11 +48,11 @@
                     <h2 class="section-title">Visual Branding</h2>
                     <label>Background URL <span class="mini-refresh" onclick="syncField('bgImageUrl')">↻</span></label><input type="text" id="bgImageUrl">
                     <label>Logo Icon URL <span class="mini-refresh" onclick="syncField('logoUrl')">↻</span></label><input type="text" id="logoUrl">
-                    <div class="grid grid-cols-4 gap-2 mt-4 text-center">
-                        <div><label>Nav</label><input type="color" id="navBg" onchange="syncField('navBg')"></div>
-                        <div><label>Logo</label><input type="color" id="navLogoCol" onchange="syncField('navLogoCol')"></div>
-                        <div><label>Hero</label><input type="color" id="heroTitleCol" onchange="syncField('heroTitleCol')"></div>
-                        <div><label>Btn</label><input type="color" id="heroBtnBg" onchange="syncField('heroBtnBg')"></div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                        <div><label>Nav BG</label><input type="color" id="navBg" onchange="syncField('navBg')"></div>
+                        <div><label>Logo Col</label><input type="color" id="navLogoCol" onchange="syncField('navLogoCol')"></div>
+                        <div><label>Hero Text</label><input type="color" id="heroTitleCol" onchange="syncField('heroTitleCol')"></div>
+                        <div><label>Accent/Btn</label><input type="color" id="heroBtnBg" onchange="syncField('heroBtnBg')"></div>
                     </div>
                 </div>
                 <div class="section-box">
@@ -65,9 +64,8 @@
                     <div id="media-list" class="sort-list"></div>
                 </div>
             </div>
-
             <div class="section-box">
-                <h2 class="section-title">Sponsorships & Store</h2>
+                <h2 class="section-title">Partner & Social</h2>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label>Sponsor Name <span class="mini-refresh" onclick="syncField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
                     <div><label>Sponsor URL <span class="mini-refresh" onclick="syncField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
@@ -76,47 +74,31 @@
                     <div class="col-span-2"><label>Patreon Link <span class="mini-refresh" onclick="syncField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
                 </div>
             </div>
-
-            <div class="section-box">
-                <h2 class="section-title">Public Lists</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div><label>SMP <span class="mini-refresh" onclick="syncList('smp-list', 'smpList')">↻</span></label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
-                    <div><label>Events <span class="mini-refresh" onclick="syncList('event-list', 'eventList')">↻</span></label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div></div>
-                    <div><label>Staff <span class="mini-refresh" onclick="syncList('staff-list', 'staffList')">↻</span></label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div></div>
-                </div>
-            </div>
         </div>
 
         <div id="page-vote" class="hidden">
             <div class="section-box">
-                <h2 class="section-title">Vote Site Management</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    <div><label>Site Name</label><input type="text" id="voteNameInput" placeholder="e.g. Planet Minecraft"></div>
-                    <div><label>Voting URL</label><div class="flex gap-2"><input type="text" id="voteInput" placeholder="https://..."><button id="voteAdd" class="btn-add px-8">ADD SITE</button></div></div>
+                <h2 class="section-title">Vote Management</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div><label>Site Name</label><input type="text" id="voteNameInput"></div>
+                    <div><label>URL</label><div class="flex gap-2"><input type="text" id="voteInput"><button id="voteAdd" class="btn-add">ADD</button></div></div>
                 </div>
-                <div class="mt-10">
-                    <label>Active Sites <span class="mini-refresh" onclick="syncList('vote-list', 'voteLinks')">↻ SAVE VOTES</span></label>
-                    <div id="vote-list" class="sort-list"></div>
-                </div>
+                <label class="mt-8">Active Sites <span class="mini-refresh" onclick="syncList('vote-list', 'voteLinks')">↻ SAVE</span></label>
+                <div id="vote-list" class="sort-list"></div>
             </div>
         </div>
 
         <div id="page-logs" class="hidden">
-            <div class="section-box">
-                <h2 class="section-title">Recent Activity</h2>
-                <div id="log-container" class="mt-4 h-[500px] overflow-y-auto bg-black/50 rounded-xl p-4 border border-zinc-800"></div>
-            </div>
+            <div class="section-box"><h2 class="section-title">Activity</h2><div id="log-container" class="mt-4 h-[400px] overflow-y-auto bg-black p-4 rounded-xl border border-zinc-800"></div></div>
         </div>
 
         <div id="page-access" class="hidden">
             <div class="section-box">
-                <h2 class="section-title">Whitelisted Emails</h2>
-                <div class="flex gap-2 mt-4">
-                    <input type="text" id="emailInput">
-                    <button id="emailAdd" class="btn-add">+</button>
-                </div>
-                <label>Access List <span class="mini-refresh" onclick="syncList('email-list', 'trustedEmails')">↻ SAVE EMAILS</span></label>
+                <h2 class="section-title">Whitelisted Admins</h2>
+                <p class="text-[10px] text-zinc-500 mb-4 uppercase">Only you can see this section.</p>
+                <div class="flex gap-2"><input type="text" id="emailInput" placeholder="admin@gmail.com"><button id="emailAdd" class="btn-add">+</button></div>
                 <div id="email-list" class="sort-list"></div>
+                <button onclick="syncList('email-list', 'trustedEmails')" class="btn-add w-full mt-4">SAVE WHITELIST</button>
             </div>
         </div>
     </div>
@@ -147,81 +129,63 @@
             if (user) {
                 const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
                 const trusted = (snap.val() || "").split(',').filter(e => e);
+                
                 if (user.email === ownerEmail || trusted.includes(user.email)) {
                     currentUser = user;
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
+
+                    // SECURITY: Show the Emails tab ONLY for the owner
+                    if (user.email === ownerEmail) {
+                        document.getElementById('tab-access').classList.remove('hidden');
+                    }
+
                     syncEverything();
                     setupLogs();
-                } else { alert("Unauthorized."); auth.signOut(); }
+                } else { 
+                    alert("Access Denied."); 
+                    auth.signOut(); 
+                }
             }
         });
 
-        const addLog = async (action) => {
-            if (!currentUser) return;
-            await push(ref(db, 'absoluteConfigV3/logs'), {
-                user: currentUser.email,
-                action: action,
-                time: new Date().toISOString() // Standard format for cross-timezone conversion
-            });
-        };
+        window.switchTab = (id) => {
+            // HARD SECURITY CHECK
+            if (id === 'access' && currentUser.email !== ownerEmail) {
+                alert("Unauthorized: Owner access only.");
+                return;
+            }
 
-        const setupLogs = () => {
-            onValue(query(ref(db, 'absoluteConfigV3/logs'), limitToLast(50)), (snap) => {
-                const container = document.getElementById('log-container');
-                container.innerHTML = "";
-                const data = snap.val();
-                if (data) {
-                    Object.values(data).reverse().forEach(log => {
-                        // LOCAL TIME FIX HERE
-                        const localTime = new Date(log.time).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
-                        container.innerHTML += `<div class="log-entry"><span class="log-time">[${localTime}]</span> <span class="log-user">${log.user.split('@')[0]}</span>: <span class="text-zinc-300">${log.action}</span></div>`;
-                    });
-                }
+            ['config', 'vote', 'logs', 'access'].forEach(t => {
+                const p = document.getElementById('page-' + t);
+                const b = document.getElementById('tab-' + t);
+                if (p) p.classList.toggle('hidden', t !== id);
+                if (b) b.classList.toggle('active', t === id);
             });
         };
 
         window.syncField = async (id) => {
             const val = document.getElementById(id).value;
             await set(ref(db, `absoluteConfigV3/${id}`), val);
-            addLog(`Changed ${id}`);
-            alert("Saved!");
+            await push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: `Updated ${id}`, time: new Date().toISOString() });
         };
 
         window.syncList = async (listId, key) => {
-            let items;
-            if (listId === 'vote-list') {
-                items = Array.from(document.getElementById(listId).querySelectorAll('.sort-item')).map(item => `${item.querySelector('.site-name').innerText}|${item.querySelector('.site-url').innerText}`).join(',');
-            } else {
-                items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
-            }
+            let items = Array.from(document.getElementById(listId).querySelectorAll('.sort-item')).map(item => {
+                const siteName = item.querySelector('.site-name');
+                return siteName ? `${siteName.innerText}|${item.querySelector('.site-url').innerText}` : item.querySelector('span').innerText;
+            }).join(',');
             await set(ref(db, `absoluteConfigV3/${key}`), items);
-            addLog(`Updated ${key}`);
             alert("Saved!");
         };
 
         const addItem = (listId, val) => {
+            if(!val) return;
             const div = document.createElement('div');
             div.className = 'sort-item';
-            let display = val;
-            if (listId === 'vote-list' && val.includes('|')) {
-                const [n, u] = val.split('|');
-                display = `<span class="site-name font-bold text-orange-500">${n}</span> <span class="site-url opacity-40 ml-2">${u}</span>`;
-            } else if (listId === 'vote-list') {
-                display = `<span class="site-name font-bold text-orange-500">Legacy</span> <span class="site-url opacity-40 ml-2">${val}</span>`;
-            } else { display = `<span>${val}</span>`; }
-            div.innerHTML = `<div>${display}</div><button class="text-red-500 font-bold px-2" onclick="this.parentElement.remove()">×</button>`;
+            let content = val.includes('|') ? `<span class="site-name font-bold text-orange-500">${val.split('|')[0]}</span> <span class="site-url opacity-40 ml-2">${val.split('|')[1]}</span>` : `<span>${val}</span>`;
+            div.innerHTML = `<div>${content}</div><button class="text-red-500 font-bold px-2" onclick="this.parentElement.remove()">×</button>`;
             document.getElementById(listId).appendChild(div);
-        };
-
-        ['media', 'smp', 'event', 'staff', 'email'].forEach(x => {
-            const btn = document.getElementById(x + 'Add');
-            if(btn) btn.onclick = () => { addItem(x + '-list', document.getElementById(x + 'Input').value); document.getElementById(x + 'Input').value = ''; };
-        });
-
-        document.getElementById('voteAdd').onclick = () => {
-            const n = document.getElementById('voteNameInput').value, u = document.getElementById('voteInput').value;
-            if(n && u) { addItem('vote-list', `${n}|${u}`); document.getElementById('voteNameInput').value = ''; document.getElementById('voteInput').value = ''; }
         };
 
         const syncEverything = async () => {
@@ -235,11 +199,25 @@
             });
         };
 
-        window.switchTab = (id) => {
-            ['config', 'vote', 'logs', 'access'].forEach(t => {
-                document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
-                document.getElementById('tab-'+t).classList.toggle('active', t === id);
+        const setupLogs = () => {
+            onValue(query(ref(db, 'absoluteConfigV3/logs'), limitToLast(50)), (snap) => {
+                const container = document.getElementById('log-container');
+                container.innerHTML = "";
+                if (snap.val()) Object.values(snap.val()).reverse().forEach(log => {
+                    const time = new Date(log.time).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+                    container.innerHTML += `<div class="log-entry"><span class="text-zinc-500">[${time}]</span> <span class="text-orange-500 font-bold">${log.user.split('@')[0]}</span>: ${log.action}</div>`;
+                });
             });
+        };
+
+        ['media', 'smp', 'event', 'staff', 'email'].forEach(x => {
+            const btn = document.getElementById(x + 'Add');
+            if(btn) btn.onclick = () => { addItem(x + '-list', document.getElementById(x + 'Input').value); document.getElementById(x + 'Input').value = ''; };
+        });
+
+        document.getElementById('voteAdd').onclick = () => {
+            const n = document.getElementById('voteNameInput').value, u = document.getElementById('voteInput').value;
+            if(n && u) { addItem('vote-list', `${n}|${u}`); document.getElementById('voteNameInput').value = ''; document.getElementById('voteInput').value = ''; }
         };
 
         ['media-list', 'smp-list', 'event-list', 'staff-list', 'vote-list', 'email-list'].forEach(id => {
