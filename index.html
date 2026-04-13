@@ -17,6 +17,8 @@
         .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
         .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
         .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+        .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; transition: 0.3s; vertical-align: middle; }
+        .mini-refresh:hover { transform: rotate(180deg); color: white; }
         .hidden { display: none; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
@@ -26,7 +28,6 @@
     <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
         <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 text-center shadow-2xl">
             <h2 class="text-3xl font-black italic text-orange-600 mb-6 uppercase">Inferno Auth</h2>
-            <p class="text-zinc-500 text-xs mb-6 font-bold uppercase tracking-widest">Administrative Access Only</p>
             <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase flex items-center justify-center gap-3">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" class="w-5 h-5 bg-white rounded-full p-0.5">
                 Sign in with Google
@@ -48,8 +49,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="section-box">
                     <h2 class="section-title">Visual Branding</h2>
-                    <label>Background URL</label><input type="text" id="bgImageUrl">
-                    <label>Logo Icon URL</label><input type="text" id="logoUrl">
+                    <label>Background URL <span class="mini-refresh" onclick="refreshField('bgImageUrl')">↻</span></label><input type="text" id="bgImageUrl">
+                    <label>Logo Icon URL <span class="mini-refresh" onclick="refreshField('logoUrl')">↻</span></label><input type="text" id="logoUrl">
                     <div class="grid grid-cols-4 gap-2 mt-4 text-center">
                         <div><label>Nav</label><input type="color" id="navBg"></div>
                         <div><label>Logo</label><input type="color" id="navLogoCol"></div>
@@ -60,10 +61,10 @@
 
                 <div class="section-box">
                     <h2 class="section-title">Hero & Media Shuffle</h2>
-                    <label>Hero Title</label><input type="text" id="heroTitle">
-                    <label>Server IP</label><input type="text" id="serverIp">
-                    <label>Shuffle Delay (Seconds)</label><input type="number" id="shuffleDelay" placeholder="10">
-                    <label>Media Gallery (Images/Videos)</label>
+                    <label>Hero Title <span class="mini-refresh" onclick="refreshField('heroTitle')">↻</span></label><input type="text" id="heroTitle">
+                    <label>Server IP <span class="mini-refresh" onclick="refreshField('serverIp')">↻</span></label><input type="text" id="serverIp">
+                    <label>Shuffle Delay <span class="mini-refresh" onclick="refreshField('shuffleDelay')">↻</span></label><input type="number" id="shuffleDelay">
+                    <label>Media Gallery <span class="mini-refresh" onclick="refreshList('media-list', 'mediaUrls')">↻</span></label>
                     <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Link..."><button id="mediaAdd" class="btn-add">+</button></div>
                     <div id="media-list" class="sort-list"></div>
                 </div>
@@ -72,19 +73,19 @@
             <div class="section-box mt-6">
                 <h2 class="section-title">Public Lists</h2>
                 <div class="grid grid-cols-3 gap-6">
-                    <div><label>SMP Realms</label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
-                    <div><label>Events List</label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div></div>
-                    <div><label>Supporters/Staff</label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div></div>
+                    <div><label>SMP Realms <span class="mini-refresh" onclick="refreshList('smp-list', 'smpList')">↻</span></label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
+                    <div><label>Events <span class="mini-refresh" onclick="refreshList('event-list', 'eventList')">↻</span></label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div></div>
+                    <div><label>Staff <span class="mini-refresh" onclick="refreshList('staff-list', 'staffList')">↻</span></label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div></div>
                 </div>
             </div>
 
             <div class="section-box">
                 <h2 class="section-title">Sponsorships & Store</h2>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label>Sponsor Name</label><input type="text" id="sponsorName"></div>
-                    <div><label>Sponsor URL</label><input type="text" id="sponsorUrl"></div>
-                    <div><label>Promo Code</label><input type="text" id="promoCode"></div>
-                    <div><label>Patreon Link</label><input type="text" id="patreonBtnLink"></div>
+                    <div><label>Sponsor Name <span class="mini-refresh" onclick="refreshField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
+                    <div><label>Sponsor URL <span class="mini-refresh" onclick="refreshField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
+                    <div><label>Promo Code <span class="mini-refresh" onclick="refreshField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
+                    <div><label>Patreon <span class="mini-refresh" onclick="refreshField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
                 </div>
             </div>
             <button id="saveBtn" class="w-full py-8 bg-orange-600 rounded-2xl font-black uppercase text-2xl mt-4 shadow-xl">Push Changes Live 🔥</button>
@@ -93,17 +94,14 @@
         <div id="page-logs" class="hidden">
             <div class="section-box">
                 <h2 class="section-title mb-4">Live System Activity</h2>
-                <div id="log-container" class="space-y-2 font-mono text-[11px] h-96 overflow-y-auto pr-2">
-                    <div class="opacity-30 italic">Connecting to system logs...</div>
-                </div>
+                <div id="log-container" class="space-y-2 font-mono text-[11px] h-96 overflow-y-auto pr-2"></div>
             </div>
         </div>
 
         <div id="page-access" class="hidden">
             <div class="section-box">
-                <h2 class="section-title">Whitelisted Access</h2>
-                <label>Add Trusted Email</label>
-                <div class="flex gap-2"><input type="text" id="emailInput" placeholder="Email..."><button id="emailAdd" class="btn-add">+</button></div>
+                <h2 class="section-title">Whitelisted Access <span class="mini-refresh" onclick="refreshList('email-list', 'trustedEmails')">↻</span></h2>
+                <div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="Email..."><button id="emailAdd" class="btn-add">+</button></div>
                 <div id="email-list" class="sort-list"></div>
             </div>
         </div>
@@ -131,42 +129,26 @@
 
         let currentUserEmail = null;
 
-        const getHaifaTime = () => {
-            return new Date().toLocaleTimeString("en-GB", {
-                timeZone: "Asia/Jerusalem",
-                hour12: false,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-        };
+        const getHaifaTime = () => new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Jerusalem", hour12: false });
 
         const unlock = (email) => {
             currentUserEmail = email;
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
+            loadAll(); // Only load when authorized
         };
 
         document.getElementById('loginBtn').onclick = async () => {
             try {
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
-                
                 const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
                 const trusted = (snap.val() || "").split(',').filter(e => e);
-
                 if (user.email === "abeedwehbe@gmail.com" || trusted.includes(user.email)) {
                     unlock(user.email);
-                    await push(ref(db, 'systemLogs'), { 
-                        user: user.email, 
-                        time: getHaifaTime(), 
-                        action: "Logged in" 
-                    });
-                } else {
-                    alert("Unauthorized Email: " + user.email);
-                    auth.signOut();
-                }
-            } catch (e) { alert("Error: " + e.message); }
+                    await push(ref(db, 'systemLogs'), { user: user.email, time: getHaifaTime(), action: "Logged in" });
+                } else { alert("Unauthorized"); auth.signOut(); }
+            } catch (e) { alert(e.message); }
         };
 
         onAuthStateChanged(auth, (user) => {
@@ -178,6 +160,20 @@
             }
         });
 
+        window.refreshField = async (id) => {
+            const snap = await get(ref(db, `absoluteConfigV3/${id}`));
+            if (snap.exists()) document.getElementById(id).value = snap.val();
+        };
+
+        window.refreshList = async (listId, key) => {
+            const snap = await get(ref(db, `absoluteConfigV3/${key}`));
+            const list = document.getElementById(listId);
+            list.innerHTML = "";
+            if (snap.exists()) {
+                snap.val().split(',').filter(v => v).forEach(v => addItem(listId, v));
+            }
+        };
+
         window.switchTab = (id) => {
             ['config', 'logs', 'access'].forEach(t => {
                 document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
@@ -186,7 +182,6 @@
         };
 
         const addItem = (listId, val) => {
-            if(!val) return;
             const div = document.createElement('div');
             div.className = 'sort-item';
             div.innerHTML = `<span>${val}</span><button class="text-red-500 font-bold" onclick="this.parentElement.remove()">×</button>`;
@@ -202,12 +197,15 @@
 
         const fields = ["bgImageUrl","logoUrl","navBg","navLogoCol","heroTitleCol","heroBtnBg","heroTitle","serverIp","shuffleDelay","sponsorName","sponsorUrl","promoCode","patreonBtnLink"];
 
-        get(ref(db, 'absoluteConfigV3')).then(s => {
-            const d = s.val(); if(!d) return;
-            fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
-            const parse = (list, key) => (d[key]||"").split(',').filter(v=>v).forEach(v => addItem(list, v));
-            parse('media-list', 'mediaUrls'); parse('smp-list', 'smpList'); parse('event-list', 'eventList'); parse('staff-list', 'staffList'); parse('email-list', 'trustedEmails');
-        });
+        const loadAll = () => {
+            get(ref(db, 'absoluteConfigV3')).then(s => {
+                const d = s.val(); if(!d) return;
+                fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
+                ['media-list','smp-list','event-list','staff-list','email-list'].forEach(id => document.getElementById(id).innerHTML = "");
+                const parse = (list, key) => (d[key]||"").split(',').filter(v=>v).forEach(v => addItem(list, v));
+                parse('media-list', 'mediaUrls'); parse('smp-list', 'smpList'); parse('event-list', 'eventList'); parse('staff-list', 'staffList'); parse('email-list', 'trustedEmails');
+            });
+        };
 
         document.getElementById('saveBtn').onclick = async () => {
             const payload = {};
@@ -218,23 +216,20 @@
             payload.eventList = collect('event-list'); 
             payload.staffList = collect('staff-list'); 
             payload.trustedEmails = collect('email-list');
-            
             await set(ref(db, 'absoluteConfigV3'), payload);
-            await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: "Pushed Config Updates" });
-            alert("🔥 Changes Pushed Live!");
+            await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: "Updated Config" });
+            alert("🔥 Saved!");
         };
 
         onValue(ref(db, 'systemLogs'), (snapshot) => {
             const data = snapshot.val();
             const logBox = document.getElementById('log-container');
             if (!data) return;
-            const logs = Object.values(data).reverse().slice(0, 50);
-            logBox.innerHTML = logs.map(log => `
+            logBox.innerHTML = Object.values(data).reverse().slice(0, 50).map(log => `
                 <div class="border-b border-white/5 py-2 flex justify-between items-center">
-                    <span class="text-orange-500 font-bold">[${log.time || '00:00'}]</span>
+                    <span class="text-orange-500 font-bold">[${log.time}]</span>
                     <span class="text-zinc-300 flex-1 px-4">${log.user} ${log.action}</span>
-                </div>
-            `).join('');
+                </div>`).join('');
         });
 
         ['media','smp','event','staff'].forEach(id => new Sortable(document.getElementById(id+'-list'), { animation: 150 }));
