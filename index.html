@@ -10,22 +10,19 @@
         .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
         .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
         label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
-        input[type="text"] { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="text"], textarea { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
         input[type="color"] { -webkit-appearance: none; border: 2px solid #333; width: 100%; height: 40px; cursor: pointer; background: #000; border-radius: 8px; padding: 2px; }
         .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; color: #555; }
         .nav-tab.active { background: #ea580c; color: white; }
         .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
         .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
         .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; height: 42px; }
-        .btn-save { background: #222; color: #ea580c; width: 100%; padding: 10px; border-radius: 8px; font-weight: 900; font-size: 11px; text-transform: uppercase; margin-top: 20px; border: 1px solid #ea580c33; transition: 0.3s; }
+        .btn-save { background: #222; color: #ea580c; width: 100%; padding: 10px; border-radius: 8px; font-weight: 900; font-size: 11px; text-transform: uppercase; margin-top: 20px; border: 1px solid #ea580c33; transition: 0.3s; cursor:pointer; }
         .btn-save:hover { background: #ea580c; color: white; }
         .hidden { display: none !important; }
-        
-        /* Drop Zone Logic */
         .drop-zone { border: 2px dashed #333; border-radius: 12px; padding: 5px; transition: 0.3s; background: #000; position: relative; }
         .drop-zone.dragover { border-color: #ea580c; background: #ea580c15; }
         .uploading::after { content: "UPLOADING..."; position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #ea580c; border-radius: 12px; z-index: 10; }
-
         .log-entry { font-family: monospace; font-size: 11px; padding: 6px 0; border-bottom: 1px solid #222; }
         .log-time { color: #ea580c; opacity: 0.6; }
         .log-user { color: #3b82f6; font-weight: bold; margin: 0 5px; }
@@ -43,15 +40,30 @@
     <div id="main-content" class="hidden">
         <div class="flex justify-between items-center mb-10">
             <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
-            <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
-                <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
-                <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab">VOTING</button>
-                <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab">ACTIVITY</button>
+            <div id="tab-container" class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
+                <button onclick="switchTab('bio')" id="tab-bio" class="nav-tab active">MY BIO</button>
+                <button onclick="switchTab('config')" id="tab-config" class="nav-tab hidden">CONFIG</button>
+                <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab hidden">VOTING</button>
+                <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab hidden">ACTIVITY</button>
                 <button onclick="switchTab('access')" id="tab-access" class="nav-tab hidden">EMAILS</button>
             </div>
         </div>
 
-        <div id="page-config">
+        <div id="page-bio">
+            <div class="section-box max-w-2xl mx-auto">
+                <h2 class="section-title">My Website Profile</h2>
+                <p class="text-zinc-500 text-[10px] mb-4">This info will appear in the "Meet the Team" section of the main site.</p>
+                <label>Display Name</label>
+                <input type="text" id="myStaffName" placeholder="Minecraft Username">
+                <label>Role / Title</label>
+                <input type="text" id="myStaffRole" placeholder="e.g. Senior Admin">
+                <label>About Me (Paragraph)</label>
+                <textarea id="myStaffBio" rows="5" class="w-full mt-2" placeholder="Tell the players about yourself..."></textarea>
+                <button onclick="saveMyBio()" class="btn-save">Update My Bio Only</button>
+            </div>
+        </div>
+
+        <div id="page-config" class="hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="section-box">
                     <h2 class="section-title">Visual Branding</h2>
@@ -71,7 +83,6 @@
                     </div>
                     <button onclick="saveBranding()" class="btn-save">Save Visuals</button>
                 </div>
-
                 <div class="section-box">
                     <h2 class="section-title">Hero & Media</h2>
                     <label>Hero Title</label><input type="text" id="heroTitle">
@@ -83,25 +94,12 @@
                     <button onclick="syncList('media-list', 'mediaUrls')" class="btn-save">Save Media Order</button>
                 </div>
             </div>
-
-            <div class="section-box">
-                <h2 class="section-title">Partner & Social</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label>Sponsor Name</label><input type="text" id="sponsorName"></div>
-                    <div><label>Sponsor URL</label><input type="text" id="sponsorUrl"></div>
-                    <div><label>Promo Code</label><input type="text" id="promoCode"></div>
-                    <div><label>Discord Link</label><input type="text" id="discordLink"></div>
-                    <div class="col-span-2"><label>Patreon Link</label><input type="text" id="patreonBtnLink"></div>
-                </div>
-                <button onclick="savePartnerSocial()" class="btn-save">Save Partner & Social</button>
-            </div>
-
             <div class="section-box">
                 <h2 class="section-title">Public Lists</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div><label>SMPs</label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div><button onclick="syncList('smp-list', 'smpList')" class="btn-save">Save SMPs</button></div>
                     <div><label>Events</label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div><button onclick="syncList('event-list', 'eventList')" class="btn-save">Save Events</button></div>
-                    <div><label>Staff</label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div><button onclick="syncList('staff-list', 'staffList')" class="btn-save">Save Staff</button></div>
+                    <div><label>Staff (Simple List)</label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div><button onclick="syncList('staff-list', 'staffList')" class="btn-save">Save Staff</button></div>
                 </div>
             </div>
         </div>
@@ -150,49 +148,70 @@
         const auth = getAuth(app);
         const ownerEmail = "abeedwehbe@gmail.com";
         let currentUser = null;
+        let sanitizedEmail = "";
 
         document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
         
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
-                const trusted = (snap.val() || "").split(',').filter(e => e);
+                const trusted = (snap.val() || "").split(',').filter(e => e.trim());
                 if (user.email === ownerEmail || trusted.includes(user.email)) {
                     currentUser = user;
+                    sanitizedEmail = user.email.replace(/\./g, '_');
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
-                    if (user.email === ownerEmail) document.getElementById('tab-access').classList.remove('hidden');
-                    syncEverything(); setupLogs();
+                    
+                    if (user.email === ownerEmail) {
+                        ['config', 'vote', 'logs', 'access'].forEach(id => document.getElementById('tab-'+id).classList.remove('hidden'));
+                    }
+                    syncEverything(); setupLogs(); loadBio();
                 } else { alert("Access Denied."); auth.signOut(); }
             }
         });
 
-        // FIXED DROP LOGIC
-        window.hOver = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('dragover'); };
-        window.hLeave = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('dragover'); };
+        // LOAD BIO ONLY FOR THE LOGGED IN USER
+        async function loadBio() {
+            const snap = await get(ref(db, `absoluteConfigV3/staffProfiles/${sanitizedEmail}`));
+            if(snap.exists()){
+                const d = snap.val();
+                document.getElementById('myStaffName').value = d.name || "";
+                document.getElementById('myStaffRole').value = d.role || "";
+                document.getElementById('myStaffBio').value = d.bio || "";
+            }
+        }
+
+        window.saveMyBio = async () => {
+            const data = {
+                name: document.getElementById('myStaffName').value,
+                role: document.getElementById('myStaffRole').value,
+                bio: document.getElementById('myStaffBio').value
+            };
+            await update(ref(db, `absoluteConfigV3/staffProfiles/${sanitizedEmail}`), data);
+            logAction("Updated personal bio");
+            alert("Bio Updated!");
+        };
+
+        // ORIGINAL UTILITIES
+        window.switchTab = (id) => {
+            ['bio', 'config', 'vote', 'logs', 'access'].forEach(t => {
+                document.getElementById('page-'+t)?.classList.toggle('hidden', t !== id);
+                document.getElementById('tab-'+t)?.classList.toggle('active', t === id);
+            });
+        };
+
+        window.hOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('dragover'); };
+        window.hLeave = (e) => { e.preventDefault(); e.currentTarget.classList.remove('dragover'); };
         window.hDrop = async (e, inputId) => {
-            e.preventDefault(); e.stopPropagation();
-            const zone = e.currentTarget;
-            zone.classList.remove('dragover');
-            
-            const file = e.dataTransfer.files[0];
-            if (!file || !file.type.startsWith('image/')) return;
-
+            e.preventDefault(); const zone = e.currentTarget; zone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0]; if (!file || !file.type.startsWith('image/')) return;
             zone.classList.add('uploading');
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', 'ml_default');
-
+            const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', 'ml_default');
             try {
-                // Using a more reliable demo cloud name or yours if you have it
                 const res = await fetch('https://api.cloudinary.com/v1_1/demo/image/upload', { method: 'POST', body: formData });
                 const data = await res.json();
-                if(data.secure_url) {
-                    document.getElementById(inputId).value = data.secure_url;
-                    logAction(`Dropped & Uploaded ${inputId}`);
-                }
-            } catch (err) { alert("Upload failed. Make sure you are using a valid Cloudinary preset."); }
-            finally { zone.classList.remove('uploading'); }
+                if(data.secure_url) { document.getElementById(inputId).value = data.secure_url; logAction(`Uploaded ${inputId}`); }
+            } catch (err) { alert("Upload failed."); } finally { zone.classList.remove('uploading'); }
         };
 
         window.saveBranding = async () => {
@@ -204,49 +223,26 @@
                 heroTitleCol: document.getElementById('heroTitleCol').value,
                 heroBtnBg: document.getElementById('heroBtnBg').value
             };
-            await update(ref(db, 'absoluteConfigV3'), data);
-            logAction("Updated Visual Branding");
-            alert("Visuals Saved!");
+            await update(ref(db, 'absoluteConfigV3'), data); alert("Saved!");
         };
 
         window.saveHeroInfo = async () => {
             const data = { heroTitle: document.getElementById('heroTitle').value, serverIp: document.getElementById('serverIp').value };
-            await update(ref(db, 'absoluteConfigV3'), data);
-            logAction("Updated Hero Info");
-            alert("Hero Info Saved!");
+            await update(ref(db, 'absoluteConfigV3'), data); alert("Saved!");
         };
 
-        window.savePartnerSocial = async () => {
-            const data = {
-                sponsorName: document.getElementById('sponsorName').value,
-                sponsorUrl: document.getElementById('sponsorUrl').value,
-                promoCode: document.getElementById('promoCode').value,
-                discordLink: document.getElementById('discordLink').value,
-                patreonBtnLink: document.getElementById('patreonBtnLink').value
-            };
-            await update(ref(db, 'absoluteConfigV3'), data);
-            logAction("Updated Partner & Social");
-            alert("Partner/Social Saved!");
-        };
-
-        const logAction = (action) => {
-            push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: action, time: new Date().toISOString() });
-        };
+        const logAction = (action) => { push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: action, time: new Date().toISOString() }); };
 
         window.syncList = async (listId, key) => {
             let items = Array.from(document.getElementById(listId).querySelectorAll('.sort-item')).map(item => {
                 const siteName = item.querySelector('.site-name');
                 return siteName ? `${siteName.innerText}|${item.querySelector('.site-url').innerText}` : item.querySelector('span').innerText;
             }).join(',');
-            await set(ref(db, `absoluteConfigV3/${key}`), items);
-            logAction(`Updated List: ${key}`);
-            alert("List Saved!");
+            await set(ref(db, `absoluteConfigV3/${key}`), items); alert("List Saved!");
         };
 
         const addItem = (listId, val) => {
-            if(!val) return;
-            const div = document.createElement('div');
-            div.className = 'sort-item';
+            if(!val) return; const div = document.createElement('div'); div.className = 'sort-item';
             let content = val.includes('|') ? `<span class="site-name font-bold text-orange-500">${val.split('|')[0]}</span> <span class="site-url opacity-40 ml-2">${val.split('|')[1]}</span>` : `<span>${val}</span>`;
             div.innerHTML = `<div>${content}</div><button class="text-red-500 font-bold px-2" onclick="this.parentElement.remove()">×</button>`;
             document.getElementById(listId).appendChild(div);
@@ -255,7 +251,7 @@
         const syncEverything = async () => {
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const d = snap.val(); if (!d) return;
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "discordLink"];
+            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp"];
             fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
             const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks' };
             Object.entries(listMap).forEach(([id, key]) => {
@@ -266,20 +262,11 @@
 
         const setupLogs = () => {
             onValue(query(ref(db, 'absoluteConfigV3/logs'), limitToLast(50)), (snap) => {
-                const container = document.getElementById('log-container');
-                container.innerHTML = "";
+                const container = document.getElementById('log-container'); container.innerHTML = "";
                 if (snap.val()) Object.values(snap.val()).reverse().forEach(log => {
                     const t = new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     container.innerHTML += `<div class="log-entry"><span class="log-time">[${t}]</span><span class="log-user">${log.user.split('@')[0]}</span><span class="log-action">→ ${log.action}</span></div>`;
                 });
-            });
-        };
-
-        window.switchTab = (id) => {
-            if (id === 'access' && currentUser.email !== ownerEmail) return;
-            ['config', 'vote', 'logs', 'access'].forEach(t => {
-                document.getElementById('page-'+t)?.classList.toggle('hidden', t !== id);
-                document.getElementById('tab-'+t)?.classList.toggle('active', t === id);
             });
         };
 
