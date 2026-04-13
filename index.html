@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V7.2</title>
+    <title>Inferno Admin | V7.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -20,9 +20,8 @@
         .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; transition: 0.3s; vertical-align: middle; display: inline-block; }
         .mini-refresh:hover { transform: rotate(180deg); color: white; }
         .hidden { display: none; }
-        /* Smaller Save Button Styling */
-        .save-btn-small { background: #ea580c; color: white; padding: 15px; border-radius: 12px; font-weight: 900; text-transform: uppercase; width: 100%; margin-top: 20px; transition: 0.2s; }
-        .save-btn-small:hover { background: #ff6a00; transform: scale(1.01); }
+        #log-container::-webkit-scrollbar { width: 4px; }
+        #log-container::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -37,7 +36,7 @@
         <div class="flex justify-between items-start mb-10">
             <div>
                 <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
-                <p class="text-[10px] text-zinc-500 font-bold">V7.2 - Haifa Special</p>
+                <p class="text-[10px] text-zinc-500 font-bold italic">V7.3 - Single Field Sync Enabled</p>
             </div>
             <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
                 <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
@@ -50,23 +49,23 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="section-box">
                     <h2 class="section-title">Visual Branding</h2>
-                    <label>Background URL <span class="mini-refresh" onclick="refreshField('bgImageUrl')">↻</span></label><input type="text" id="bgImageUrl">
-                    <label>Logo Icon URL <span class="mini-refresh" onclick="refreshField('logoUrl')">↻</span></label><input type="text" id="logoUrl">
+                    <label>Background URL <span class="mini-refresh" onclick="syncField('bgImageUrl')">↻</span></label><input type="text" id="bgImageUrl">
+                    <label>Logo Icon URL <span class="mini-refresh" onclick="syncField('logoUrl')">↻</span></label><input type="text" id="logoUrl">
                     <div class="grid grid-cols-4 gap-2 mt-4 text-center">
-                        <div><label>Nav</label><input type="color" id="navBg"></div>
-                        <div><label>Logo</label><input type="color" id="navLogoCol"></div>
-                        <div><label>Hero</label><input type="color" id="heroTitleCol"></div>
-                        <div><label>Btn</label><input type="color" id="heroBtnBg"></div>
+                        <div><label>Nav</label><input type="color" id="navBg" onchange="syncField('navBg')"></div>
+                        <div><label>Logo</label><input type="color" id="navLogoCol" onchange="syncField('navLogoCol')"></div>
+                        <div><label>Hero</label><input type="color" id="heroTitleCol" onchange="syncField('heroTitleCol')"></div>
+                        <div><label>Btn</label><input type="color" id="heroBtnBg" onchange="syncField('heroBtnBg')"></div>
                     </div>
                 </div>
 
                 <div class="section-box">
                     <h2 class="section-title">Hero & Media</h2>
-                    <label>Hero Title <span class="mini-refresh" onclick="refreshField('heroTitle')">↻</span></label><input type="text" id="heroTitle">
-                    <label>Server IP <span class="mini-refresh" onclick="refreshField('serverIp')">↻</span></label><input type="text" id="serverIp">
-                    <label>Shuffle Delay <span class="mini-refresh" onclick="refreshField('shuffleDelay')">↻</span></label><input type="number" id="shuffleDelay">
-                    <label>Media <span class="mini-refresh" onclick="refreshList('media-list', 'mediaUrls')">↻</span></label>
-                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Link..."><button id="mediaAdd" class="btn-add">+</button></div>
+                    <label>Hero Title <span class="mini-refresh" onclick="syncField('heroTitle')">↻</span></label><input type="text" id="heroTitle">
+                    <label>Server IP <span class="mini-refresh" onclick="syncField('serverIp')">↻</span></label><input type="text" id="serverIp">
+                    <label>Shuffle Delay <span class="mini-refresh" onclick="syncField('shuffleDelay')">↻</span></label><input type="number" id="shuffleDelay">
+                    <label>Media <span class="mini-refresh" onclick="syncList('media-list', 'mediaUrls')">↻</span></label>
+                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Add Link..."><button id="mediaAdd" class="btn-add">+</button></div>
                     <div id="media-list" class="sort-list"></div>
                 </div>
             </div>
@@ -74,27 +73,26 @@
             <div class="section-box">
                 <h2 class="section-title">Sponsorships & Store</h2>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label>Sponsor Name <span class="mini-refresh" onclick="refreshField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
+                    <div><label>Sponsor Name <span class="mini-refresh" onclick="syncField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
                     <div><label>Sponsor URL <span class="mini-refresh" onclick="refreshField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
-                    <div><label>Promo Code <span class="mini-refresh" onclick="refreshField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
-                    <div><label>Patreon Link <span class="mini-refresh" onclick="refreshField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
+                    <div><label>Promo Code <span class="mini-refresh" onclick="syncField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
+                    <div><label>Patreon Link <span class="mini-refresh" onclick="syncField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
                 </div>
             </div>
 
             <div class="section-box">
                 <h2 class="section-title">Public Lists</h2>
                 <div class="grid grid-cols-3 gap-6">
-                    <div><label>SMP <span class="mini-refresh" onclick="refreshList('smp-list', 'smpList')">↻</span></label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
-                    <div><label>Events <span class="mini-refresh" onclick="refreshList('event-list', 'eventList')">↻</span></label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div></div>
-                    <div><label>Staff <span class="mini-refresh" onclick="refreshList('staff-list', 'staffList')">↻</span></label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div></div>
+                    <div><label>SMP <span class="mini-refresh" onclick="syncList('smp-list', 'smpList')">↻</span></label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
+                    <div><label>Events <span class="mini-refresh" onclick="syncList('event-list', 'eventList')">↻</span></label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div></div>
+                    <div><label>Staff <span class="mini-refresh" onclick="syncList('staff-list', 'staffList')">↻</span></label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div></div>
                 </div>
-                <button id="saveBtn" class="save-btn-small">Save Settings 🔥</button>
             </div>
         </div>
 
         <div id="page-logs" class="hidden">
             <div class="section-box">
-                <h2 class="section-title mb-4">Live Activity</h2>
+                <h2 class="section-title mb-4">Live Activity Log</h2>
                 <div id="log-container" class="space-y-2 font-mono text-[11px] h-96 overflow-y-auto pr-2"></div>
             </div>
         </div>
@@ -103,7 +101,7 @@
             <div id="admin-only-warning" class="text-red-500 font-bold mb-4 hidden uppercase text-xs">Access Restricted to Owner</div>
             <div id="access-content">
                 <div class="section-box">
-                    <h2 class="section-title">Whitelisted Access <span class="mini-refresh" onclick="refreshList('email-list', 'trustedEmails')">↻</span></h2>
+                    <h2 class="section-title">Whitelisted Emails <span class="mini-refresh" onclick="syncList('email-list', 'trustedEmails')">↻</span></h2>
                     <div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="Email..."><button id="emailAdd" class="btn-add">+</button></div>
                     <div id="email-list" class="sort-list"></div>
                 </div>
@@ -164,21 +162,20 @@
             }
         });
 
-        window.refreshField = async (id) => {
-            const snap = await get(ref(db, `absoluteConfigV3/${id}`));
-            if (snap.exists()) {
-                document.getElementById(id).value = snap.val();
-                await logAction(`Refreshed field: ${id}`);
-            }
+        // SINGLE FIELD SYNC: Saves ONLY this field and logs it specifically
+        window.syncField = async (id) => {
+            const val = document.getElementById(id).value;
+            await set(ref(db, `absoluteConfigV3/${id}`), val);
+            await logAction(`Updated Field: ${id}`);
+            alert(`Saved ${id}!`);
         };
 
-        window.refreshList = async (listId, key) => {
-            const snap = await get(ref(db, `absoluteConfigV3/${key}`));
-            document.getElementById(listId).innerHTML = "";
-            if (snap.exists() && snap.val()) {
-                snap.val().split(',').forEach(v => v.trim() && addItem(listId, v.trim()));
-                await logAction(`Refreshed list: ${key}`);
-            }
+        // SINGLE LIST SYNC: Saves ONLY this list and logs it
+        window.syncList = async (listId, key) => {
+            const items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
+            await set(ref(db, `absoluteConfigV3/${key}`), items);
+            await logAction(`Updated List: ${key}`);
+            alert(`Saved ${key}!`);
         };
 
         const syncEverything = async () => {
@@ -187,7 +184,10 @@
             const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink"];
             fields.forEach(f => d[f] && (document.getElementById(f).value = d[f]));
             const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails' };
-            Object.entries(listMap).forEach(([listId, key]) => refreshList(listId, key));
+            Object.entries(listMap).forEach(([listId, key]) => {
+                document.getElementById(listId).innerHTML = "";
+                if (d[key]) d[key].split(',').forEach(v => v.trim() && addItem(listId, v.trim()));
+            });
         };
 
         window.switchTab = (id) => {
@@ -211,21 +211,6 @@
                 document.getElementById(x + 'Input').value = '';
             };
         });
-
-        document.getElementById('saveBtn').onclick = async () => {
-            const payload = {};
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink"];
-            fields.forEach(f => payload[f] = document.getElementById(f).value);
-            const collect = (id) => Array.from(document.getElementById(id).querySelectorAll('span')).map(s => s.innerText).join(',');
-            payload.mediaUrls = collect('media-list');
-            payload.smpList = collect('smp-list');
-            payload.eventList = collect('event-list');
-            payload.staffList = collect('staff-list');
-            payload.trustedEmails = collect('email-list');
-            await set(ref(db, 'absoluteConfigV3'), payload);
-            await logAction("🔥 Bulk Saved Config");
-            alert("Changes Saved!");
-        };
 
         onValue(ref(db, 'systemLogs'), (snapshot) => {
             const data = snapshot.val(); if (!data) return;
