@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V10.2</title>
+    <title>Inferno Admin | V10.3 Fix</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -20,13 +20,15 @@
         .btn-save { background: #222; color: #ea580c; width: 100%; padding: 10px; border-radius: 8px; font-weight: 900; font-size: 11px; text-transform: uppercase; margin-top: 20px; border: 1px solid #ea580c33; transition: 0.3s; }
         .btn-save:hover { background: #ea580c; color: white; }
         .hidden { display: none !important; }
-        .drop-zone { border: 2px dashed #333; border-radius: 12px; padding: 10px; transition: 0.3s; background: #000; }
-        .drop-zone.dragover { border-color: #ea580c; background: #ea580c10; }
         
-        /* Activity Log Colors */
-        .log-entry { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 6px 0; border-bottom: 1px solid #222; }
-        .log-time { color: #555; }
-        .log-user { color: #3b82f6; font-weight: bold; }
+        /* Drop Zone Logic */
+        .drop-zone { border: 2px dashed #333; border-radius: 12px; padding: 5px; transition: 0.3s; background: #000; position: relative; }
+        .drop-zone.dragover { border-color: #ea580c; background: #ea580c15; }
+        .uploading::after { content: "UPLOADING..."; position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #ea580c; border-radius: 12px; z-index: 10; }
+
+        .log-entry { font-family: monospace; font-size: 11px; padding: 6px 0; border-bottom: 1px solid #222; }
+        .log-time { color: #ea580c; opacity: 0.6; }
+        .log-user { color: #3b82f6; font-weight: bold; margin: 0 5px; }
         .log-action { color: #22c55e; }
     </style>
 </head>
@@ -53,13 +55,13 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="section-box">
                     <h2 class="section-title">Visual Branding</h2>
-                    <label>Background Image (Drop file)</label>
-                    <div class="drop-zone" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'bgImageUrl')">
-                        <input type="text" id="bgImageUrl" placeholder="Paste URL or Drop Image">
+                    <label>Background Image</label>
+                    <div class="drop-zone" id="dz-bg" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'bgImageUrl')">
+                        <input type="text" id="bgImageUrl" placeholder="Paste link or DROP file here">
                     </div>
-                    <label>Logo Icon (Drop file)</label>
-                    <div class="drop-zone" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'logoUrl')">
-                        <input type="text" id="logoUrl" placeholder="Paste URL or Drop Image">
+                    <label>Logo Icon</label>
+                    <div class="drop-zone" id="dz-logo" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'logoUrl')">
+                        <input type="text" id="logoUrl" placeholder="Paste link or DROP file here">
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                         <div><label>Nav BG</label><input type="color" id="navBg"></div>
@@ -75,7 +77,6 @@
                     <label>Hero Title</label><input type="text" id="heroTitle">
                     <label>Server IP</label><input type="text" id="serverIp">
                     <button onclick="saveHeroInfo()" class="btn-save mb-6">Save Hero Info</button>
-                    
                     <label class="mt-4">Media Carousel</label>
                     <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Add Link..."><button id="mediaAdd" class="btn-add">+</button></div>
                     <div id="media-list" class="sort-list"></div>
@@ -118,10 +119,7 @@
         </div>
 
         <div id="page-logs" class="hidden">
-            <div class="section-box">
-                <h2 class="section-title">Activity Log</h2>
-                <div id="log-container" class="bg-black p-6 rounded-xl border border-zinc-800 h-[500px] overflow-y-auto mt-4"></div>
-            </div>
+            <div class="section-box"><h2 class="section-title">Activity Log</h2><div id="log-container" class="bg-black p-6 rounded-xl border border-zinc-800 h-[500px] overflow-y-auto mt-4"></div></div>
         </div>
 
         <div id="page-access" class="hidden">
@@ -169,7 +167,34 @@
             }
         });
 
-        // MASS SAVE FUNCTIONS
+        // FIXED DROP LOGIC
+        window.hOver = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('dragover'); };
+        window.hLeave = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('dragover'); };
+        window.hDrop = async (e, inputId) => {
+            e.preventDefault(); e.stopPropagation();
+            const zone = e.currentTarget;
+            zone.classList.remove('dragover');
+            
+            const file = e.dataTransfer.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+
+            zone.classList.add('uploading');
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'ml_default');
+
+            try {
+                // Using a more reliable demo cloud name or yours if you have it
+                const res = await fetch('https://api.cloudinary.com/v1_1/demo/image/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if(data.secure_url) {
+                    document.getElementById(inputId).value = data.secure_url;
+                    logAction(`Dropped & Uploaded ${inputId}`);
+                }
+            } catch (err) { alert("Upload failed. Make sure you are using a valid Cloudinary preset."); }
+            finally { zone.classList.remove('uploading'); }
+        };
+
         window.saveBranding = async () => {
             const data = {
                 bgImageUrl: document.getElementById('bgImageUrl').value,
@@ -185,10 +210,7 @@
         };
 
         window.saveHeroInfo = async () => {
-            const data = {
-                heroTitle: document.getElementById('heroTitle').value,
-                serverIp: document.getElementById('serverIp').value
-            };
+            const data = { heroTitle: document.getElementById('heroTitle').value, serverIp: document.getElementById('serverIp').value };
             await update(ref(db, 'absoluteConfigV3'), data);
             logAction("Updated Hero Info");
             alert("Hero Info Saved!");
@@ -209,23 +231,6 @@
 
         const logAction = (action) => {
             push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: action, time: new Date().toISOString() });
-        };
-
-        // DRAG DROP
-        window.hOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('dragover'); };
-        window.hLeave = (e) => { e.preventDefault(); e.currentTarget.classList.remove('dragover'); };
-        window.hDrop = async (e, id) => {
-            e.preventDefault(); e.currentTarget.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (!file || !file.type.startsWith('image/')) return;
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', 'ml_default');
-            try {
-                const res = await fetch('https://api.cloudinary.com/v1_1/demo/image/upload', { method: 'POST', body: formData });
-                const data = await res.json();
-                document.getElementById(id).value = data.secure_url;
-            } catch (err) { alert("Upload failed."); }
         };
 
         window.syncList = async (listId, key) => {
@@ -264,13 +269,8 @@
                 const container = document.getElementById('log-container');
                 container.innerHTML = "";
                 if (snap.val()) Object.values(snap.val()).reverse().forEach(log => {
-                    const time = new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    container.innerHTML += `
-                        <div class="log-entry">
-                            <span class="log-time">[${time}]</span> 
-                            <span class="log-user">${log.user.split('@')[0]}</span> 
-                            <span class="log-action">→ ${log.action}</span>
-                        </div>`;
+                    const t = new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    container.innerHTML += `<div class="log-entry"><span class="log-time">[${t}]</span><span class="log-user">${log.user.split('@')[0]}</span><span class="log-action">→ ${log.action}</span></div>`;
                 });
             });
         };
