@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V7.5</title>
+    <title>Inferno Admin | V7.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -34,7 +34,7 @@
         <div class="flex justify-between items-start mb-10">
             <div>
                 <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
-                <p class="text-[10px] text-zinc-500 font-bold">V7.5 - Haifa/Widget Edition</p>
+                <p class="text-[10px] text-zinc-500 font-bold">V7.6 - Updated Layout</p>
             </div>
             <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
                 <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
@@ -49,6 +49,7 @@
                     <h2 class="section-title">Visual Branding</h2>
                     <label>Background URL <span class="mini-refresh" onclick="syncField('bgImageUrl')">↻</span></label><input type="text" id="bgImageUrl">
                     <label>Logo Icon URL <span class="mini-refresh" onclick="syncField('logoUrl')">↻</span></label><input type="text" id="logoUrl">
+                    <label>Widget Icon URL <span class="mini-refresh" onclick="syncField('widgetIconUrl')">↻</span></label><input type="text" id="widgetIconUrl">
                     <div class="grid grid-cols-4 gap-2 mt-4 text-center">
                         <div><label>Nav</label><input type="color" id="navBg" onchange="syncField('navBg')"></div>
                         <div><label>Logo</label><input type="color" id="navLogoCol" onchange="syncField('navLogoCol')"></div>
@@ -69,11 +70,12 @@
             </div>
 
             <div class="section-box">
-                <h2 class="section-title">Sponsorships & Widget</h2>
+                <h2 class="section-title">Sponsorships & Widget Settings</h2>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label>Sponsor Name <span class="mini-refresh" onclick="syncField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
                     <div><label>Promo Code <span class="mini-refresh" onclick="syncField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
-                    <div><label>Widget Text <span class="mini-refresh" onclick="syncField('widgetText')">↻</span></label><input type="text" id="widgetText" placeholder="Inferno Realms | Official"></div>
+                    <div><label>Patreon Link <span class="mini-refresh" onclick="syncField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
+                    <div><label>Widget Text <span class="mini-refresh" onclick="syncField('widgetText')">↻</span></label><input type="text" id="widgetText"></div>
                     <div>
                         <label>Widget Status <span class="mini-refresh" onclick="syncField('widgetActive')">↻</span></label>
                         <select id="widgetActive">
@@ -171,7 +173,7 @@
         const syncEverything = async () => {
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const d = snap.val(); if (!d) return;
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "promoCode", "widgetText", "widgetActive"];
+            const fields = ["bgImageUrl", "logoUrl", "widgetIconUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "promoCode", "patreonBtnLink", "widgetText", "widgetActive"];
             fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
             const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails' };
             Object.entries(listMap).forEach(([listId, key]) => {
