@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V9.3</title>
+    <title>Inferno Admin | V9.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -69,7 +69,8 @@
                     <div><label>Sponsor Name <span class="mini-refresh" onclick="syncField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
                     <div><label>Sponsor URL <span class="mini-refresh" onclick="syncField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
                     <div><label>Promo Code <span class="mini-refresh" onclick="syncField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
-                    <div><label>Patreon Link <span class="mini-refresh" onclick="syncField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
+                    <div><label>Discord Link <span class="mini-refresh" onclick="syncField('discordLink')">↻</span></label><input type="text" id="discordLink"></div>
+                    <div class="col-span-2"><label>Patreon Link <span class="mini-refresh" onclick="syncField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
                 </div>
             </div>
 
@@ -185,7 +186,6 @@
                 const [n, u] = val.split('|');
                 display = `<span class="site-name font-bold text-orange-500">${n}</span> <span class="site-url opacity-40 ml-2">${u}</span>`;
             } else if (listId === 'vote-list') {
-                // Fallback for old links
                 display = `<span class="site-name font-bold text-orange-500">Legacy Site</span> <span class="site-url opacity-40 ml-2">${val}</span>`;
             } else {
                 display = `<span>${val}</span>`;
@@ -207,15 +207,13 @@
                 addItem('vote-list', `${name}|${url}`);
                 document.getElementById('voteNameInput').value = '';
                 document.getElementById('voteInput').value = '';
-            } else {
-                alert("Please fill in both Name and Link!");
             }
         };
 
         const syncEverything = async () => {
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const d = snap.val(); if (!d) return;
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink"];
+            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "discordLink"];
             fields.forEach(f => { if(d[f] !== undefined) document.getElementById(f).value = d[f]; });
             const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks' };
             Object.entries(listMap).forEach(([id, key]) => {
