@@ -51,15 +51,15 @@
 
         <div id="page-bio">
             <div class="section-box max-w-2xl mx-auto">
-                <h2 class="section-title">My Website Profile</h2>
-                <p class="text-zinc-500 text-[10px] mb-4">This info will appear in the "Meet the Team" section of the main site.</p>
+                <h2 class="section-title">My Staff Paragraph</h2>
+                <p class="text-zinc-500 text-[10px] mb-4 uppercase font-bold">Write your own info below to appear on the site.</p>
                 <label>Display Name</label>
                 <input type="text" id="myStaffName" placeholder="Minecraft Username">
-                <label>Role / Title</label>
+                <label>Staff Role</label>
                 <input type="text" id="myStaffRole" placeholder="e.g. Senior Admin">
-                <label>About Me (Paragraph)</label>
-                <textarea id="myStaffBio" rows="5" class="w-full mt-2" placeholder="Tell the players about yourself..."></textarea>
-                <button onclick="saveMyBio()" class="btn-save">Update My Bio Only</button>
+                <label>Bio Paragraph</label>
+                <textarea id="myStaffBio" rows="5" placeholder="Write about yourself..."></textarea>
+                <button onclick="saveMyBio()" class="btn-save">Update My Paragraph</button>
             </div>
         </div>
 
@@ -96,10 +96,16 @@
             </div>
             <div class="section-box">
                 <h2 class="section-title">Public Lists</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div><label>SMPs</label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div><button onclick="syncList('smp-list', 'smpList')" class="btn-save">Save SMPs</button></div>
                     <div><label>Events</label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div><button onclick="syncList('event-list', 'eventList')" class="btn-save">Save Events</button></div>
-                    <div><label>Staff (Simple List)</label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div><button onclick="syncList('staff-list', 'staffList')" class="btn-save">Save Staff</button></div>
+                    <div><label>Staff (Simple)</label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div><button onclick="syncList('staff-list', 'staffList')" class="btn-save">Save Staff</button></div>
+                    <div>
+                        <label>Meet Staff Emails (Bio Only)</label>
+                        <div class="flex gap-2"><input type="text" id="bioEmailInput" placeholder="bio@gmail.com"><button id="bioEmailAdd" class="btn-add">+</button></div>
+                        <div id="bio-email-list" class="sort-list"></div>
+                        <button onclick="syncList('bio-email-list', 'bioStaffEmails')" class="btn-save">Save Bio Access</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -122,10 +128,10 @@
 
         <div id="page-access" class="hidden">
             <div class="section-box">
-                <h2 class="section-title">Admin Access</h2>
-                <div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="email@gmail.com"><button id="emailAdd" class="btn-add">+</button></div>
+                <h2 class="section-title">Admin Access (Main)</h2>
+                <div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="admin@gmail.com"><button id="emailAdd" class="btn-add">+</button></div>
                 <div id="email-list" class="sort-list"></div>
-                <button onclick="syncList('email-list', 'trustedEmails')" class="btn-save">Save Whitelist</button>
+                <button onclick="syncList('email-list', 'trustedEmails')" class="btn-save">Save Admin Whitelist</button>
             </div>
         </div>
     </div>
@@ -154,23 +160,29 @@
         
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
-                const trusted = (snap.val() || "").split(',').filter(e => e.trim());
-                if (user.email === ownerEmail || trusted.includes(user.email)) {
+                const snap = await get(ref(db, 'absoluteConfigV3'));
+                const d = snap.val();
+                const admins = (d.trustedEmails || "").split(',').filter(e => e.trim());
+                const bioStaff = (d.bioStaffEmails || "").split(',').filter(e => e.trim());
+                
+                const isAdmin = user.email === ownerEmail || admins.includes(user.email);
+                const isBioStaff = bioStaff.includes(user.email);
+
+                if (isAdmin || isBioStaff) {
                     currentUser = user;
                     sanitizedEmail = user.email.replace(/\./g, '_');
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
                     
-                    if (user.email === ownerEmail) {
-                        ['config', 'vote', 'logs', 'access'].forEach(id => document.getElementById('tab-'+id).classList.remove('hidden'));
+                    if (isAdmin) {
+                        ['config', 'vote', 'logs', 'access'].forEach(id => document.getElementById('tab-'+id)?.classList.remove('hidden'));
+                        if (user.email === ownerEmail) document.getElementById('tab-access').classList.remove('hidden');
                     }
                     syncEverything(); setupLogs(); loadBio();
                 } else { alert("Access Denied."); auth.signOut(); }
             }
         });
 
-        // LOAD BIO ONLY FOR THE LOGGED IN USER
         async function loadBio() {
             const snap = await get(ref(db, `absoluteConfigV3/staffProfiles/${sanitizedEmail}`));
             if(snap.exists()){
@@ -188,11 +200,10 @@
                 bio: document.getElementById('myStaffBio').value
             };
             await update(ref(db, `absoluteConfigV3/staffProfiles/${sanitizedEmail}`), data);
-            logAction("Updated personal bio");
+            logAction("Updated personal staff paragraph");
             alert("Bio Updated!");
         };
 
-        // ORIGINAL UTILITIES
         window.switchTab = (id) => {
             ['bio', 'config', 'vote', 'logs', 'access'].forEach(t => {
                 document.getElementById('page-'+t)?.classList.toggle('hidden', t !== id);
@@ -253,7 +264,7 @@
             const d = snap.val(); if (!d) return;
             const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp"];
             fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
-            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks' };
+            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'bio-email-list': 'bioStaffEmails', 'vote-list': 'voteLinks' };
             Object.entries(listMap).forEach(([id, key]) => {
                 document.getElementById(id).innerHTML = "";
                 if(d[key]) d[key].split(',').forEach(v => v.trim() && addItem(id, v.trim()));
@@ -270,7 +281,7 @@
             });
         };
 
-        ['media', 'smp', 'event', 'staff', 'email'].forEach(x => {
+        ['media', 'smp', 'event', 'staff', 'email', 'bioEmail'].forEach(x => {
             const btn = document.getElementById(x + 'Add');
             if(btn) btn.onclick = () => { addItem(x + '-list', document.getElementById(x + 'Input').value); document.getElementById(x + 'Input').value = ''; };
         });
@@ -280,7 +291,7 @@
             if(n && u) { addItem('vote-list', `${n}|${u}`); document.getElementById('voteNameInput').value = ''; document.getElementById('voteInput').value = ''; }
         };
 
-        ['media-list', 'smp-list', 'event-list', 'staff-list', 'vote-list', 'email-list'].forEach(id => {
+        ['media-list', 'smp-list', 'event-list', 'staff-list', 'vote-list', 'email-list', 'bio-email-list'].forEach(id => {
             const el = document.getElementById(id); if(el) new Sortable(el, { animation: 150 });
         });
     </script>
