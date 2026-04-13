@@ -1,74 +1,143 @@
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inferno Realms | Official</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { background: #0a0a0a no-repeat center center fixed; background-size: cover; color: #eee; font-family: sans-serif; scroll-behavior: smooth; transition: 0.5s; }
+        .glass { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .nav-glass { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); }
+        .inferno-gradient { background: linear-gradient(135deg, #8b0000 0%, #ff4500 100%); }
+        #media-content iframe, #media-content img { width: 100%; height: 100%; border: none; display: block; }
+        .fade-in { animation: fadeIn 1s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <nav id="nav-bar" class="fixed w-full z-50 nav-glass py-4 px-6 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div id="logo-wrap"><i data-lucide="flame" class="text-orange-500 fill-orange-500"></i></div>
+            <span id="nav-logo-txt" class="font-black text-xl tracking-tighter uppercase italic">Inferno <span id="nav-accent" class="text-orange-500">Realms</span></span>
+        </div>
+        <div class="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+            <a href="#smps">SMPs</a><a href="#events">Events</a><a href="#patreon">Patreon</a>
+        </div>
+        <a id="display-discord" href="#" class="inferno-gradient px-8 py-2.5 rounded-full font-black text-xs">JOIN DISCORD</a>
+    </nav>
 
-    // Your Firebase Config (Keep this as is)
-    const firebaseConfig = {
-        apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
-        authDomain: "inferno-realms.firebaseapp.com",
-        databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/",
-        projectId: "inferno-realms",
-        storageBucket: "inferno-realms.firebasestorage.app",
-        appId: "1:669014530995:web:41fd088f6255118c9e89c6"
-    };
+    <section class="h-screen flex flex-col items-center justify-center text-center px-4">
+        <h1 id="display-hero" class="text-7xl md:text-[10rem] font-black italic uppercase tracking-tighter mb-4">INFERNO</h1>
+        <div class="glass px-8 py-3 rounded-full mb-10 flex items-center gap-3">
+            <span class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span id="player-count" class="font-mono text-green-400 font-black tracking-widest text-xs uppercase">ONLINE</span>
+        </div>
+        <button id="copy-btn" onclick="copyIP()" class="bg-white text-black px-12 py-5 rounded-2xl font-black uppercase tracking-tight shadow-2xl hover:scale-105 transition">Copy Server IP</button>
+        <span id="display-ip" class="hidden">play.infernorealms.xyz</span>
+    </section>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const configRef = ref(db, 'absoluteConfigV3');
+    <main class="max-w-6xl mx-auto px-6 space-y-24 pb-24">
+        <div class="aspect-video glass rounded-[3rem] overflow-hidden border-4 border-orange-600/20">
+            <div id="media-content" class="w-full h-full"></div>
+        </div>
 
-    // --- LOAD DATA ---
-    onValue(configRef, (snap) => {
-        const d = snap.val();
-        if (!d) return;
+        <div id="smps">
+            <h2 id="smp-header-line" class="text-4xl font-black uppercase italic mb-10 border-l-[12px] border-orange-600 pl-8">The Realms</h2>
+            <div id="smp-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </div>
 
-        // Visual Branding
-        document.getElementById('bgUrlInput').value = d.bgImageUrl || "";
-        document.getElementById('logoUrlInput').value = d.logoUrl || "";
-        
-        // Widget Settings (The Fix)
-        document.getElementById('widgetActiveInput').value = d.widgetActive || "false";
-        document.getElementById('widgetTextInput').value = d.widgetText || "";
-        document.getElementById('widgetIconInput').value = d.widgetIconUrl || "";
+        <div id="events" class="grid md:grid-cols-2 gap-12">
+            <div class="glass p-12 rounded-[3rem]">
+                <h3 class="text-2xl font-black uppercase mb-8 flex items-center gap-3 text-orange-500"><i data-lucide="calendar"></i> Events List</h3>
+                <div id="event-list" class="space-y-4"></div>
+            </div>
+            <div id="patreon" class="glass p-12 rounded-[3rem] flex flex-col justify-between">
+                <div><h3 class="text-2xl font-black uppercase mb-8 text-[#f96854]">Supporters</h3><div id="patreon-list" class="grid grid-cols-2 gap-4 italic text-zinc-400 font-bold uppercase text-xs"></div></div>
+                <a id="display-patreon-link" href="#" class="block text-center mt-12 py-5 bg-[#f96854] text-black font-black uppercase rounded-2xl">Patreon</a>
+            </div>
+        </div>
 
-        // Hero & Media
-        document.getElementById('heroTitleInput').value = d.heroTitle || "";
-        document.getElementById('serverIpInput').value = d.serverIp || "";
-        document.getElementById('shuffleDelayInput').value = d.shuffleDelay || "15";
-        document.getElementById('mediaUrlsInput').value = d.mediaUrls || "";
+        <a id="sponsor-link" href="#" target="_blank" class="block">
+            <div id="partner-box" class="glass p-12 rounded-[3rem] border-l-[16px] border-orange-600 flex flex-col md:flex-row justify-between items-center hover:scale-[1.02] transition shadow-2xl">
+                <div><p class="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">Partner</p><h4 id="sponsor-name" class="text-4xl font-black italic uppercase tracking-tighter">Sylant Hosting</h4></div>
+                <div class="text-center md:text-right mt-6 md:mt-0"><span class="text-xs font-bold text-zinc-500 uppercase">Use Code</span><div id="display-promo" class="text-7xl font-[1000] text-orange-600 tracking-tighter italic">INFERNO</div></div>
+            </div>
+        </a>
+    </main>
 
-        // Partner & Lists
-        document.getElementById('sponsorNameInput').value = d.sponsorName || "";
-        document.getElementById('promoCodeInput').value = d.promoCode || "";
-        document.getElementById('smpListInput').value = d.smpList || "";
-        document.getElementById('eventListInput').value = d.eventList || "";
-        document.getElementById('staffListInput').value = d.staffList || "";
-    });
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // --- SAVE DATA ---
-    window.saveConfig = () => {
-        const newData = {
-            bgImageUrl: document.getElementById('bgUrlInput').value,
-            logoUrl: document.getElementById('logoUrlInput').value,
-            
-            // Widget Fix
-            widgetActive: document.getElementById('widgetActiveInput').value,
-            widgetText: document.getElementById('widgetTextInput').value,
-            widgetIconUrl: document.getElementById('widgetIconInput').value,
+        const firebaseConfig = {
+            apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
+            authDomain: "inferno-realms.firebaseapp.com",
+            databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/",
+            projectId: "inferno-realms",
+            storageBucket: "inferno-realms.firebasestorage.app",
+            messagingSenderId: "669014530995",
+            appId: "1:669014530995:web:41fd088f6255118c9e89c6"
+        };
 
-            heroTitle: document.getElementById('heroTitleInput').value,
-            serverIp: document.getElementById('serverIpInput').value,
-            shuffleDelay: document.getElementById('shuffleDelayInput').value,
-            mediaUrls: document.getElementById('mediaUrlsInput').value,
-            
-            sponsorName: document.getElementById('sponsorNameInput').value,
-            promoCode: document.getElementById('promoCodeInput').value,
-            smpList: document.getElementById('smpListInput').value,
-            eventList: document.getElementById('eventListInput').value,
-            staffList: document.getElementById('staffListInput').value
-        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        let mediaItems = [], currentIndex = 0, shuffleInterval;
 
-        set(configRef, newData)
-            .then(() => alert("Configuration Saved! 🔥"))
-            .catch((err) => alert("Error: " + err));
-    };
-</script>
+        const cleanYT = (url) => {
+            let vId = "";
+            if (url.includes('shorts/')) vId = url.split('shorts/')[1].split('?')[0];
+            else if (url.includes('v=')) vId = url.split('v=')[1].split('&')[0];
+            else if (url.includes('youtu.be/')) vId = url.split('youtu.be/')[1].split('?')[0];
+            return vId ? `https://www.youtube.com/embed/${vId}?autoplay=1&mute=1&loop=1&playlist=${vId}&controls=0&rel=0` : url;
+        };
+
+        const rotateMedia = () => {
+            if (!mediaItems.length) return;
+            const container = document.getElementById('media-content');
+            const url = mediaItems[currentIndex].trim();
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                container.innerHTML = `<iframe src="${cleanYT(url)}" allow="autoplay; encrypted-media"></iframe>`;
+            } else {
+                container.innerHTML = `<img src="${url}" class="fade-in" style="object-fit: cover;">`;
+            }
+            currentIndex = (currentIndex + 1) % mediaItems.length;
+        };
+
+        onValue(ref(db, 'absoluteConfigV3'), (snap) => {
+            const d = snap.val(); if (!d) return;
+            document.body.style.backgroundImage = `url('${d.bgImageUrl}')`;
+            if(d.logoUrl) document.getElementById('logo-wrap').innerHTML = `<img src="${d.logoUrl}" class="h-8">`;
+            document.getElementById('display-hero').innerText = d.heroTitle || "INFERNO";
+            document.getElementById('display-hero').style.color = d.heroTitleCol;
+            document.getElementById('nav-bar').style.background = d.navBg;
+            document.getElementById('display-ip').innerText = d.serverIp || "play.infernorealms.xyz";
+            document.getElementById('display-promo').innerText = d.promoCode || "INFERNO";
+            document.getElementById('sponsor-name').innerText = d.sponsorName || "Sylant Hosting";
+            document.getElementById('display-patreon-link').href = d.patreonBtnLink || "#";
+
+            mediaItems = d.mediaUrls ? d.mediaUrls.split(',').filter(v => v.trim()) : [];
+            clearInterval(shuffleInterval);
+            rotateMedia();
+            shuffleInterval = setInterval(rotateMedia, (parseInt(d.shuffleDelay) || 10) * 1000);
+
+            const wrap = (str, cls) => (str || "").split(',').filter(v=>v).map(s => `<div class="${cls}">${s.trim()}</div>`).join('');
+            document.getElementById('smp-container').innerHTML = wrap(d.smpList, "glass p-10 rounded-[2rem] font-black italic uppercase text-2xl text-center");
+            document.getElementById('event-list').innerHTML = (d.eventList || "").split(',').filter(v=>v).map(e => `<div class="p-5 bg-white/5 rounded-2xl border-l-4 font-bold uppercase text-xs" style="border-color:${d.heroBtnBg || '#ea580c'}">${e}</div>`).join('');
+            document.getElementById('patreon-list').innerHTML = wrap(d.staffList, "py-1 opacity-70");
+        });
+
+        async function updatePlayers() {
+            try {
+                const res = await fetch(`https://api.mcsrvstat.us/2/${document.getElementById('display-ip').innerText}`);
+                const data = await res.json();
+                document.getElementById('player-count').innerText = data.online ? `${data.players.online} ONLINE` : "OFFLINE";
+            } catch(e) {}
+        }
+        setInterval(updatePlayers, 30000); updatePlayers();
+        window.copyIP = () => { navigator.clipboard.writeText(document.getElementById('display-ip').innerText); alert('IP Copied!'); };
+        lucide.createIcons();
+    </script>
+</body>
+</html>
