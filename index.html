@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Control | V8.5</title>
+    <title>Inferno Control | V7.0 Gold</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -10,32 +10,30 @@
         .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
         .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
         label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
-        input { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="text"], input[type="number"], input[type="password"] { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; cursor: pointer; background: none; }
         .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; }
         .nav-tab.active { background: #ea580c; color: white; }
         .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
         .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
         .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
         .hidden { display: none; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
     <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
         <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 text-center shadow-2xl">
             <h2 class="text-3xl font-black italic text-orange-600 mb-6 uppercase">Inferno Auth</h2>
-            <button id="googleLoginBtn" class="w-full py-4 bg-white text-black rounded-xl font-black uppercase flex items-center justify-center gap-3 hover:bg-zinc-200 transition">
-                <img src="https://www.google.com/favicon.ico" class="w-5 h-5"> Sign in with Google
-            </button>
-            <p id="authError" class="mt-4 text-red-500 text-[10px] font-black uppercase hidden italic">Unauthorized: Check your whitelist</p>
+            <input type="password" id="userInput" class="mb-4 text-center" placeholder="Email or System Password">
+            <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase">Access Control</button>
         </div>
     </div>
 
     <div id="main-content" class="hidden">
         <div class="flex justify-between items-center mb-10">
-            <div class="flex items-center gap-6">
-                <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter italic">Inferno Control</h1>
-                <button onclick="logout()" class="text-[9px] border border-zinc-800 text-zinc-500 px-3 py-1 rounded-md font-bold uppercase hover:text-red-500 transition">Logout</button>
-            </div>
+            <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter italic">Inferno Dashboard</h1>
             <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
                 <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
                 <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab">ACTIVITY</button>
@@ -46,47 +44,71 @@
         <div id="page-config">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="section-box">
-                    <h2 class="section-title">Branding</h2>
+                    <h2 class="section-title">Visual Branding</h2>
                     <label>Background URL</label><input type="text" id="bgImageUrl">
                     <label>Logo Icon URL</label><input type="text" id="logoUrl">
                     <div class="grid grid-cols-4 gap-2 mt-4 text-center">
-                        <div><label>Nav</label><input type="color" id="navBg" class="h-10 cursor-pointer"></div>
-                        <div><label>Logo</label><input type="color" id="navLogoCol" class="h-10 cursor-pointer"></div>
-                        <div><label>Hero</label><input type="color" id="heroTitleCol" class="h-10 cursor-pointer"></div>
-                        <div><label>Btn</label><input type="color" id="heroBtnBg" class="h-10 cursor-pointer"></div>
+                        <div><label>Nav</label><input type="color" id="navBg"></div>
+                        <div><label>Logo</label><input type="color" id="navLogoCol"></div>
+                        <div><label>Hero</label><input type="color" id="heroTitleCol"></div>
+                        <div><label>Button</label><input type="color" id="heroBtnBg"></div>
                     </div>
                 </div>
 
                 <div class="section-box">
-                    <h2 class="section-title">Media Shuffle</h2>
-                    <label>Shuffle Delay (Sec)</label><input type="number" id="shuffleDelay">
-                    <label>Media Gallery</label>
-                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="URL..."><button id="mediaAdd" class="btn-add">+</button></div>
+                    <h2 class="section-title">Hero & Media Shuffle</h2>
+                    <label>Hero Title</label><input type="text" id="heroTitle">
+                    <label>Server IP</label><input type="text" id="serverIp">
+                    <label>Shuffle Delay (Seconds)</label><input type="number" id="shuffleDelay" placeholder="10">
+                    <label>Media Gallery (Images/Videos)</label>
+                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Link..."><button id="mediaAdd" class="btn-add">+</button></div>
                     <div id="media-list" class="sort-list"></div>
                 </div>
             </div>
 
-            <div class="section-box">
-                <h2 class="section-title">Global Settings</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label>Hero Title</label><input type="text" id="heroTitle"></div>
-                    <div><label>Server IP</label><input type="text" id="serverIp"></div>
-                    <div><label>Sponsor URL</label><input type="text" id="sponsorUrl"></div>
-                    <div><label>Promo Code</label><input type="text" id="promoCode"></div>
+            <div class="section-box mt-6">
+                <h2 class="section-title">Public Lists</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <div><label>SMP Realms</label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
+                    <div><label>Events List</label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div></div>
+                    <div><label>Supporters/Staff</label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div></div>
                 </div>
             </div>
 
-            <button id="saveBtn" class="w-full py-8 bg-orange-600 rounded-2xl font-black uppercase text-2xl mt-4 active:scale-95 transition">Publish to Production 🔥</button>
+            <div class="section-box">
+                <h2 class="section-title">Sponsorships & Store</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label>Sponsor Name</label><input type="text" id="sponsorName"></div>
+                    <div><label>Sponsor URL</label><input type="text" id="sponsorUrl"></div>
+                    <div><label>Promo Code</label><input type="text" id="promoCode"></div>
+                    <div><label>Patreon Link</label><input type="text" id="patreonBtnLink"></div>
+                </div>
+            </div>
+            <button id="saveBtn" class="w-full py-8 bg-orange-600 rounded-2xl font-black uppercase text-2xl mt-4 shadow-xl">Push Changes Live 🔥</button>
         </div>
 
-        <div id="page-logs" class="hidden"><div class="section-box h-96 overflow-y-auto" id="log-container"></div></div>
-        <div id="page-access" class="hidden"><div class="section-box"><h2 class="section-title">Access Management</h2><div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="Email..."><button id="emailAdd" class="btn-add">+</button></div><div id="email-list" class="sort-list"></div></div></div>
+        <div id="page-logs" class="hidden">
+            <div class="section-box">
+                <h2 class="section-title mb-4">Live System Activity</h2>
+                <div id="log-container" class="space-y-2 font-mono text-[11px] h-96 overflow-y-auto pr-2">
+                    <div class="opacity-30 italic">Connecting to system logs...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-access" class="hidden">
+            <div class="section-box">
+                <h2 class="section-title">Whitelisted Access</h2>
+                <label>Add Trusted Email</label>
+                <div class="flex gap-2"><input type="text" id="emailInput" placeholder="Email..."><button id="emailAdd" class="btn-add">+</button></div>
+                <div id="email-list" class="sort-list"></div>
+            </div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get, push, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, set, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
@@ -100,39 +122,26 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+        let currentUser = sessionStorage.getItem('infernoUser') || null;
 
-        // --- AUTH ---
-        document.getElementById('googleLoginBtn').onclick = () => signInWithPopup(auth, provider);
-        window.logout = () => signOut(auth);
+        const unlock = (user) => {
+            currentUser = user; sessionStorage.setItem('infernoUser', user);
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+        };
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await get(ref(db, 'absoluteConfigV3'));
-                const trusted = snap.val()?.trustedEmails?.split(',') || [];
-                
-                // CHANGE THIS EMAIL
-                if (user.email === "abeedwehbe@gmail.com" || trusted.includes(user.email)) {
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('main-content').classList.remove('hidden');
-                } else {
-                    document.getElementById('authError').classList.remove('hidden');
-                    setTimeout(() => signOut(auth), 4000);
-                }
+        if(currentUser) unlock(currentUser);
+
+        document.getElementById('loginBtn').onclick = async () => {
+            const input = document.getElementById('userInput').value;
+            const snap = await get(ref(db, 'absoluteConfigV3'));
+            const trusted = snap.val()?.trustedEmails?.split(',') || [];
+            if (input === "INFERNO2026" || trusted.includes(input)) {
+                unlock(input);
+                await push(ref(db, 'systemLogs'), { user: input, time: new Date().toLocaleTimeString(), action: "Logged in" });
             } else {
-                document.getElementById('login-screen').classList.remove('hidden');
-                document.getElementById('main-content').classList.add('hidden');
+                alert("Unauthorized Access Attempt Recorded.");
             }
-        });
-
-        // --- HAIFA TIMEZONE FIX ---
-        const formatTime = (ts) => {
-            if(!ts) return "--:--";
-            return new Date(ts).toLocaleString('en-GB', { 
-                timeZone: 'Asia/Jerusalem', // Set to Haifa/Israel time
-                hour: '2-digit', minute: '2-digit', second: '2-digit' 
-            });
         };
 
         window.switchTab = (id) => {
@@ -150,52 +159,58 @@
             document.getElementById(listId).appendChild(div);
         };
 
-        ['media','email'].forEach(x => {
+        ['media','smp','event','staff','email'].forEach(x => {
             document.getElementById(x+'Add').onclick = () => {
                 addItem(x+'-list', document.getElementById(x+'Input').value);
                 document.getElementById(x+'Input').value = '';
             };
         });
 
-        const fields = ["bgImageUrl","logoUrl","navBg","navLogoCol","heroTitleCol","heroBtnBg","heroTitle","serverIp","shuffleDelay","sponsorUrl","promoCode"];
+        const fields = ["bgImageUrl","logoUrl","navBg","navLogoCol","heroTitleCol","heroBtnBg","heroTitle","serverIp","shuffleDelay","sponsorName","sponsorUrl","promoCode","patreonBtnLink"];
 
+        // Initial Load
         get(ref(db, 'absoluteConfigV3')).then(s => {
             const d = s.val(); if(!d) return;
             fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
             const parse = (list, key) => (d[key]||"").split(',').filter(v=>v).forEach(v => addItem(list, v));
-            parse('media-list', 'mediaUrls'); parse('email-list', 'trustedEmails');
+            parse('media-list', 'mediaUrls'); parse('smp-list', 'smpList'); parse('event-list', 'eventList'); parse('staff-list', 'staffList'); parse('email-list', 'trustedEmails');
         });
 
+        // Save Logic
         document.getElementById('saveBtn').onclick = async () => {
             const payload = {};
             fields.forEach(f => payload[f] = document.getElementById(f).value);
             const collect = (id) => Array.from(document.getElementById(id).querySelectorAll('span')).map(s=>s.innerText).join(',');
             payload.mediaUrls = collect('media-list'); 
+            payload.smpList = collect('smp-list'); 
+            payload.eventList = collect('event-list'); 
+            payload.staffList = collect('staff-list'); 
             payload.trustedEmails = collect('email-list');
             
             await set(ref(db, 'absoluteConfigV3'), payload);
-            await push(ref(db, 'systemLogs'), { 
-                user: auth.currentUser.email, 
-                time: serverTimestamp(), 
-                action: "Published Config Update" 
-            });
-            alert("🔥 Global Changes Applied!");
+            await push(ref(db, 'systemLogs'), { user: currentUser, time: new Date().toLocaleTimeString(), action: "Saved Global Config" });
+            alert("🔥 Changes Pushed to Main Site!");
         };
 
+        // Live Log Listener
         onValue(ref(db, 'systemLogs'), (snapshot) => {
             const data = snapshot.val();
             const logBox = document.getElementById('log-container');
-            if (!data) { logBox.innerHTML = "No logs."; return; }
-            const logs = Object.values(data).reverse().slice(0, 40);
+            if (!data) {
+                logBox.innerHTML = `<div class="opacity-30 italic">No activity recorded...</div>`;
+                return;
+            }
+            const logs = Object.values(data).reverse().slice(0, 50);
             logBox.innerHTML = logs.map(log => `
-                <div class="border-b border-white/5 py-3 flex justify-between text-[11px]">
-                    <span class="text-orange-500 font-bold">[${formatTime(log.time)}]</span>
-                    <span class="text-zinc-400 flex-1 px-4 italic">${log.user} — ${log.action}</span>
+                <div class="border-b border-white/5 py-2 flex justify-between items-center">
+                    <span class="text-orange-500 font-bold">[${log.time || '00:00'}]</span>
+                    <span class="text-zinc-300 flex-1 px-4">${log.user} ${log.action || 'performed an action'}</span>
                 </div>
             `).join('');
         });
 
-        new Sortable(document.getElementById('media-list'), { animation: 150 });
+        // Draggable Sorting
+        ['media','smp','event','staff'].forEach(id => new Sortable(document.getElementById(id+'-list'), { animation: 150 }));
     </script>
 </body>
 </html>
