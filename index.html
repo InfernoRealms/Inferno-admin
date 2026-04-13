@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V8.8</title>
+    <title>Inferno Admin | V7.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -10,28 +10,34 @@
         .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
         .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
         label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
-        input[type="text"], input[type="number"], select { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="text"], input[type="number"] { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; cursor: pointer; background: none; }
         .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; }
         .nav-tab.active { background: #ea580c; color: white; }
         .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
         .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
         .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
-        .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; vertical-align: middle; }
+        .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; transition: 0.3s; vertical-align: middle; display: inline-block; }
+        .mini-refresh:hover { transform: rotate(180deg); color: white; }
         .hidden { display: none; }
+        #log-container::-webkit-scrollbar { width: 4px; }
+        #log-container::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
-    <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
-        <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 text-center shadow-2xl">
+    <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center text-center">
+        <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 shadow-2xl">
             <h2 class="text-3xl font-black italic text-orange-600 mb-6 uppercase">Inferno Auth</h2>
             <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase">Sign in with Google</button>
         </div>
     </div>
 
     <div id="main-content" class="hidden">
-        <div class="flex justify-between items-center mb-10">
-            <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
+        <div class="flex justify-between items-start mb-10">
+            <div>
+                <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
+                <p class="text-[10px] text-zinc-500 font-bold italic">V7.3 - Single Field Sync Enabled</p>
+            </div>
             <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
                 <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
                 <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab">ACTIVITY</button>
@@ -65,22 +71,17 @@
             </div>
 
             <div class="section-box">
-                <h2 class="section-title">Sponsorships & YouTube Widget</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <h2 class="section-title">Sponsorships & Store</h2>
+                <div class="grid grid-cols-2 gap-4">
                     <div><label>Sponsor Name <span class="mini-refresh" onclick="syncField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
                     <div><label>Sponsor URL <span class="mini-refresh" onclick="syncField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
                     <div><label>Promo Code <span class="mini-refresh" onclick="syncField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
                     <div><label>Patreon Link <span class="mini-refresh" onclick="syncField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/5">
-                    <div><label>Widget Status</label><select id="widgetActive" onchange="syncField('widgetActive')"><option value="false">OFF</option><option value="true">ON</option></select></div>
-                    <div><label>Widget Text <span class="mini-refresh" onclick="syncField('widgetText')">↻</span></label><input type="text" id="widgetText"></div>
-                    <div><label>Widget Icon URL <span class="mini-refresh" onclick="syncField('widgetIconUrl')">↻</span></label><input type="text" id="widgetIconUrl"></div>
-                </div>
             </div>
 
             <div class="section-box">
-                <h2 class="section-title">Public Lists & Voting</h2>
+                <h2 class="section-title">Public Lists</h2>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div><label>SMP <span class="mini-refresh" onclick="syncList('smp-list', 'smpList')">↻</span></label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
                     <div><label>Vote Sites <span class="mini-refresh" onclick="syncList('vote-list', 'voteLinks')">↻</span></label><div class="flex gap-2"><input type="text" id="voteInput"><button id="voteAdd" class="btn-add">+</button></div><div id="vote-list" class="sort-list"></div></div>
@@ -90,8 +91,23 @@
             </div>
         </div>
 
-        <div id="page-logs" class="hidden"><div class="section-box h-96 overflow-y-auto" id="log-container"></div></div>
-        <div id="page-access" class="hidden"><div class="section-box"><h2 class="section-title">Whitelisted Emails</h2><div class="flex gap-2 mt-4"><input type="text" id="emailInput"><button id="emailAdd" class="btn-add">+</button></div><div id="email-list" class="sort-list"></div></div></div>
+        <div id="page-logs" class="hidden">
+            <div class="section-box">
+                <h2 class="section-title mb-4">Live Activity Log</h2>
+                <div id="log-container" class="space-y-2 font-mono text-[11px] h-96 overflow-y-auto pr-2"></div>
+            </div>
+        </div>
+
+        <div id="page-access" class="hidden">
+            <div id="admin-only-warning" class="text-red-500 font-bold mb-4 hidden uppercase text-xs">Access Restricted to Owner</div>
+            <div id="access-content">
+                <div class="section-box">
+                    <h2 class="section-title">Whitelisted Emails <span class="mini-refresh" onclick="syncList('email-list', 'trustedEmails')">↻</span></h2>
+                    <div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="Email..."><button id="emailAdd" class="btn-add">+</button></div>
+                    <div id="email-list" class="sort-list"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -104,6 +120,8 @@
             authDomain: "inferno-realms.firebaseapp.com",
             databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/",
             projectId: "inferno-realms",
+            storageBucket: "inferno-realms.firebasestorage.app",
+            messagingSenderId: "669014530995",
             appId: "1:669014530995:web:41fd088f6255118c9e89c6"
         };
 
@@ -112,33 +130,70 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         const ownerEmail = "abeedwehbe@gmail.com";
+        let currentUserEmail = null;
 
-        document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
-        
-        onAuthStateChanged(auth, async (user) => {
+        const getHaifaTime = () => new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Jerusalem", hour12: false });
+        const logAction = async (action) => await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: action });
+
+        const unlock = (email) => {
+            currentUserEmail = email;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            if (email !== ownerEmail) {
+                document.getElementById('access-content').classList.add('hidden');
+                document.getElementById('admin-only-warning').classList.remove('hidden');
+            }
+            syncEverything();
+        };
+
+        document.getElementById('loginBtn').onclick = async () => {
+            const result = await signInWithPopup(auth, provider);
+            const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
+            const trusted = (snap.val() || "").split(',').filter(e => e);
+            if (result.user.email === ownerEmail || trusted.includes(result.user.email)) unlock(result.user.email);
+            else { alert("Unauthorized"); auth.signOut(); }
+        };
+
+        onAuthStateChanged(auth, (user) => {
             if (user) {
-                const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
-                const trusted = (snap.val() || "").split(',').filter(e => e);
-                if (user.email === ownerEmail || trusted.includes(user.email)) {
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('main-content').classList.remove('hidden');
-                    syncEverything();
-                } else { alert("Unauthorized"); auth.signOut(); }
+                get(ref(db, 'absoluteConfigV3/trustedEmails')).then(snap => {
+                    const trusted = (snap.val() || "").split(',').filter(e => e);
+                    if (user.email === ownerEmail || trusted.includes(user.email)) unlock(user.email);
+                });
             }
         });
 
         window.syncField = async (id) => {
             const val = document.getElementById(id).value;
             await set(ref(db, `absoluteConfigV3/${id}`), val);
-            await push(ref(db, 'systemLogs'), { user: auth.currentUser.email, action: `Updated ${id}`, time: new Date().toLocaleTimeString("en-GB", {timeZone: "Asia/Jerusalem"}) });
-            alert("Saved " + id);
+            await logAction(`Updated Field: ${id}`);
+            alert(`Saved ${id}!`);
         };
 
         window.syncList = async (listId, key) => {
             const items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
             await set(ref(db, `absoluteConfigV3/${key}`), items);
-            await push(ref(db, 'systemLogs'), { user: auth.currentUser.email, action: `Updated List ${key}`, time: new Date().toLocaleTimeString("en-GB", {timeZone: "Asia/Jerusalem"}) });
-            alert("Saved List!");
+            await logAction(`Updated List: ${key}`);
+            alert(`Saved ${key}!`);
+        };
+
+        const syncEverything = async () => {
+            const snap = await get(ref(db, 'absoluteConfigV3'));
+            const d = snap.val(); if (!d) return;
+            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink"];
+            fields.forEach(f => { if(d[f] !== undefined) document.getElementById(f).value = d[f] });
+            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks' };
+            Object.entries(listMap).forEach(([listId, key]) => {
+                document.getElementById(listId).innerHTML = "";
+                if (d[key]) d[key].split(',').forEach(v => v.trim() && addItem(listId, v.trim()));
+            });
+        };
+
+        window.switchTab = (id) => {
+            ['config', 'logs', 'access'].forEach(t => {
+                document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
+                document.getElementById('tab-'+t).classList.toggle('active', t === id);
+            });
         };
 
         const addItem = (listId, val) => {
@@ -150,39 +205,24 @@
 
         ['media', 'smp', 'event', 'staff', 'email', 'vote'].forEach(x => {
             const btn = document.getElementById(x + 'Add');
-            if(btn) btn.onclick = () => { addItem(x + '-list', document.getElementById(x + 'Input').value); document.getElementById(x + 'Input').value = ''; };
+            if (btn) btn.onclick = () => {
+                addItem(x + '-list', document.getElementById(x + 'Input').value);
+                document.getElementById(x + 'Input').value = '';
+            };
         });
 
-        const syncEverything = async () => {
-            const snap = await get(ref(db, 'absoluteConfigV3'));
-            const d = snap.val(); if (!d) return;
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "widgetActive", "widgetText", "widgetIconUrl"];
-            fields.forEach(f => { if(d[f] !== undefined) document.getElementById(f).value = d[f]; });
-            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks' };
-            Object.entries(listMap).forEach(([id, key]) => {
-                document.getElementById(id).innerHTML = "";
-                if(d[key]) d[key].split(',').forEach(v => v.trim() && addItem(id, v.trim()));
-            });
-        };
-
-        window.switchTab = (id) => {
-            ['config', 'logs', 'access'].forEach(t => {
-                document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
-                document.getElementById('tab-'+t).classList.toggle('active', t === id);
-            });
-        };
-
-        onValue(ref(db, 'systemLogs'), snapshot => {
+        onValue(ref(db, 'systemLogs'), (snapshot) => {
             const data = snapshot.val(); if (!data) return;
             document.getElementById('log-container').innerHTML = Object.values(data).reverse().slice(0, 50).map(log => `
-                <div class="border-b border-white/5 py-2 flex justify-between text-[10px] uppercase">
+                <div class="border-b border-white/5 py-2 flex justify-between items-center text-[10px]">
                     <span class="text-orange-500 font-bold">[${log.time}]</span>
-                    <span class="text-zinc-300 flex-1 px-4">${log.user} — ${log.action}</span>
+                    <span class="text-zinc-300 flex-1 px-4">${log.user} ${log.action}</span>
                 </div>`).join('');
         });
 
         ['media-list', 'smp-list', 'event-list', 'staff-list', 'vote-list'].forEach(id => {
-            const el = document.getElementById(id); if(el) new Sortable(el, { animation: 150 });
+            const el = document.getElementById(id);
+            if (el) new Sortable(el, { animation: 150 });
         });
     </script>
 </body>
