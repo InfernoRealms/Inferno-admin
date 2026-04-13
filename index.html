@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V8.7</title>
+    <title>Inferno Admin | V8.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -10,7 +10,8 @@
         .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
         .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
         label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
-        input, select { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="text"], input[type="number"], select { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; cursor: pointer; background: none; }
         .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; }
         .nav-tab.active { background: #ea580c; color: white; }
         .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
@@ -41,7 +42,7 @@
         <div id="page-config">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="section-box">
-                    <h2 class="section-title">Branding</h2>
+                    <h2 class="section-title">Visual Branding</h2>
                     <label>Background URL <span class="mini-refresh" onclick="syncField('bgImageUrl')">↻</span></label><input type="text" id="bgImageUrl">
                     <label>Logo Icon URL <span class="mini-refresh" onclick="syncField('logoUrl')">↻</span></label><input type="text" id="logoUrl">
                     <div class="grid grid-cols-4 gap-2 mt-4 text-center">
@@ -53,46 +54,44 @@
                 </div>
 
                 <div class="section-box">
-                    <h2 class="section-title">Hero & IP</h2>
+                    <h2 class="section-title">Hero & Media</h2>
                     <label>Hero Title <span class="mini-refresh" onclick="syncField('heroTitle')">↻</span></label><input type="text" id="heroTitle">
                     <label>Server IP <span class="mini-refresh" onclick="syncField('serverIp')">↻</span></label><input type="text" id="serverIp">
-                    <label>Shuffle Delay (Sec) <span class="mini-refresh" onclick="syncField('shuffleDelay')">↻</span></label><input type="number" id="shuffleDelay">
+                    <label>Shuffle Delay <span class="mini-refresh" onclick="syncField('shuffleDelay')">↻</span></label><input type="number" id="shuffleDelay">
+                    <label>Media <span class="mini-refresh" onclick="syncList('media-list', 'mediaUrls')">↻</span></label>
+                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Add Link..."><button id="mediaAdd" class="btn-add">+</button></div>
+                    <div id="media-list" class="sort-list"></div>
                 </div>
             </div>
 
             <div class="section-box">
-                <h2 class="section-title">YouTube Widget Controls</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div><label>Status</label><select id="widgetActive" onchange="syncField('widgetActive')"><option value="false">OFF</option><option value="true">ON</option></select></div>
+                <h2 class="section-title">Sponsorships & YouTube Widget</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div><label>Sponsor Name <span class="mini-refresh" onclick="syncField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
+                    <div><label>Sponsor URL <span class="mini-refresh" onclick="syncField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
+                    <div><label>Promo Code <span class="mini-refresh" onclick="syncField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
+                    <div><label>Patreon Link <span class="mini-refresh" onclick="syncField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/5">
+                    <div><label>Widget Status</label><select id="widgetActive" onchange="syncField('widgetActive')"><option value="false">OFF</option><option value="true">ON</option></select></div>
                     <div><label>Widget Text <span class="mini-refresh" onclick="syncField('widgetText')">↻</span></label><input type="text" id="widgetText"></div>
-                    <div><label>Icon URL <span class="mini-refresh" onclick="syncField('widgetIconUrl')">↻</span></label><input type="text" id="widgetIconUrl"></div>
+                    <div><label>Widget Icon URL <span class="mini-refresh" onclick="syncField('widgetIconUrl')">↻</span></label><input type="text" id="widgetIconUrl"></div>
                 </div>
             </div>
 
             <div class="section-box">
-                <h2 class="section-title">Public Lists & Vote Links</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label>Media Links <span class="mini-refresh" onclick="syncList('media-list', 'mediaUrls')">↻</span></label>
-                        <div class="flex gap-2"><input type="text" id="mediaInput"><button id="mediaAdd" class="btn-add">+</button></div>
-                        <div id="media-list" class="sort-list"></div>
-                    </div>
-                    <div>
-                        <label>Vote Links <span class="mini-refresh" onclick="syncList('vote-list', 'voteLinks')">↻</span></label>
-                        <div class="flex gap-2"><input type="text" id="voteInput"><button id="voteAdd" class="btn-add">+</button></div>
-                        <div id="vote-list" class="sort-list"></div>
-                    </div>
-                    <div>
-                        <label>SMPs <span class="mini-refresh" onclick="syncList('smp-list', 'smpList')">↻</span></label>
-                        <div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div>
-                        <div id="smp-list" class="sort-list"></div>
-                    </div>
+                <h2 class="section-title">Public Lists & Voting</h2>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div><label>SMP <span class="mini-refresh" onclick="syncList('smp-list', 'smpList')">↻</span></label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
+                    <div><label>Vote Sites <span class="mini-refresh" onclick="syncList('vote-list', 'voteLinks')">↻</span></label><div class="flex gap-2"><input type="text" id="voteInput"><button id="voteAdd" class="btn-add">+</button></div><div id="vote-list" class="sort-list"></div></div>
+                    <div><label>Events <span class="mini-refresh" onclick="syncList('event-list', 'eventList')">↻</span></label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div></div>
+                    <div><label>Staff <span class="mini-refresh" onclick="syncList('staff-list', 'staffList')">↻</span></label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div></div>
                 </div>
             </div>
         </div>
 
         <div id="page-logs" class="hidden"><div class="section-box h-96 overflow-y-auto" id="log-container"></div></div>
-        <div id="page-access" class="hidden"><div class="section-box"><h2 class="section-title">Emails</h2><div class="flex gap-2 mt-4"><input type="text" id="emailInput"><button id="emailAdd" class="btn-add">+</button></div><div id="email-list" class="sort-list"></div></div></div>
+        <div id="page-access" class="hidden"><div class="section-box"><h2 class="section-title">Whitelisted Emails</h2><div class="flex gap-2 mt-4"><input type="text" id="emailInput"><button id="emailAdd" class="btn-add">+</button></div><div id="email-list" class="sort-list"></div></div></div>
     </div>
 
     <script type="module">
@@ -114,56 +113,55 @@
         const provider = new GoogleAuthProvider();
         const ownerEmail = "abeedwehbe@gmail.com";
 
-        // Auth
         document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
+        
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
-                const trusted = (snap.val() || "").split(',');
+                const trusted = (snap.val() || "").split(',').filter(e => e);
                 if (user.email === ownerEmail || trusted.includes(user.email)) {
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
                     syncEverything();
-                }
+                } else { alert("Unauthorized"); auth.signOut(); }
             }
         });
 
         window.syncField = async (id) => {
             const val = document.getElementById(id).value;
             await set(ref(db, `absoluteConfigV3/${id}`), val);
-            await push(ref(db, 'systemLogs'), { user: auth.currentUser.email, action: `Updated ${id}`, time: new Date().toLocaleTimeString() });
-            alert("Saved!");
+            await push(ref(db, 'systemLogs'), { user: auth.currentUser.email, action: `Updated ${id}`, time: new Date().toLocaleTimeString("en-GB", {timeZone: "Asia/Jerusalem"}) });
+            alert("Saved " + id);
         };
 
         window.syncList = async (listId, key) => {
             const items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
             await set(ref(db, `absoluteConfigV3/${key}`), items);
-            alert("List Saved!");
+            await push(ref(db, 'systemLogs'), { user: auth.currentUser.email, action: `Updated List ${key}`, time: new Date().toLocaleTimeString("en-GB", {timeZone: "Asia/Jerusalem"}) });
+            alert("Saved List!");
         };
 
         const addItem = (listId, val) => {
             const div = document.createElement('div');
             div.className = 'sort-item';
-            div.innerHTML = `<span>${val}</span><button onclick="this.parentElement.remove()">×</button>`;
+            div.innerHTML = `<span>${val}</span><button class="text-red-500 font-bold" onclick="this.parentElement.remove()">×</button>`;
             document.getElementById(listId).appendChild(div);
         };
 
-        ['media', 'vote', 'smp', 'email'].forEach(x => {
-            document.getElementById(x + 'Add').onclick = () => {
-                addItem(x + '-list', document.getElementById(x + 'Input').value);
-                document.getElementById(x + 'Input').value = '';
-            };
+        ['media', 'smp', 'event', 'staff', 'email', 'vote'].forEach(x => {
+            const btn = document.getElementById(x + 'Add');
+            if(btn) btn.onclick = () => { addItem(x + '-list', document.getElementById(x + 'Input').value); document.getElementById(x + 'Input').value = ''; };
         });
 
         const syncEverything = async () => {
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const d = snap.val(); if (!d) return;
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "widgetActive", "widgetText", "widgetIconUrl"];
-            fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f] });
-            const lists = { 'media-list': 'mediaUrls', 'vote-list': 'voteLinks', 'smp-list': 'smpList', 'email-list': 'trustedEmails' };
-            Object.entries(lists).forEach(([id, key]) => {
+            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "widgetActive", "widgetText", "widgetIconUrl"];
+            fields.forEach(f => { if(d[f] !== undefined) document.getElementById(f).value = d[f]; });
+            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks' };
+            Object.entries(listMap).forEach(([id, key]) => {
                 document.getElementById(id).innerHTML = "";
-                if(d[key]) d[key].split(',').forEach(v => addItem(id, v));
+                if(d[key]) d[key].split(',').forEach(v => v.trim() && addItem(id, v.trim()));
             });
         };
 
@@ -174,12 +172,18 @@
             });
         };
 
-        onValue(ref(db, 'systemLogs'), s => {
-            const d = s.val(); if(!d) return;
-            document.getElementById('log-container').innerHTML = Object.values(d).reverse().map(l => `<div class="py-2 border-b border-white/5 text-[10px] uppercase"><b>[${l.time}]</b> ${l.user}: ${l.action}</div>`).join('');
+        onValue(ref(db, 'systemLogs'), snapshot => {
+            const data = snapshot.val(); if (!data) return;
+            document.getElementById('log-container').innerHTML = Object.values(data).reverse().slice(0, 50).map(log => `
+                <div class="border-b border-white/5 py-2 flex justify-between text-[10px] uppercase">
+                    <span class="text-orange-500 font-bold">[${log.time}]</span>
+                    <span class="text-zinc-300 flex-1 px-4">${log.user} — ${log.action}</span>
+                </div>`).join('');
         });
 
-        ['media-list', 'vote-list', 'smp-list'].forEach(id => new Sortable(document.getElementById(id), { animation: 150 }));
+        ['media-list', 'smp-list', 'event-list', 'staff-list', 'vote-list'].forEach(id => {
+            const el = document.getElementById(id); if(el) new Sortable(el, { animation: 150 });
+        });
     </script>
 </body>
 </html>
