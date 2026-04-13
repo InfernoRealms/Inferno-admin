@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V9.4</title>
+    <title>Inferno Admin | V9.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -19,6 +19,10 @@
         .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; height: 42px; }
         .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; vertical-align: middle; }
         .hidden { display: none; }
+        /* Log Styles */
+        .log-entry { font-family: monospace; font-size: 11px; padding: 8px; border-bottom: 1px solid #222; }
+        .log-user { color: #ea580c; font-weight: bold; }
+        .log-time { color: #555; margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -108,7 +112,12 @@
         </div>
 
         <div id="page-logs" class="hidden">
-            <div class="section-box h-96 overflow-y-auto" id="log-container"></div>
+            <div class="section-box">
+                <h2 class="section-title">Recent Activity</h2>
+                <div id="log-container" class="mt-4 h-[500px] overflow-y-auto bg-black/50 rounded-xl p-4 border border-zinc-800">
+                    <p class="text-zinc-600 italic text-xs">Loading logs...</p>
+                </div>
+            </div>
         </div>
 
         <div id="page-access" class="hidden">
@@ -125,7 +134,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, get, push, onValue, limitToLast, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -141,7 +150,9 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         const ownerEmail = "abeedwehbe@gmail.com";
+        let currentUser = null;
 
+        // AUTH LOGIC
         document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
         
         onAuthStateChanged(auth, async (user) => {
@@ -149,16 +160,52 @@
                 const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
                 const trusted = (snap.val() || "").split(',').filter(e => e);
                 if (user.email === ownerEmail || trusted.includes(user.email)) {
+                    currentUser = user;
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
                     syncEverything();
+                    setupLogs();
+                } else {
+                    alert("Unauthorized Email.");
+                    auth.signOut();
                 }
             }
         });
 
+        // LOGGING FUNCTION
+        const addLog = async (action) => {
+            if (!currentUser) return;
+            await push(ref(db, 'absoluteConfigV3/logs'), {
+                user: currentUser.email,
+                action: action,
+                time: new Date().toLocaleString()
+            });
+        };
+
+        const setupLogs = () => {
+            const logRef = query(ref(db, 'absoluteConfigV3/logs'), limitToLast(50));
+            onValue(logRef, (snap) => {
+                const container = document.getElementById('log-container');
+                container.innerHTML = "";
+                const data = snap.val();
+                if (data) {
+                    Object.values(data).reverse().forEach(log => {
+                        container.innerHTML += `
+                            <div class="log-entry">
+                                <span class="log-time">[${log.time}]</span>
+                                <span class="log-user">${log.user.split('@')[0]}</span>: 
+                                <span class="text-zinc-300">${log.action}</span>
+                            </div>`;
+                    });
+                }
+            });
+        };
+
+        // SYNC LOGIC
         window.syncField = async (id) => {
             const val = document.getElementById(id).value;
             await set(ref(db, `absoluteConfigV3/${id}`), val);
+            addLog(`Updated ${id} to "${val.substring(0, 20)}..."`);
             alert("Saved!");
         };
 
@@ -174,6 +221,7 @@
                 items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
             }
             await set(ref(db, `absoluteConfigV3/${key}`), items);
+            addLog(`Updated ${key} list`);
             alert("List Updated Successfully!");
         };
 
