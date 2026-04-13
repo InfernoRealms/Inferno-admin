@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Inferno Control | V8.5</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        body { background: #050505; color: white; font-family: sans-serif; padding: 40px; }
+        .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
+        .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
+        label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
+        input { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; }
+        .nav-tab.active { background: #ea580c; color: white; }
+        .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
+        .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
+        .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
+        <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 text-center shadow-2xl">
+            <h2 class="text-3xl font-black italic text-orange-600 mb-6 uppercase">Inferno Auth</h2>
+            <button id="googleLoginBtn" class="w-full py-4 bg-white text-black rounded-xl font-black uppercase flex items-center justify-center gap-3 hover:bg-zinc-200 transition">
+                <img src="https://www.google.com/favicon.ico" class="w-5 h-5"> Sign in with Google
+            </button>
+            <p id="authError" class="mt-4 text-red-500 text-[10px] font-black uppercase hidden italic">Unauthorized: Check your whitelist</p>
+        </div>
+    </div>
+
+    <div id="main-content" class="hidden">
+        <div class="flex justify-between items-center mb-10">
+            <div class="flex items-center gap-6">
+                <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter italic">Inferno Control</h1>
+                <button onclick="logout()" class="text-[9px] border border-zinc-800 text-zinc-500 px-3 py-1 rounded-md font-bold uppercase hover:text-red-500 transition">Logout</button>
+            </div>
+            <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
+                <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
+                <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab">ACTIVITY</button>
+                <button onclick="switchTab('access')" id="tab-access" class="nav-tab">EMAILS</button>
+            </div>
+        </div>
+
+        <div id="page-config">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="section-box">
+                    <h2 class="section-title">Branding</h2>
+                    <label>Background URL</label><input type="text" id="bgImageUrl">
+                    <label>Logo Icon URL</label><input type="text" id="logoUrl">
+                    <div class="grid grid-cols-4 gap-2 mt-4 text-center">
+                        <div><label>Nav</label><input type="color" id="navBg" class="h-10 cursor-pointer"></div>
+                        <div><label>Logo</label><input type="color" id="navLogoCol" class="h-10 cursor-pointer"></div>
+                        <div><label>Hero</label><input type="color" id="heroTitleCol" class="h-10 cursor-pointer"></div>
+                        <div><label>Btn</label><input type="color" id="heroBtnBg" class="h-10 cursor-pointer"></div>
+                    </div>
+                </div>
+
+                <div class="section-box">
+                    <h2 class="section-title">Media Shuffle</h2>
+                    <label>Shuffle Delay (Sec)</label><input type="number" id="shuffleDelay">
+                    <label>Media Gallery</label>
+                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="URL..."><button id="mediaAdd" class="btn-add">+</button></div>
+                    <div id="media-list" class="sort-list"></div>
+                </div>
+            </div>
+
+            <div class="section-box">
+                <h2 class="section-title">Global Settings</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label>Hero Title</label><input type="text" id="heroTitle"></div>
+                    <div><label>Server IP</label><input type="text" id="serverIp"></div>
+                    <div><label>Sponsor URL</label><input type="text" id="sponsorUrl"></div>
+                    <div><label>Promo Code</label><input type="text" id="promoCode"></div>
+                </div>
+            </div>
+
+            <button id="saveBtn" class="w-full py-8 bg-orange-600 rounded-2xl font-black uppercase text-2xl mt-4 active:scale-95 transition">Publish to Production 🔥</button>
+        </div>
+
+        <div id="page-logs" class="hidden"><div class="section-box h-96 overflow-y-auto" id="log-container"></div></div>
+        <div id="page-access" class="hidden"><div class="section-box"><h2 class="section-title">Access Management</h2><div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="Email..."><button id="emailAdd" class="btn-add">+</button></div><div id="email-list" class="sort-list"></div></div></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, push, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
+            authDomain: "inferno-realms.firebaseapp.com",
+            databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/",
+            projectId: "inferno-realms",
+            storageBucket: "inferno-realms.firebasestorage.app",
+            messagingSenderId: "669014530995",
+            appId: "1:669014530995:web:41fd088f6255118c9e89c6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // --- AUTH ---
+        document.getElementById('googleLoginBtn').onclick = () => signInWithPopup(auth, provider);
+        window.logout = () => signOut(auth);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await get(ref(db, 'absoluteConfigV3'));
+                const trusted = snap.val()?.trustedEmails?.split(',') || [];
+                
+                // CHANGE THIS EMAIL
+                if (user.email === "YOUR_ACTUAL_GMAIL@GMAIL.COM" || trusted.includes(user.email)) {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+                } else {
+                    document.getElementById('authError').classList.remove('hidden');
+                    setTimeout(() => signOut(auth), 4000);
+                }
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('main-content').classList.add('hidden');
+            }
+        });
+
+        // --- HAIFA TIMEZONE FIX ---
+        const formatTime = (ts) => {
+            if(!ts) return "--:--";
+            return new Date(ts).toLocaleString('en-GB', { 
+                timeZone: 'Asia/Jerusalem', // Set to Haifa/Israel time
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
+        };
+
+        window.switchTab = (id) => {
+            ['config', 'logs', 'access'].forEach(t => {
+                document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
+                document.getElementById('tab-'+t).classList.toggle('active', t === id);
+            });
+        };
+
+        const addItem = (listId, val) => {
+            if(!val) return;
+            const div = document.createElement('div');
+            div.className = 'sort-item';
+            div.innerHTML = `<span>${val}</span><button class="text-red-500 font-bold" onclick="this.parentElement.remove()">×</button>`;
+            document.getElementById(listId).appendChild(div);
+        };
+
+        ['media','email'].forEach(x => {
+            document.getElementById(x+'Add').onclick = () => {
+                addItem(x+'-list', document.getElementById(x+'Input').value);
+                document.getElementById(x+'Input').value = '';
+            };
+        });
+
+        const fields = ["bgImageUrl","logoUrl","navBg","navLogoCol","heroTitleCol","heroBtnBg","heroTitle","serverIp","shuffleDelay","sponsorUrl","promoCode"];
+
+        get(ref(db, 'absoluteConfigV3')).then(s => {
+            const d = s.val(); if(!d) return;
+            fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
+            const parse = (list, key) => (d[key]||"").split(',').filter(v=>v).forEach(v => addItem(list, v));
+            parse('media-list', 'mediaUrls'); parse('email-list', 'trustedEmails');
+        });
+
+        document.getElementById('saveBtn').onclick = async () => {
+            const payload = {};
+            fields.forEach(f => payload[f] = document.getElementById(f).value);
+            const collect = (id) => Array.from(document.getElementById(id).querySelectorAll('span')).map(s=>s.innerText).join(',');
+            payload.mediaUrls = collect('media-list'); 
+            payload.trustedEmails = collect('email-list');
+            
+            await set(ref(db, 'absoluteConfigV3'), payload);
+            await push(ref(db, 'systemLogs'), { 
+                user: auth.currentUser.email, 
+                time: serverTimestamp(), 
+                action: "Published Config Update" 
+            });
+            alert("🔥 Global Changes Applied!");
+        };
+
+        onValue(ref(db, 'systemLogs'), (snapshot) => {
+            const data = snapshot.val();
+            const logBox = document.getElementById('log-container');
+            if (!data) { logBox.innerHTML = "No logs."; return; }
+            const logs = Object.values(data).reverse().slice(0, 40);
+            logBox.innerHTML = logs.map(log => `
+                <div class="border-b border-white/5 py-3 flex justify-between text-[11px]">
+                    <span class="text-orange-500 font-bold">[${formatTime(log.time)}]</span>
+                    <span class="text-zinc-400 flex-1 px-4 italic">${log.user} — ${log.action}</span>
+                </div>
+            `).join('');
+        });
+
+        new Sortable(document.getElementById('media-list'), { animation: 150 });
+    </script>
+</body>
+</html>
