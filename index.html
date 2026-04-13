@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V7.3</title>
+    <title>Inferno Admin | V7.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -10,7 +10,7 @@
         .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
         .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
         label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
-        input[type="text"], input[type="number"] { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="text"], input[type="number"], select { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; cursor: pointer; background: none; }
         .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; }
         .nav-tab.active { background: #ea580c; color: white; }
@@ -20,8 +20,6 @@
         .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; transition: 0.3s; vertical-align: middle; display: inline-block; }
         .mini-refresh:hover { transform: rotate(180deg); color: white; }
         .hidden { display: none; }
-        #log-container::-webkit-scrollbar { width: 4px; }
-        #log-container::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -36,7 +34,7 @@
         <div class="flex justify-between items-start mb-10">
             <div>
                 <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
-                <p class="text-[10px] text-zinc-500 font-bold italic">V7.3 - Single Field Sync Enabled</p>
+                <p class="text-[10px] text-zinc-500 font-bold">V7.5 - Haifa/Widget Edition</p>
             </div>
             <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
                 <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
@@ -65,18 +63,24 @@
                     <label>Server IP <span class="mini-refresh" onclick="syncField('serverIp')">↻</span></label><input type="text" id="serverIp">
                     <label>Shuffle Delay <span class="mini-refresh" onclick="syncField('shuffleDelay')">↻</span></label><input type="number" id="shuffleDelay">
                     <label>Media <span class="mini-refresh" onclick="syncList('media-list', 'mediaUrls')">↻</span></label>
-                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Add Link..."><button id="mediaAdd" class="btn-add">+</button></div>
+                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Link..."><button id="mediaAdd" class="btn-add">+</button></div>
                     <div id="media-list" class="sort-list"></div>
                 </div>
             </div>
 
             <div class="section-box">
-                <h2 class="section-title">Sponsorships & Store</h2>
+                <h2 class="section-title">Sponsorships & Widget</h2>
                 <div class="grid grid-cols-2 gap-4">
                     <div><label>Sponsor Name <span class="mini-refresh" onclick="syncField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
-                    <div><label>Sponsor URL <span class="mini-refresh" onclick="refreshField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
                     <div><label>Promo Code <span class="mini-refresh" onclick="syncField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
-                    <div><label>Patreon Link <span class="mini-refresh" onclick="syncField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
+                    <div><label>Widget Text <span class="mini-refresh" onclick="syncField('widgetText')">↻</span></label><input type="text" id="widgetText" placeholder="Inferno Realms | Official"></div>
+                    <div>
+                        <label>Widget Status <span class="mini-refresh" onclick="syncField('widgetActive')">↻</span></label>
+                        <select id="widgetActive">
+                            <option value="true">Visible</option>
+                            <option value="false">Hidden</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -92,17 +96,16 @@
 
         <div id="page-logs" class="hidden">
             <div class="section-box">
-                <h2 class="section-title mb-4">Live Activity Log</h2>
-                <div id="log-container" class="space-y-2 font-mono text-[11px] h-96 overflow-y-auto pr-2"></div>
+                <h2 class="section-title mb-4">Live Activity</h2>
+                <div id="log-container" class="space-y-2 font-mono text-[10px] h-96 overflow-y-auto"></div>
             </div>
         </div>
 
         <div id="page-access" class="hidden">
-            <div id="admin-only-warning" class="text-red-500 font-bold mb-4 hidden uppercase text-xs">Access Restricted to Owner</div>
             <div id="access-content">
                 <div class="section-box">
                     <h2 class="section-title">Whitelisted Emails <span class="mini-refresh" onclick="syncList('email-list', 'trustedEmails')">↻</span></h2>
-                    <div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="Email..."><button id="emailAdd" class="btn-add">+</button></div>
+                    <div class="flex gap-2 mt-4"><input type="text" id="emailInput"><button id="emailAdd" class="btn-add">+</button></div>
                     <div id="email-list" class="sort-list"></div>
                 </div>
             </div>
@@ -120,7 +123,6 @@
             databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/",
             projectId: "inferno-realms",
             storageBucket: "inferno-realms.firebasestorage.app",
-            messagingSenderId: "669014530995",
             appId: "1:669014530995:web:41fd088f6255118c9e89c6"
         };
 
@@ -132,61 +134,49 @@
         let currentUserEmail = null;
 
         const getHaifaTime = () => new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Jerusalem", hour12: false });
-        const logAction = async (action) => await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: action });
+        const logAction = async (msg) => await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: msg });
 
         const unlock = (email) => {
             currentUserEmail = email;
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
-            if (email !== ownerEmail) {
-                document.getElementById('access-content').classList.add('hidden');
-                document.getElementById('admin-only-warning').classList.remove('hidden');
-            }
+            if (email !== ownerEmail) document.getElementById('tab-access').style.display = 'none';
             syncEverything();
         };
 
         document.getElementById('loginBtn').onclick = async () => {
-            const result = await signInWithPopup(auth, provider);
+            const res = await signInWithPopup(auth, provider);
             const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
             const trusted = (snap.val() || "").split(',').filter(e => e);
-            if (result.user.email === ownerEmail || trusted.includes(result.user.email)) unlock(result.user.email);
+            if (res.user.email === ownerEmail || trusted.includes(res.user.email)) unlock(res.user.email);
             else { alert("Unauthorized"); auth.signOut(); }
         };
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                get(ref(db, 'absoluteConfigV3/trustedEmails')).then(snap => {
-                    const trusted = (snap.val() || "").split(',').filter(e => e);
-                    if (user.email === ownerEmail || trusted.includes(user.email)) unlock(user.email);
-                });
-            }
-        });
+        onAuthStateChanged(auth, (user) => { if (user) unlock(user.email); });
 
-        // SINGLE FIELD SYNC: Saves ONLY this field and logs it specifically
         window.syncField = async (id) => {
             const val = document.getElementById(id).value;
             await set(ref(db, `absoluteConfigV3/${id}`), val);
-            await logAction(`Updated Field: ${id}`);
-            alert(`Saved ${id}!`);
+            await logAction(`Modified ${id}`);
+            alert(`Live Update: ${id}`);
         };
 
-        // SINGLE LIST SYNC: Saves ONLY this list and logs it
         window.syncList = async (listId, key) => {
-            const items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
-            await set(ref(db, `absoluteConfigV3/${key}`), items);
+            const vals = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
+            await set(ref(db, `absoluteConfigV3/${key}`), vals);
             await logAction(`Updated List: ${key}`);
-            alert(`Saved ${key}!`);
+            alert(`List Saved: ${key}`);
         };
 
         const syncEverything = async () => {
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const d = snap.val(); if (!d) return;
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink"];
-            fields.forEach(f => d[f] && (document.getElementById(f).value = d[f]));
+            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "promoCode", "widgetText", "widgetActive"];
+            fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
             const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails' };
             Object.entries(listMap).forEach(([listId, key]) => {
                 document.getElementById(listId).innerHTML = "";
-                if (d[key]) d[key].split(',').forEach(v => v.trim() && addItem(listId, v.trim()));
+                if(d[key]) d[key].split(',').forEach(v => v.trim() && addItem(listId, v.trim()));
             });
         };
 
@@ -206,25 +196,19 @@
 
         ['media', 'smp', 'event', 'staff', 'email'].forEach(x => {
             const btn = document.getElementById(x + 'Add');
-            if (btn) btn.onclick = () => {
-                addItem(x + '-list', document.getElementById(x + 'Input').value);
-                document.getElementById(x + 'Input').value = '';
-            };
+            if (btn) btn.onclick = () => { addItem(x + '-list', document.getElementById(x + 'Input').value); document.getElementById(x + 'Input').value = ''; };
         });
 
-        onValue(ref(db, 'systemLogs'), (snapshot) => {
-            const data = snapshot.val(); if (!data) return;
-            document.getElementById('log-container').innerHTML = Object.values(data).reverse().slice(0, 50).map(log => `
-                <div class="border-b border-white/5 py-2 flex justify-between items-center text-[10px]">
-                    <span class="text-orange-500 font-bold">[${log.time}]</span>
-                    <span class="text-zinc-300 flex-1 px-4">${log.user} ${log.action}</span>
+        onValue(ref(db, 'systemLogs'), (s) => {
+            const data = s.val(); if (!data) return;
+            document.getElementById('log-container').innerHTML = Object.values(data).reverse().slice(0, 50).map(l => `
+                <div class="border-b border-white/5 py-2 flex justify-between">
+                    <span class="text-orange-500 font-bold">[${l.time}]</span>
+                    <span class="text-zinc-300 flex-1 px-4 text-right">${l.user} ${l.action}</span>
                 </div>`).join('');
         });
 
-        ['media', 'smp', 'event', 'staff'].forEach(id => {
-            const el = document.getElementById(id + '-list');
-            if (el) new Sortable(el, { animation: 150 });
-        });
+        ['media', 'smp', 'event', 'staff'].forEach(id => { new Sortable(document.getElementById(id + '-list'), { animation: 150 }); });
     </script>
 </body>
 </html>
