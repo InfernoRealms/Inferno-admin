@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V9.5</title>
+    <title>Inferno Admin | V9.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -19,7 +19,6 @@
         .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; height: 42px; }
         .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; vertical-align: middle; }
         .hidden { display: none; }
-        /* Log Styles */
         .log-entry { font-family: monospace; font-size: 11px; padding: 8px; border-bottom: 1px solid #222; }
         .log-user { color: #ea580c; font-weight: bold; }
         .log-time { color: #555; margin-right: 8px; }
@@ -92,17 +91,8 @@
             <div class="section-box">
                 <h2 class="section-title">Vote Site Management</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    <div>
-                        <label>Site Name</label>
-                        <input type="text" id="voteNameInput" placeholder="e.g. Planet Minecraft">
-                    </div>
-                    <div>
-                        <label>Voting URL</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="voteInput" placeholder="https://...">
-                            <button id="voteAdd" class="btn-add px-8">ADD SITE</button>
-                        </div>
-                    </div>
+                    <div><label>Site Name</label><input type="text" id="voteNameInput" placeholder="e.g. Planet Minecraft"></div>
+                    <div><label>Voting URL</label><div class="flex gap-2"><input type="text" id="voteInput" placeholder="https://..."><button id="voteAdd" class="btn-add px-8">ADD SITE</button></div></div>
                 </div>
                 <div class="mt-10">
                     <label>Active Sites <span class="mini-refresh" onclick="syncList('vote-list', 'voteLinks')">↻ SAVE VOTES</span></label>
@@ -114,9 +104,7 @@
         <div id="page-logs" class="hidden">
             <div class="section-box">
                 <h2 class="section-title">Recent Activity</h2>
-                <div id="log-container" class="mt-4 h-[500px] overflow-y-auto bg-black/50 rounded-xl p-4 border border-zinc-800">
-                    <p class="text-zinc-600 italic text-xs">Loading logs...</p>
-                </div>
+                <div id="log-container" class="mt-4 h-[500px] overflow-y-auto bg-black/50 rounded-xl p-4 border border-zinc-800"></div>
             </div>
         </div>
 
@@ -127,6 +115,7 @@
                     <input type="text" id="emailInput">
                     <button id="emailAdd" class="btn-add">+</button>
                 </div>
+                <label>Access List <span class="mini-refresh" onclick="syncList('email-list', 'trustedEmails')">↻ SAVE EMAILS</span></label>
                 <div id="email-list" class="sort-list"></div>
             </div>
         </div>
@@ -152,7 +141,6 @@
         const ownerEmail = "abeedwehbe@gmail.com";
         let currentUser = null;
 
-        // AUTH LOGIC
         document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
         
         onAuthStateChanged(auth, async (user) => {
@@ -165,14 +153,10 @@
                     document.getElementById('main-content').classList.remove('hidden');
                     syncEverything();
                     setupLogs();
-                } else {
-                    alert("Unauthorized Email.");
-                    auth.signOut();
-                }
+                } else { alert("Unauthorized Email."); auth.signOut(); }
             }
         });
 
-        // LOGGING FUNCTION
         const addLog = async (action) => {
             if (!currentUser) return;
             await push(ref(db, 'absoluteConfigV3/logs'), {
@@ -183,62 +167,47 @@
         };
 
         const setupLogs = () => {
-            const logRef = query(ref(db, 'absoluteConfigV3/logs'), limitToLast(50));
-            onValue(logRef, (snap) => {
+            onValue(query(ref(db, 'absoluteConfigV3/logs'), limitToLast(50)), (snap) => {
                 const container = document.getElementById('log-container');
                 container.innerHTML = "";
                 const data = snap.val();
                 if (data) {
                     Object.values(data).reverse().forEach(log => {
-                        container.innerHTML += `
-                            <div class="log-entry">
-                                <span class="log-time">[${log.time}]</span>
-                                <span class="log-user">${log.user.split('@')[0]}</span>: 
-                                <span class="text-zinc-300">${log.action}</span>
-                            </div>`;
+                        container.innerHTML += `<div class="log-entry"><span class="log-time">[${log.time}]</span> <span class="log-user">${log.user.split('@')[0]}</span>: <span class="text-zinc-300">${log.action}</span></div>`;
                     });
                 }
             });
         };
 
-        // SYNC LOGIC
         window.syncField = async (id) => {
             const val = document.getElementById(id).value;
             await set(ref(db, `absoluteConfigV3/${id}`), val);
-            addLog(`Updated ${id} to "${val.substring(0, 20)}..."`);
+            addLog(`Updated ${id}`);
             alert("Saved!");
         };
 
         window.syncList = async (listId, key) => {
             let items;
             if (listId === 'vote-list') {
-                items = Array.from(document.getElementById(listId).querySelectorAll('.sort-item')).map(item => {
-                    const name = item.querySelector('.site-name').innerText;
-                    const url = item.querySelector('.site-url').innerText;
-                    return `${name}|${url}`;
-                }).join(',');
+                items = Array.from(document.getElementById(listId).querySelectorAll('.sort-item')).map(item => `${item.querySelector('.site-name').innerText}|${item.querySelector('.site-url').innerText}`).join(',');
             } else {
                 items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
             }
             await set(ref(db, `absoluteConfigV3/${key}`), items);
             addLog(`Updated ${key} list`);
-            alert("List Updated Successfully!");
+            alert("List Saved!");
         };
 
         const addItem = (listId, val) => {
             const div = document.createElement('div');
             div.className = 'sort-item';
             let display = val;
-            
             if (listId === 'vote-list' && val.includes('|')) {
                 const [n, u] = val.split('|');
                 display = `<span class="site-name font-bold text-orange-500">${n}</span> <span class="site-url opacity-40 ml-2">${u}</span>`;
             } else if (listId === 'vote-list') {
                 display = `<span class="site-name font-bold text-orange-500">Legacy Site</span> <span class="site-url opacity-40 ml-2">${val}</span>`;
-            } else {
-                display = `<span>${val}</span>`;
-            }
-
+            } else { display = `<span>${val}</span>`; }
             div.innerHTML = `<div>${display}</div><button class="text-red-500 font-bold px-2" onclick="this.parentElement.remove()">×</button>`;
             document.getElementById(listId).appendChild(div);
         };
@@ -249,20 +218,14 @@
         });
 
         document.getElementById('voteAdd').onclick = () => {
-            const name = document.getElementById('voteNameInput').value;
-            const url = document.getElementById('voteInput').value;
-            if(name && url) {
-                addItem('vote-list', `${name}|${url}`);
-                document.getElementById('voteNameInput').value = '';
-                document.getElementById('voteInput').value = '';
-            }
+            const n = document.getElementById('voteNameInput').value, u = document.getElementById('voteInput').value;
+            if(n && u) { addItem('vote-list', `${n}|${u}`); document.getElementById('voteNameInput').value = ''; document.getElementById('voteInput').value = ''; }
         };
 
         const syncEverything = async () => {
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const d = snap.val(); if (!d) return;
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "discordLink"];
-            fields.forEach(f => { if(d[f] !== undefined) document.getElementById(f).value = d[f]; });
+            ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "discordLink"].forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
             const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks' };
             Object.entries(listMap).forEach(([id, key]) => {
                 document.getElementById(id).innerHTML = "";
@@ -277,7 +240,7 @@
             });
         };
 
-        ['media-list', 'smp-list', 'event-list', 'staff-list', 'vote-list'].forEach(id => {
+        ['media-list', 'smp-list', 'event-list', 'staff-list', 'vote-list', 'email-list'].forEach(id => {
             const el = document.getElementById(id); if(el) new Sortable(el, { animation: 150 });
         });
     </script>
