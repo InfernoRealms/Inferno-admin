@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V9.2</title>
+    <title>Inferno Admin | V9.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -16,7 +16,7 @@
         .nav-tab.active { background: #ea580c; color: white; }
         .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
         .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
-        .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+        .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; height: 42px; }
         .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; vertical-align: middle; }
         .hidden { display: none; }
     </style>
@@ -86,18 +86,40 @@
         <div id="page-vote" class="hidden">
             <div class="section-box">
                 <h2 class="section-title">Vote Site Management</h2>
-                <label>Paste Voting Link</label>
-                <div class="flex gap-2 mb-6">
-                    <input type="text" id="voteInput" placeholder="https://...">
-                    <button id="voteAdd" class="btn-add">ADD SITE</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <div>
+                        <label>Site Name</label>
+                        <input type="text" id="voteNameInput" placeholder="e.g. Planet Minecraft">
+                    </div>
+                    <div>
+                        <label>Voting URL</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="voteInput" placeholder="https://...">
+                            <button id="voteAdd" class="btn-add px-8">ADD SITE</button>
+                        </div>
+                    </div>
                 </div>
-                <label>Active Sites <span class="mini-refresh" onclick="syncList('vote-list', 'voteLinks')">↻ SAVE VOTES</span></label>
-                <div id="vote-list" class="sort-list"></div>
+                <div class="mt-10">
+                    <label>Active Sites <span class="mini-refresh" onclick="syncList('vote-list', 'voteLinks')">↻ SAVE VOTES</span></label>
+                    <div id="vote-list" class="sort-list"></div>
+                </div>
             </div>
         </div>
 
-        <div id="page-logs" class="hidden"><div class="section-box h-96 overflow-y-auto" id="log-container"></div></div>
-        <div id="page-access" class="hidden"><div class="section-box"><h2 class="section-title">Whitelisted Emails</h2><div class="flex gap-2 mt-4"><input type="text" id="emailInput"><button id="emailAdd" class="btn-add">+</button></div><div id="email-list" class="sort-list"></div></div></div>
+        <div id="page-logs" class="hidden">
+            <div class="section-box h-96 overflow-y-auto" id="log-container"></div>
+        </div>
+
+        <div id="page-access" class="hidden">
+            <div class="section-box">
+                <h2 class="section-title">Whitelisted Emails</h2>
+                <div class="flex gap-2 mt-4">
+                    <input type="text" id="emailInput">
+                    <button id="emailAdd" class="btn-add">+</button>
+                </div>
+                <div id="email-list" class="sort-list"></div>
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -151,7 +173,7 @@
                 items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
             }
             await set(ref(db, `absoluteConfigV3/${key}`), items);
-            alert("Updated!");
+            alert("List Updated Successfully!");
         };
 
         const addItem = (listId, val) => {
@@ -162,6 +184,9 @@
             if (listId === 'vote-list' && val.includes('|')) {
                 const [n, u] = val.split('|');
                 display = `<span class="site-name font-bold text-orange-500">${n}</span> <span class="site-url opacity-40 ml-2">${u}</span>`;
+            } else if (listId === 'vote-list') {
+                // Fallback for old links
+                display = `<span class="site-name font-bold text-orange-500">Legacy Site</span> <span class="site-url opacity-40 ml-2">${val}</span>`;
             } else {
                 display = `<span>${val}</span>`;
             }
@@ -176,12 +201,14 @@
         });
 
         document.getElementById('voteAdd').onclick = () => {
+            const name = document.getElementById('voteNameInput').value;
             const url = document.getElementById('voteInput').value;
-            if(!url) return;
-            const name = prompt("Enter Site Name (e.g. Minecraft MP):");
-            if(name) {
+            if(name && url) {
                 addItem('vote-list', `${name}|${url}`);
+                document.getElementById('voteNameInput').value = '';
                 document.getElementById('voteInput').value = '';
+            } else {
+                alert("Please fill in both Name and Link!");
             }
         };
 
