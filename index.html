@@ -20,6 +20,9 @@
         .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; transition: 0.3s; vertical-align: middle; display: inline-block; }
         .mini-refresh:hover { transform: rotate(180deg); color: white; }
         .hidden { display: none; }
+        /* Smaller Save Button Styling */
+        .save-btn-small { background: #ea580c; color: white; padding: 15px; border-radius: 12px; font-weight: 900; text-transform: uppercase; width: 100%; margin-top: 20px; transition: 0.2s; }
+        .save-btn-small:hover { background: #ff6a00; transform: scale(1.01); }
     </style>
 </head>
 <body>
@@ -71,7 +74,7 @@
             <div class="section-box">
                 <h2 class="section-title">Sponsorships & Store</h2>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label>Sponsor Name (Sylant) <span class="mini-refresh" onclick="refreshField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
+                    <div><label>Sponsor Name <span class="mini-refresh" onclick="refreshField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
                     <div><label>Sponsor URL <span class="mini-refresh" onclick="refreshField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
                     <div><label>Promo Code <span class="mini-refresh" onclick="refreshField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
                     <div><label>Patreon Link <span class="mini-refresh" onclick="refreshField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
@@ -85,9 +88,8 @@
                     <div><label>Events <span class="mini-refresh" onclick="refreshList('event-list', 'eventList')">↻</span></label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div></div>
                     <div><label>Staff <span class="mini-refresh" onclick="refreshList('staff-list', 'staffList')">↻</span></label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div></div>
                 </div>
+                <button id="saveBtn" class="save-btn-small">Save Settings 🔥</button>
             </div>
-
-            <button id="saveBtn" class="w-full py-8 bg-orange-600 rounded-2xl font-black uppercase text-2xl mt-4">Save Configuration 🔥</button>
         </div>
 
         <div id="page-logs" class="hidden">
@@ -222,7 +224,7 @@
             payload.trustedEmails = collect('email-list');
             await set(ref(db, 'absoluteConfigV3'), payload);
             await logAction("🔥 Bulk Saved Config");
-            alert("Changes Live!");
+            alert("Changes Saved!");
         };
 
         onValue(ref(db, 'systemLogs'), (snapshot) => {
