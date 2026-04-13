@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V7.6</title>
+    <title>Inferno Admin | V7.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -10,7 +10,8 @@
         .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
         .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
         label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
-        input[type="text"], input[type="number"], select { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="text"], input[type="number"], select { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; transition: 0.2s; }
+        input.drag-over { border-color: #ea580c; background: #1a0a00 !important; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; cursor: pointer; background: none; }
         .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; }
         .nav-tab.active { background: #ea580c; color: white; }
@@ -34,7 +35,7 @@
         <div class="flex justify-between items-start mb-10">
             <div>
                 <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
-                <p class="text-[10px] text-zinc-500 font-bold">V7.6 - Updated Layout</p>
+                <p class="text-[10px] text-zinc-500 font-bold">V7.7 - Drag & Drop Enabled</p>
             </div>
             <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
                 <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
@@ -47,9 +48,15 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="section-box">
                     <h2 class="section-title">Visual Branding</h2>
-                    <label>Background URL <span class="mini-refresh" onclick="syncField('bgImageUrl')">↻</span></label><input type="text" id="bgImageUrl">
-                    <label>Logo Icon URL <span class="mini-refresh" onclick="syncField('logoUrl')">↻</span></label><input type="text" id="logoUrl">
-                    <label>Widget Icon URL <span class="mini-refresh" onclick="syncField('widgetIconUrl')">↻</span></label><input type="text" id="widgetIconUrl">
+                    <label>Background URL <span class="mini-refresh" onclick="syncField('bgImageUrl')">↻</span></label>
+                    <input type="text" id="bgImageUrl" class="drop-zone" placeholder="Drag image here...">
+                    
+                    <label>Logo Icon URL <span class="mini-refresh" onclick="syncField('logoUrl')">↻</span></label>
+                    <input type="text" id="logoUrl" class="drop-zone" placeholder="Drag image here...">
+                    
+                    <label>Widget Icon URL <span class="mini-refresh" onclick="syncField('widgetIconUrl')">↻</span></label>
+                    <input type="text" id="widgetIconUrl" class="drop-zone" placeholder="Drag image here...">
+                    
                     <div class="grid grid-cols-4 gap-2 mt-4 text-center">
                         <div><label>Nav</label><input type="color" id="navBg" onchange="syncField('navBg')"></div>
                         <div><label>Logo</label><input type="color" id="navLogoCol" onchange="syncField('navLogoCol')"></div>
@@ -155,6 +162,18 @@
         };
 
         onAuthStateChanged(auth, (user) => { if (user) unlock(user.email); });
+
+        // DRAG AND DROP LOGIC
+        document.querySelectorAll('.drop-zone').forEach(input => {
+            input.addEventListener('dragover', (e) => { e.preventDefault(); input.classList.add('drag-over'); });
+            input.addEventListener('dragleave', () => input.classList.remove('drag-over'));
+            input.addEventListener('drop', (e) => {
+                e.preventDefault();
+                input.classList.remove('drag-over');
+                const url = e.dataTransfer.getData('text/plain');
+                if (url) input.value = url;
+            });
+        });
 
         window.syncField = async (id) => {
             const val = document.getElementById(id).value;
