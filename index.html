@@ -1,216 +1,74 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Inferno Admin | V7.6</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <style>
-        body { background: #050505; color: white; font-family: sans-serif; padding: 40px; }
-        .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
-        .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
-        label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
-        input[type="text"], input[type="number"], select { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
-        input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; cursor: pointer; background: none; }
-        .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; }
-        .nav-tab.active { background: #ea580c; color: white; }
-        .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
-        .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
-        .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
-        .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; transition: 0.3s; vertical-align: middle; display: inline-block; }
-        .mini-refresh:hover { transform: rotate(180deg); color: white; }
-        .hidden { display: none; }
-    </style>
-</head>
-<body>
-    <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center text-center">
-        <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 shadow-2xl">
-            <h2 class="text-3xl font-black italic text-orange-600 mb-6 uppercase">Inferno Auth</h2>
-            <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase">Sign in with Google</button>
-        </div>
-    </div>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    <div id="main-content" class="hidden">
-        <div class="flex justify-between items-start mb-10">
-            <div>
-                <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
-                <p class="text-[10px] text-zinc-500 font-bold">V7.6 - Updated Layout</p>
-            </div>
-            <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
-                <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
-                <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab">ACTIVITY</button>
-                <button onclick="switchTab('access')" id="tab-access" class="nav-tab">EMAILS</button>
-            </div>
-        </div>
+    // Your Firebase Config (Keep this as is)
+    const firebaseConfig = {
+        apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
+        authDomain: "inferno-realms.firebaseapp.com",
+        databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/",
+        projectId: "inferno-realms",
+        storageBucket: "inferno-realms.firebasestorage.app",
+        appId: "1:669014530995:web:41fd088f6255118c9e89c6"
+    };
 
-        <div id="page-config">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="section-box">
-                    <h2 class="section-title">Visual Branding</h2>
-                    <label>Background URL <span class="mini-refresh" onclick="syncField('bgImageUrl')">↻</span></label><input type="text" id="bgImageUrl">
-                    <label>Logo Icon URL <span class="mini-refresh" onclick="syncField('logoUrl')">↻</span></label><input type="text" id="logoUrl">
-                    <label>Widget Icon URL <span class="mini-refresh" onclick="syncField('widgetIconUrl')">↻</span></label><input type="text" id="widgetIconUrl">
-                    <div class="grid grid-cols-4 gap-2 mt-4 text-center">
-                        <div><label>Nav</label><input type="color" id="navBg" onchange="syncField('navBg')"></div>
-                        <div><label>Logo</label><input type="color" id="navLogoCol" onchange="syncField('navLogoCol')"></div>
-                        <div><label>Hero</label><input type="color" id="heroTitleCol" onchange="syncField('heroTitleCol')"></div>
-                        <div><label>Btn</label><input type="color" id="heroBtnBg" onchange="syncField('heroBtnBg')"></div>
-                    </div>
-                </div>
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const configRef = ref(db, 'absoluteConfigV3');
 
-                <div class="section-box">
-                    <h2 class="section-title">Hero & Media</h2>
-                    <label>Hero Title <span class="mini-refresh" onclick="syncField('heroTitle')">↻</span></label><input type="text" id="heroTitle">
-                    <label>Server IP <span class="mini-refresh" onclick="syncField('serverIp')">↻</span></label><input type="text" id="serverIp">
-                    <label>Shuffle Delay <span class="mini-refresh" onclick="syncField('shuffleDelay')">↻</span></label><input type="number" id="shuffleDelay">
-                    <label>Media <span class="mini-refresh" onclick="syncList('media-list', 'mediaUrls')">↻</span></label>
-                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Link..."><button id="mediaAdd" class="btn-add">+</button></div>
-                    <div id="media-list" class="sort-list"></div>
-                </div>
-            </div>
+    // --- LOAD DATA ---
+    onValue(configRef, (snap) => {
+        const d = snap.val();
+        if (!d) return;
 
-            <div class="section-box">
-                <h2 class="section-title">Sponsorships & Widget Settings</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label>Sponsor Name <span class="mini-refresh" onclick="syncField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
-                    <div><label>Promo Code <span class="mini-refresh" onclick="syncField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
-                    <div><label>Patreon Link <span class="mini-refresh" onclick="syncField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
-                    <div><label>Widget Text <span class="mini-refresh" onclick="syncField('widgetText')">↻</span></label><input type="text" id="widgetText"></div>
-                    <div>
-                        <label>Widget Status <span class="mini-refresh" onclick="syncField('widgetActive')">↻</span></label>
-                        <select id="widgetActive">
-                            <option value="true">Visible</option>
-                            <option value="false">Hidden</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+        // Visual Branding
+        document.getElementById('bgUrlInput').value = d.bgImageUrl || "";
+        document.getElementById('logoUrlInput').value = d.logoUrl || "";
+        
+        // Widget Settings (The Fix)
+        document.getElementById('widgetActiveInput').value = d.widgetActive || "false";
+        document.getElementById('widgetTextInput').value = d.widgetText || "";
+        document.getElementById('widgetIconInput').value = d.widgetIconUrl || "";
 
-            <div class="section-box">
-                <h2 class="section-title">Public Lists</h2>
-                <div class="grid grid-cols-3 gap-6">
-                    <div><label>SMP <span class="mini-refresh" onclick="syncList('smp-list', 'smpList')">↻</span></label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
-                    <div><label>Events <span class="mini-refresh" onclick="syncList('event-list', 'eventList')">↻</span></label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div></div>
-                    <div><label>Staff <span class="mini-refresh" onclick="syncList('staff-list', 'staffList')">↻</span></label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div></div>
-                </div>
-            </div>
-        </div>
+        // Hero & Media
+        document.getElementById('heroTitleInput').value = d.heroTitle || "";
+        document.getElementById('serverIpInput').value = d.serverIp || "";
+        document.getElementById('shuffleDelayInput').value = d.shuffleDelay || "15";
+        document.getElementById('mediaUrlsInput').value = d.mediaUrls || "";
 
-        <div id="page-logs" class="hidden">
-            <div class="section-box">
-                <h2 class="section-title mb-4">Live Activity</h2>
-                <div id="log-container" class="space-y-2 font-mono text-[10px] h-96 overflow-y-auto"></div>
-            </div>
-        </div>
+        // Partner & Lists
+        document.getElementById('sponsorNameInput').value = d.sponsorName || "";
+        document.getElementById('promoCodeInput').value = d.promoCode || "";
+        document.getElementById('smpListInput').value = d.smpList || "";
+        document.getElementById('eventListInput').value = d.eventList || "";
+        document.getElementById('staffListInput').value = d.staffList || "";
+    });
 
-        <div id="page-access" class="hidden">
-            <div id="access-content">
-                <div class="section-box">
-                    <h2 class="section-title">Whitelisted Emails <span class="mini-refresh" onclick="syncList('email-list', 'trustedEmails')">↻</span></h2>
-                    <div class="flex gap-2 mt-4"><input type="text" id="emailInput"><button id="emailAdd" class="btn-add">+</button></div>
-                    <div id="email-list" class="sort-list"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    // --- SAVE DATA ---
+    window.saveConfig = () => {
+        const newData = {
+            bgImageUrl: document.getElementById('bgUrlInput').value,
+            logoUrl: document.getElementById('logoUrlInput').value,
+            
+            // Widget Fix
+            widgetActive: document.getElementById('widgetActiveInput').value,
+            widgetText: document.getElementById('widgetTextInput').value,
+            widgetIconUrl: document.getElementById('widgetIconInput').value,
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
-            authDomain: "inferno-realms.firebaseapp.com",
-            databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/",
-            projectId: "inferno-realms",
-            storageBucket: "inferno-realms.firebasestorage.app",
-            appId: "1:669014530995:web:41fd088f6255118c9e89c6"
+            heroTitle: document.getElementById('heroTitleInput').value,
+            serverIp: document.getElementById('serverIpInput').value,
+            shuffleDelay: document.getElementById('shuffleDelayInput').value,
+            mediaUrls: document.getElementById('mediaUrlsInput').value,
+            
+            sponsorName: document.getElementById('sponsorNameInput').value,
+            promoCode: document.getElementById('promoCodeInput').value,
+            smpList: document.getElementById('smpListInput').value,
+            eventList: document.getElementById('eventListInput').value,
+            staffList: document.getElementById('staffListInput').value
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-        const ownerEmail = "abeedwehbe@gmail.com";
-        let currentUserEmail = null;
-
-        const getHaifaTime = () => new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Jerusalem", hour12: false });
-        const logAction = async (msg) => await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: msg });
-
-        const unlock = (email) => {
-            currentUserEmail = email;
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-            if (email !== ownerEmail) document.getElementById('tab-access').style.display = 'none';
-            syncEverything();
-        };
-
-        document.getElementById('loginBtn').onclick = async () => {
-            const res = await signInWithPopup(auth, provider);
-            const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
-            const trusted = (snap.val() || "").split(',').filter(e => e);
-            if (res.user.email === ownerEmail || trusted.includes(res.user.email)) unlock(res.user.email);
-            else { alert("Unauthorized"); auth.signOut(); }
-        };
-
-        onAuthStateChanged(auth, (user) => { if (user) unlock(user.email); });
-
-        window.syncField = async (id) => {
-            const val = document.getElementById(id).value;
-            await set(ref(db, `absoluteConfigV3/${id}`), val);
-            await logAction(`Modified ${id}`);
-            alert(`Live Update: ${id}`);
-        };
-
-        window.syncList = async (listId, key) => {
-            const vals = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
-            await set(ref(db, `absoluteConfigV3/${key}`), vals);
-            await logAction(`Updated List: ${key}`);
-            alert(`List Saved: ${key}`);
-        };
-
-        const syncEverything = async () => {
-            const snap = await get(ref(db, 'absoluteConfigV3'));
-            const d = snap.val(); if (!d) return;
-            const fields = ["bgImageUrl", "logoUrl", "widgetIconUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "promoCode", "patreonBtnLink", "widgetText", "widgetActive"];
-            fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
-            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails' };
-            Object.entries(listMap).forEach(([listId, key]) => {
-                document.getElementById(listId).innerHTML = "";
-                if(d[key]) d[key].split(',').forEach(v => v.trim() && addItem(listId, v.trim()));
-            });
-        };
-
-        window.switchTab = (id) => {
-            ['config', 'logs', 'access'].forEach(t => {
-                document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
-                document.getElementById('tab-'+t).classList.toggle('active', t === id);
-            });
-        };
-
-        const addItem = (listId, val) => {
-            const div = document.createElement('div');
-            div.className = 'sort-item';
-            div.innerHTML = `<span>${val}</span><button class="text-red-500 font-bold" onclick="this.parentElement.remove()">×</button>`;
-            document.getElementById(listId).appendChild(div);
-        };
-
-        ['media', 'smp', 'event', 'staff', 'email'].forEach(x => {
-            const btn = document.getElementById(x + 'Add');
-            if (btn) btn.onclick = () => { addItem(x + '-list', document.getElementById(x + 'Input').value); document.getElementById(x + 'Input').value = ''; };
-        });
-
-        onValue(ref(db, 'systemLogs'), (s) => {
-            const data = s.val(); if (!data) return;
-            document.getElementById('log-container').innerHTML = Object.values(data).reverse().slice(0, 50).map(l => `
-                <div class="border-b border-white/5 py-2 flex justify-between">
-                    <span class="text-orange-500 font-bold">[${l.time}]</span>
-                    <span class="text-zinc-300 flex-1 px-4 text-right">${l.user} ${l.action}</span>
-                </div>`).join('');
-        });
-
-        ['media', 'smp', 'event', 'staff'].forEach(id => { new Sortable(document.getElementById(id + '-list'), { animation: 150 }); });
-    </script>
-</body>
-</html>
+        set(configRef, newData)
+            .then(() => alert("Configuration Saved! 🔥"))
+            .catch((err) => alert("Error: " + err));
+    };
+</script>
