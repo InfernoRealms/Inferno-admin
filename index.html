@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V9.9 Secure</title>
+    <title>Inferno Admin | V10.0 Drop</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -10,22 +10,33 @@
         .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
         .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
         label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
+        
+        /* Drag & Drop Styles */
+        .drop-zone { 
+            border: 2px dashed #333; 
+            border-radius: 12px; 
+            padding: 20px; 
+            text-align: center; 
+            transition: 0.3s; 
+            cursor: pointer;
+            background: #000;
+            position: relative;
+        }
+        .drop-zone.dragover { border-color: #ea580c; background: #ea580c10; }
+        .drop-preview { height: 60px; object-fit: contain; margin: 10px auto; display: none; }
+        
         input[type="text"] { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
         input[type="color"] { -webkit-appearance: none; border: 2px solid #333; width: 100%; height: 40px; cursor: pointer; background: #000; border-radius: 8px; padding: 2px; }
         .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; color: #555; }
         .nav-tab.active { background: #ea580c; color: white; }
-        .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
+        .hidden { display: none !important; }
         .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
         .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; height: 42px; }
-        .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; vertical-align: middle; }
-        .hidden { display: none !important; }
-        .log-entry { font-family: monospace; font-size: 11px; padding: 8px; border-bottom: 1px solid #222; }
-        .log-user { color: #ea580c; font-weight: bold; }
     </style>
 </head>
 <body>
     <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
-        <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 text-center shadow-2xl">
+        <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 text-center">
             <h2 class="text-3xl font-black italic text-orange-600 mb-6 uppercase">Inferno Auth</h2>
             <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase">Sign in with Google</button>
         </div>
@@ -46,59 +57,67 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="section-box">
                     <h2 class="section-title">Visual Branding</h2>
-                    <label>Background URL <span class="mini-refresh" onclick="syncField('bgImageUrl')">↻</span></label><input type="text" id="bgImageUrl">
-                    <label>Logo Icon URL <span class="mini-refresh" onclick="syncField('logoUrl')">↻</span></label><input type="text" id="logoUrl">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                    
+                    <label>Background Image</label>
+                    <div class="drop-zone" id="drop-bg" ondragover="handleOver(event)" ondragleave="handleLeave(event)" ondrop="handleDrop(event, 'bgImageUrl')">
+                        <div class="text-xs text-zinc-500 uppercase font-black">Drop BG Here</div>
+                        <img id="preview-bg" class="drop-preview">
+                        <input type="text" id="bgImageUrl" class="mt-2 text-[10px]" placeholder="Or paste URL...">
+                    </div>
+
+                    <label>Logo Icon</label>
+                    <div class="drop-zone" id="drop-logo" ondragover="handleOver(event)" ondragleave="handleLeave(event)" ondrop="handleDrop(event, 'logoUrl')">
+                        <div class="text-xs text-zinc-500 uppercase font-black">Drop Logo Here</div>
+                        <img id="preview-logo" class="drop-preview">
+                        <input type="text" id="logoUrl" class="mt-2 text-[10px]" placeholder="Or paste URL...">
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                         <div><label>Nav BG</label><input type="color" id="navBg" onchange="syncField('navBg')"></div>
                         <div><label>Logo Col</label><input type="color" id="navLogoCol" onchange="syncField('navLogoCol')"></div>
                         <div><label>Hero Text</label><input type="color" id="heroTitleCol" onchange="syncField('heroTitleCol')"></div>
-                        <div><label>Accent/Btn</label><input type="color" id="heroBtnBg" onchange="syncField('heroBtnBg')"></div>
+                        <div><label>Accent</label><input type="color" id="heroBtnBg" onchange="syncField('heroBtnBg')"></div>
                     </div>
                 </div>
+
                 <div class="section-box">
                     <h2 class="section-title">Hero & Media</h2>
-                    <label>Hero Title <span class="mini-refresh" onclick="syncField('heroTitle')">↻</span></label><input type="text" id="heroTitle">
-                    <label>Server IP <span class="mini-refresh" onclick="syncField('serverIp')">↻</span></label><input type="text" id="serverIp">
-                    <label>Media <span class="mini-refresh" onclick="syncList('media-list', 'mediaUrls')">↻</span></label>
-                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Add Link..."><button id="mediaAdd" class="btn-add">+</button></div>
-                    <div id="media-list" class="sort-list"></div>
+                    <label>Hero Title</label><input type="text" id="heroTitle" onchange="syncField('heroTitle')">
+                    <label>Server IP</label><input type="text" id="serverIp" onchange="syncField('serverIp')">
+                    <label>Media (Carousel)</label>
+                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="YouTube/Image Link"><button id="mediaAdd" class="btn-add">+</button></div>
+                    <div id="media-list" class="sort-list mt-2"></div>
+                    <button onclick="syncList('media-list', 'mediaUrls')" class="btn-add w-full mt-2 text-[10px]">SAVE MEDIA</button>
                 </div>
             </div>
-            <div class="section-box">
-                <h2 class="section-title">Partner & Social</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label>Sponsor Name <span class="mini-refresh" onclick="syncField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
-                    <div><label>Sponsor URL <span class="mini-refresh" onclick="syncField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
-                    <div><label>Promo Code <span class="mini-refresh" onclick="syncField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
-                    <div><label>Discord Link <span class="mini-refresh" onclick="syncField('discordLink')">↻</span></label><input type="text" id="discordLink"></div>
-                    <div class="col-span-2"><label>Patreon Link <span class="mini-refresh" onclick="syncField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
-                </div>
-            </div>
-        </div>
 
-        <div id="page-vote" class="hidden">
             <div class="section-box">
-                <h2 class="section-title">Vote Management</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div><label>Site Name</label><input type="text" id="voteNameInput"></div>
-                    <div><label>URL</label><div class="flex gap-2"><input type="text" id="voteInput"><button id="voteAdd" class="btn-add">ADD</button></div></div>
+                <h2 class="section-title">Public Lists</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div><label>SMPs</label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list mt-2"></div><button onclick="syncList('smp-list', 'smpList')" class="w-full mt-2 bg-zinc-800 text-[10px] py-1 rounded">Save SMPs</button></div>
+                    <div><label>Events</label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list mt-2"></div><button onclick="syncList('event-list', 'eventList')" class="w-full mt-2 bg-zinc-800 text-[10px] py-1 rounded">Save Events</button></div>
+                    <div><label>Staff</label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list mt-2"></div><button onclick="syncList('staff-list', 'staffList')" class="w-full mt-2 bg-zinc-800 text-[10px] py-1 rounded">Save Staff</button></div>
                 </div>
-                <label class="mt-8">Active Sites <span class="mini-refresh" onclick="syncList('vote-list', 'voteLinks')">↻ SAVE</span></label>
-                <div id="vote-list" class="sort-list"></div>
             </div>
-        </div>
-
-        <div id="page-logs" class="hidden">
-            <div class="section-box"><h2 class="section-title">Activity</h2><div id="log-container" class="mt-4 h-[400px] overflow-y-auto bg-black p-4 rounded-xl border border-zinc-800"></div></div>
         </div>
 
         <div id="page-access" class="hidden">
             <div class="section-box">
-                <h2 class="section-title">Whitelisted Admins</h2>
-                <p class="text-[10px] text-zinc-500 mb-4 uppercase">Only you can see this section.</p>
+                <h2 class="section-title">Owner Controls</h2>
                 <div class="flex gap-2"><input type="text" id="emailInput" placeholder="admin@gmail.com"><button id="emailAdd" class="btn-add">+</button></div>
-                <div id="email-list" class="sort-list"></div>
+                <div id="email-list" class="sort-list mt-4"></div>
                 <button onclick="syncList('email-list', 'trustedEmails')" class="btn-add w-full mt-4">SAVE WHITELIST</button>
+            </div>
+        </div>
+        
+        <div id="page-logs" class="hidden"><div id="log-container" class="bg-black p-4 rounded-xl border border-zinc-800 h-96 overflow-y-auto font-mono text-xs"></div></div>
+        <div id="page-vote" class="hidden">
+            <div class="section-box">
+                <label>Add Vote Site</label>
+                <div class="grid grid-cols-2 gap-2"><input type="text" id="voteNameInput" placeholder="Site Name"><input type="text" id="voteInput" placeholder="URL"></div>
+                <button id="voteAdd" class="btn-add w-full mt-2">ADD SITE</button>
+                <div id="vote-list" class="sort-list mt-4"></div>
+                <button onclick="syncList('vote-list', 'voteLinks')" class="btn-add w-full mt-2">SAVE VOTES</button>
             </div>
         </div>
     </div>
@@ -119,49 +138,55 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
         const ownerEmail = "abeedwehbe@gmail.com";
         let currentUser = null;
 
-        document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
-        
+        document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
                 const trusted = (snap.val() || "").split(',').filter(e => e);
-                
                 if (user.email === ownerEmail || trusted.includes(user.email)) {
                     currentUser = user;
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
-
-                    // SECURITY: Show the Emails tab ONLY for the owner
-                    if (user.email === ownerEmail) {
-                        document.getElementById('tab-access').classList.remove('hidden');
-                    }
-
-                    syncEverything();
-                    setupLogs();
-                } else { 
-                    alert("Access Denied."); 
-                    auth.signOut(); 
-                }
+                    if (user.email === ownerEmail) document.getElementById('tab-access').classList.remove('hidden');
+                    syncEverything(); setupLogs();
+                } else { alert("Access Denied"); auth.signOut(); }
             }
         });
 
-        window.switchTab = (id) => {
-            // HARD SECURITY CHECK
-            if (id === 'access' && currentUser.email !== ownerEmail) {
-                alert("Unauthorized: Owner access only.");
-                return;
-            }
+        // DRAG AND DROP LOGIC
+        window.handleOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('dragover'); };
+        window.handleLeave = (e) => { e.preventDefault(); e.currentTarget.classList.remove('dragover'); };
+        
+        window.handleDrop = async (e, fieldId) => {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
 
-            ['config', 'vote', 'logs', 'access'].forEach(t => {
-                const p = document.getElementById('page-' + t);
-                const b = document.getElementById('tab-' + t);
-                if (p) p.classList.toggle('hidden', t !== id);
-                if (b) b.classList.toggle('active', t === id);
-            });
+            const previewId = fieldId === 'bgImageUrl' ? 'preview-bg' : 'preview-logo';
+            const preview = document.getElementById(previewId);
+            
+            // Upload to Cloudinary (Anonymous)
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'ml_default'); // Cloudinary default unsigned preset
+
+            try {
+                const res = await fetch('https://api.cloudinary.com/v1_1/demo/image/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                const url = data.secure_url;
+                
+                document.getElementById(fieldId).value = url;
+                preview.src = url;
+                preview.style.display = 'block';
+                
+                await set(ref(db, `absoluteConfigV3/${fieldId}`), url);
+                await push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: `Uploaded new ${fieldId}`, time: new Date().toISOString() });
+            } catch (err) { alert("Upload failed. Try pasting the URL manually."); }
         };
 
         window.syncField = async (id) => {
@@ -191,7 +216,13 @@
         const syncEverything = async () => {
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const d = snap.val(); if (!d) return;
-            ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "discordLink"].forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
+            ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "discordLink"].forEach(f => { 
+                if(d[f]) {
+                    document.getElementById(f).value = d[f];
+                    if (f === 'bgImageUrl') { document.getElementById('preview-bg').src = d[f]; document.getElementById('preview-bg').style.display = 'block'; }
+                    if (f === 'logoUrl') { document.getElementById('preview-logo').src = d[f]; document.getElementById('preview-logo').style.display = 'block'; }
+                }
+            });
             const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks' };
             Object.entries(listMap).forEach(([id, key]) => {
                 document.getElementById(id).innerHTML = "";
@@ -204,9 +235,17 @@
                 const container = document.getElementById('log-container');
                 container.innerHTML = "";
                 if (snap.val()) Object.values(snap.val()).reverse().forEach(log => {
-                    const time = new Date(log.time).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
-                    container.innerHTML += `<div class="log-entry"><span class="text-zinc-500">[${time}]</span> <span class="text-orange-500 font-bold">${log.user.split('@')[0]}</span>: ${log.action}</div>`;
+                    const time = new Date(log.time).toLocaleString([], { hour: '2-digit', minute: '2-digit' });
+                    container.innerHTML += `<div>[${time}] ${log.user.split('@')[0]}: ${log.action}</div>`;
                 });
+            });
+        };
+
+        window.switchTab = (id) => {
+            if (id === 'access' && currentUser.email !== ownerEmail) return;
+            ['config', 'vote', 'logs', 'access'].forEach(t => {
+                document.getElementById('page-'+t)?.classList.toggle('hidden', t !== id);
+                document.getElementById('tab-'+t)?.classList.toggle('active', t === id);
             });
         };
 
