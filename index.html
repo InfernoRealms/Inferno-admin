@@ -1,143 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inferno Realms | Official</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        body { background: #0a0a0a no-repeat center center fixed; background-size: cover; color: #eee; font-family: sans-serif; scroll-behavior: smooth; transition: 0.5s; }
-        .glass { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .nav-glass { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); }
-        .inferno-gradient { background: linear-gradient(135deg, #8b0000 0%, #ff4500 100%); }
-        #media-content iframe, #media-content img { width: 100%; height: 100%; border: none; display: block; }
-        .fade-in { animation: fadeIn 1s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
+    <meta charset="UTF-8">
+    <title>Inferno Admin | V7.3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        body { background: #050505; color: white; font-family: sans-serif; padding: 40px; }
+        .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
+        .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
+        label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
+        input[type="text"], input[type="number"] { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; cursor: pointer; background: none; }
+        .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; }
+        .nav-tab.active { background: #ea580c; color: white; }
+        .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
+        .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
+        .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; }
+        .mini-refresh { cursor: pointer; color: #ea580c; font-size: 12px; margin-left: 8px; transition: 0.3s; vertical-align: middle; display: inline-block; }
+        .mini-refresh:hover { transform: rotate(180deg); color: white; }
+        .hidden { display: none; }
+        #log-container::-webkit-scrollbar { width: 4px; }
+        #log-container::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
 </head>
 <body>
-    <nav id="nav-bar" class="fixed w-full z-50 nav-glass py-4 px-6 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div id="logo-wrap"><i data-lucide="flame" class="text-orange-500 fill-orange-500"></i></div>
-            <span id="nav-logo-txt" class="font-black text-xl tracking-tighter uppercase italic">Inferno <span id="nav-accent" class="text-orange-500">Realms</span></span>
-        </div>
-        <div class="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-widest text-zinc-400">
-            <a href="#smps">SMPs</a><a href="#events">Events</a><a href="#patreon">Patreon</a>
-        </div>
-        <a id="display-discord" href="#" class="inferno-gradient px-8 py-2.5 rounded-full font-black text-xs">JOIN DISCORD</a>
-    </nav>
+    <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center text-center">
+        <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 shadow-2xl">
+            <h2 class="text-3xl font-black italic text-orange-600 mb-6 uppercase">Inferno Auth</h2>
+            <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase">Sign in with Google</button>
+        </div>
+    </div>
 
-    <section class="h-screen flex flex-col items-center justify-center text-center px-4">
-        <h1 id="display-hero" class="text-7xl md:text-[10rem] font-black italic uppercase tracking-tighter mb-4">INFERNO</h1>
-        <div class="glass px-8 py-3 rounded-full mb-10 flex items-center gap-3">
-            <span class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span id="player-count" class="font-mono text-green-400 font-black tracking-widest text-xs uppercase">ONLINE</span>
-        </div>
-        <button id="copy-btn" onclick="copyIP()" class="bg-white text-black px-12 py-5 rounded-2xl font-black uppercase tracking-tight shadow-2xl hover:scale-105 transition">Copy Server IP</button>
-        <span id="display-ip" class="hidden">play.infernorealms.xyz</span>
-    </section>
+    <div id="main-content" class="hidden">
+        <div class="flex justify-between items-start mb-10">
+            <div>
+                <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
+                <p class="text-[10px] text-zinc-500 font-bold italic">V7.3 - Single Field Sync Enabled</p>
+            </div>
+            <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
+                <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
+                <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab">ACTIVITY</button>
+                <button onclick="switchTab('access')" id="tab-access" class="nav-tab">EMAILS</button>
+            </div>
+        </div>
 
-    <main class="max-w-6xl mx-auto px-6 space-y-24 pb-24">
-        <div class="aspect-video glass rounded-[3rem] overflow-hidden border-4 border-orange-600/20">
-            <div id="media-content" class="w-full h-full"></div>
-        </div>
+        <div id="page-config">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="section-box">
+                    <h2 class="section-title">Visual Branding</h2>
+                    <label>Background URL <span class="mini-refresh" onclick="syncField('bgImageUrl')">↻</span></label><input type="text" id="bgImageUrl">
+                    <label>Logo Icon URL <span class="mini-refresh" onclick="syncField('logoUrl')">↻</span></label><input type="text" id="logoUrl">
+                    <div class="grid grid-cols-4 gap-2 mt-4 text-center">
+                        <div><label>Nav</label><input type="color" id="navBg" onchange="syncField('navBg')"></div>
+                        <div><label>Logo</label><input type="color" id="navLogoCol" onchange="syncField('navLogoCol')"></div>
+                        <div><label>Hero</label><input type="color" id="heroTitleCol" onchange="syncField('heroTitleCol')"></div>
+                        <div><label>Btn</label><input type="color" id="heroBtnBg" onchange="syncField('heroBtnBg')"></div>
+                    </div>
+                </div>
 
-        <div id="smps">
-            <h2 id="smp-header-line" class="text-4xl font-black uppercase italic mb-10 border-l-[12px] border-orange-600 pl-8">The Realms</h2>
-            <div id="smp-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-        </div>
+                <div class="section-box">
+                    <h2 class="section-title">Hero & Media</h2>
+                    <label>Hero Title <span class="mini-refresh" onclick="syncField('heroTitle')">↻</span></label><input type="text" id="heroTitle">
+                    <label>Server IP <span class="mini-refresh" onclick="syncField('serverIp')">↻</span></label><input type="text" id="serverIp">
+                    <label>Shuffle Delay <span class="mini-refresh" onclick="syncField('shuffleDelay')">↻</span></label><input type="number" id="shuffleDelay">
+                    <label>Media <span class="mini-refresh" onclick="syncList('media-list', 'mediaUrls')">↻</span></label>
+                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Add Link..."><button id="mediaAdd" class="btn-add">+</button></div>
+                    <div id="media-list" class="sort-list"></div>
+                </div>
+            </div>
 
-        <div id="events" class="grid md:grid-cols-2 gap-12">
-            <div class="glass p-12 rounded-[3rem]">
-                <h3 class="text-2xl font-black uppercase mb-8 flex items-center gap-3 text-orange-500"><i data-lucide="calendar"></i> Events List</h3>
-                <div id="event-list" class="space-y-4"></div>
-            </div>
-            <div id="patreon" class="glass p-12 rounded-[3rem] flex flex-col justify-between">
-                <div><h3 class="text-2xl font-black uppercase mb-8 text-[#f96854]">Supporters</h3><div id="patreon-list" class="grid grid-cols-2 gap-4 italic text-zinc-400 font-bold uppercase text-xs"></div></div>
-                <a id="display-patreon-link" href="#" class="block text-center mt-12 py-5 bg-[#f96854] text-black font-black uppercase rounded-2xl">Patreon</a>
-            </div>
-        </div>
+            <div class="section-box">
+                <h2 class="section-title">Sponsorships & Store</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label>Sponsor Name <span class="mini-refresh" onclick="syncField('sponsorName')">↻</span></label><input type="text" id="sponsorName"></div>
+                    <div><label>Sponsor URL <span class="mini-refresh" onclick="refreshField('sponsorUrl')">↻</span></label><input type="text" id="sponsorUrl"></div>
+                    <div><label>Promo Code <span class="mini-refresh" onclick="syncField('promoCode')">↻</span></label><input type="text" id="promoCode"></div>
+                    <div><label>Patreon Link <span class="mini-refresh" onclick="syncField('patreonBtnLink')">↻</span></label><input type="text" id="patreonBtnLink"></div>
+                </div>
+            </div>
 
-        <a id="sponsor-link" href="#" target="_blank" class="block">
-            <div id="partner-box" class="glass p-12 rounded-[3rem] border-l-[16px] border-orange-600 flex flex-col md:flex-row justify-between items-center hover:scale-[1.02] transition shadow-2xl">
-                <div><p class="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">Partner</p><h4 id="sponsor-name" class="text-4xl font-black italic uppercase tracking-tighter">Sylant Hosting</h4></div>
-                <div class="text-center md:text-right mt-6 md:mt-0"><span class="text-xs font-bold text-zinc-500 uppercase">Use Code</span><div id="display-promo" class="text-7xl font-[1000] text-orange-600 tracking-tighter italic">INFERNO</div></div>
-            </div>
-        </a>
-    </main>
+            <div class="section-box">
+                <h2 class="section-title">Public Lists</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <div><label>SMP <span class="mini-refresh" onclick="syncList('smp-list', 'smpList')">↻</span></label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div></div>
+                    <div><label>Events <span class="mini-refresh" onclick="syncList('event-list', 'eventList')">↻</span></label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div></div>
+                    <div><label>Staff <span class="mini-refresh" onclick="syncList('staff-list', 'staffList')">↻</span></label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div></div>
+                </div>
+            </div>
+        </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        <div id="page-logs" class="hidden">
+            <div class="section-box">
+                <h2 class="section-title mb-4">Live Activity Log</h2>
+                <div id="log-container" class="space-y-2 font-mono text-[11px] h-96 overflow-y-auto pr-2"></div>
+            </div>
+        </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
-            authDomain: "inferno-realms.firebaseapp.com",
-            databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/",
-            projectId: "inferno-realms",
-            storageBucket: "inferno-realms.firebasestorage.app",
-            messagingSenderId: "669014530995",
-            appId: "1:669014530995:web:41fd088f6255118c9e89c6"
-        };
+        <div id="page-access" class="hidden">
+            <div id="admin-only-warning" class="text-red-500 font-bold mb-4 hidden uppercase text-xs">Access Restricted to Owner</div>
+            <div id="access-content">
+                <div class="section-box">
+                    <h2 class="section-title">Whitelisted Emails <span class="mini-refresh" onclick="syncList('email-list', 'trustedEmails')">↻</span></h2>
+                    <div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="Email..."><button id="emailAdd" class="btn-add">+</button></div>
+                    <div id="email-list" class="sort-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        let mediaItems = [], currentIndex = 0, shuffleInterval;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        const cleanYT = (url) => {
-            let vId = "";
-            if (url.includes('shorts/')) vId = url.split('shorts/')[1].split('?')[0];
-            else if (url.includes('v=')) vId = url.split('v=')[1].split('&')[0];
-            else if (url.includes('youtu.be/')) vId = url.split('youtu.be/')[1].split('?')[0];
-            return vId ? `https://www.youtube.com/embed/${vId}?autoplay=1&mute=1&loop=1&playlist=${vId}&controls=0&rel=0` : url;
-        };
+        const firebaseConfig = {
+            apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
+            authDomain: "inferno-realms.firebaseapp.com",
+            databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/",
+            projectId: "inferno-realms",
+            storageBucket: "inferno-realms.firebasestorage.app",
+            messagingSenderId: "669014530995",
+            appId: "1:669014530995:web:41fd088f6255118c9e89c6"
+        };
 
-        const rotateMedia = () => {
-            if (!mediaItems.length) return;
-            const container = document.getElementById('media-content');
-            const url = mediaItems[currentIndex].trim();
-            if (url.includes('youtube.com') || url.includes('youtu.be')) {
-                container.innerHTML = `<iframe src="${cleanYT(url)}" allow="autoplay; encrypted-media"></iframe>`;
-            } else {
-                container.innerHTML = `<img src="${url}" class="fade-in" style="object-fit: cover;">`;
-            }
-            currentIndex = (currentIndex + 1) % mediaItems.length;
-        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        const ownerEmail = "abeedwehbe@gmail.com";
+        let currentUserEmail = null;
 
-        onValue(ref(db, 'absoluteConfigV3'), (snap) => {
-            const d = snap.val(); if (!d) return;
-            document.body.style.backgroundImage = `url('${d.bgImageUrl}')`;
-            if(d.logoUrl) document.getElementById('logo-wrap').innerHTML = `<img src="${d.logoUrl}" class="h-8">`;
-            document.getElementById('display-hero').innerText = d.heroTitle || "INFERNO";
-            document.getElementById('display-hero').style.color = d.heroTitleCol;
-            document.getElementById('nav-bar').style.background = d.navBg;
-            document.getElementById('display-ip').innerText = d.serverIp || "play.infernorealms.xyz";
-            document.getElementById('display-promo').innerText = d.promoCode || "INFERNO";
-            document.getElementById('sponsor-name').innerText = d.sponsorName || "Sylant Hosting";
-            document.getElementById('display-patreon-link').href = d.patreonBtnLink || "#";
+        const getHaifaTime = () => new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Jerusalem", hour12: false });
+        const logAction = async (action) => await push(ref(db, 'systemLogs'), { user: currentUserEmail, time: getHaifaTime(), action: action });
 
-            mediaItems = d.mediaUrls ? d.mediaUrls.split(',').filter(v => v.trim()) : [];
-            clearInterval(shuffleInterval);
-            rotateMedia();
-            shuffleInterval = setInterval(rotateMedia, (parseInt(d.shuffleDelay) || 10) * 1000);
+        const unlock = (email) => {
+            currentUserEmail = email;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            if (email !== ownerEmail) {
+                document.getElementById('access-content').classList.add('hidden');
+                document.getElementById('admin-only-warning').classList.remove('hidden');
+            }
+            syncEverything();
+        };
 
-            const wrap = (str, cls) => (str || "").split(',').filter(v=>v).map(s => `<div class="${cls}">${s.trim()}</div>`).join('');
-            document.getElementById('smp-container').innerHTML = wrap(d.smpList, "glass p-10 rounded-[2rem] font-black italic uppercase text-2xl text-center");
-            document.getElementById('event-list').innerHTML = (d.eventList || "").split(',').filter(v=>v).map(e => `<div class="p-5 bg-white/5 rounded-2xl border-l-4 font-bold uppercase text-xs" style="border-color:${d.heroBtnBg || '#ea580c'}">${e}</div>`).join('');
-            document.getElementById('patreon-list').innerHTML = wrap(d.staffList, "py-1 opacity-70");
-        });
+        document.getElementById('loginBtn').onclick = async () => {
+            const result = await signInWithPopup(auth, provider);
+            const snap = await get(ref(db, 'absoluteConfigV3/trustedEmails'));
+            const trusted = (snap.val() || "").split(',').filter(e => e);
+            if (result.user.email === ownerEmail || trusted.includes(result.user.email)) unlock(result.user.email);
+            else { alert("Unauthorized"); auth.signOut(); }
+        };
 
-        async function updatePlayers() {
-            try {
-                const res = await fetch(`https://api.mcsrvstat.us/2/${document.getElementById('display-ip').innerText}`);
-                const data = await res.json();
-                document.getElementById('player-count').innerText = data.online ? `${data.players.online} ONLINE` : "OFFLINE";
-            } catch(e) {}
-        }
-        setInterval(updatePlayers, 30000); updatePlayers();
-        window.copyIP = () => { navigator.clipboard.writeText(document.getElementById('display-ip').innerText); alert('IP Copied!'); };
-        lucide.createIcons();
-    </script>
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                get(ref(db, 'absoluteConfigV3/trustedEmails')).then(snap => {
+                    const trusted = (snap.val() || "").split(',').filter(e => e);
+                    if (user.email === ownerEmail || trusted.includes(user.email)) unlock(user.email);
+                });
+            }
+        });
+
+        // SINGLE FIELD SYNC: Saves ONLY this field and logs it specifically
+        window.syncField = async (id) => {
+            const val = document.getElementById(id).value;
+            await set(ref(db, `absoluteConfigV3/${id}`), val);
+            await logAction(`Updated Field: ${id}`);
+            alert(`Saved ${id}!`);
+        };
+
+        // SINGLE LIST SYNC: Saves ONLY this list and logs it
+        window.syncList = async (listId, key) => {
+            const items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
+            await set(ref(db, `absoluteConfigV3/${key}`), items);
+            await logAction(`Updated List: ${key}`);
+            alert(`Saved ${key}!`);
+        };
+
+        const syncEverything = async () => {
+            const snap = await get(ref(db, 'absoluteConfigV3'));
+            const d = snap.val(); if (!d) return;
+            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "shuffleDelay", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink"];
+            fields.forEach(f => d[f] && (document.getElementById(f).value = d[f]));
+            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails' };
+            Object.entries(listMap).forEach(([listId, key]) => {
+                document.getElementById(listId).innerHTML = "";
+                if (d[key]) d[key].split(',').forEach(v => v.trim() && addItem(listId, v.trim()));
+            });
+        };
+
+        window.switchTab = (id) => {
+            ['config', 'logs', 'access'].forEach(t => {
+                document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
+                document.getElementById('tab-'+t).classList.toggle('active', t === id);
+            });
+        };
+
+        const addItem = (listId, val) => {
+            const div = document.createElement('div');
+            div.className = 'sort-item';
+            div.innerHTML = `<span>${val}</span><button class="text-red-500 font-bold" onclick="this.parentElement.remove()">×</button>`;
+            document.getElementById(listId).appendChild(div);
+        };
+
+        ['media', 'smp', 'event', 'staff', 'email'].forEach(x => {
+            const btn = document.getElementById(x + 'Add');
+            if (btn) btn.onclick = () => {
+                addItem(x + '-list', document.getElementById(x + 'Input').value);
+                document.getElementById(x + 'Input').value = '';
+            };
+        });
+
+        onValue(ref(db, 'systemLogs'), (snapshot) => {
+            const data = snapshot.val(); if (!data) return;
+            document.getElementById('log-container').innerHTML = Object.values(data).reverse().slice(0, 50).map(log => `
+                <div class="border-b border-white/5 py-2 flex justify-between items-center text-[10px]">
+                    <span class="text-orange-500 font-bold">[${log.time}]</span>
+                    <span class="text-zinc-300 flex-1 px-4">${log.user} ${log.action}</span>
+                </div>`).join('');
+        });
+
+        ['media', 'smp', 'event', 'staff'].forEach(id => {
+            const el = document.getElementById(id + '-list');
+            if (el) new Sortable(el, { animation: 150 });
+        });
+    </script>
 </body>
 </html>
