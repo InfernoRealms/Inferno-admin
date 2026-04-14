@@ -3,80 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inferno Realms | Official</title>
+    <title>Meet the Staff | Inferno Realms</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background: #0a0a0a no-repeat center center fixed; background-size: cover; color: #eee; font-family: sans-serif; scroll-behavior: smooth; }
+        body { background: #0a0a0a no-repeat center center fixed; background-size: cover; color: #eee; font-family: sans-serif; }
         .glass { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .nav-glass { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); }
-        .hero-glow { text-shadow: 0 0 60px rgba(0,0,0,1); }
-        .inferno-gradient { background: linear-gradient(135deg, #8b0000 0%, #ff4500 100%); }
     </style>
 </head>
-<body>
-    <nav class="fixed w-full z-50 nav-glass py-4 px-6 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div id="logo-wrap"><i data-lucide="flame" class="text-orange-500 fill-orange-500"></i></div>
-            <span class="font-black text-xl tracking-tighter uppercase italic">Inferno <span class="text-orange-500">Realms</span></span>
-        </div>
-        <div class="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-widest text-zinc-400">
-            <a href="index.html" class="text-white">Home</a>
-            <a href="#vote" class="hover:text-white transition">Vote</a>
-            <a href="staff.html" class="text-orange-500 font-black hover:scale-110 transition">STAFF PAGE</a>
-            <a href="#events" class="hover:text-white transition">Events</a>
-        </div>
-        <a id="display-discord" href="#" target="_blank" class="inferno-gradient px-8 py-2.5 rounded-full font-black text-xs hover:scale-105 transition">JOIN DISCORD</a>
+<body class="pt-32">
+    <nav class="fixed top-0 w-full z-50 nav-glass py-4 px-6 flex justify-between items-center">
+        <a href="index.html" class="flex items-center gap-3">
+            <i data-lucide="flame" class="text-orange-500"></i>
+            <span class="font-black text-xl tracking-tighter uppercase italic text-white">Inferno <span class="text-orange-500">Realms</span></span>
+        </a>
+        <a href="index.html" class="px-6 py-2 bg-orange-600 rounded-full font-black text-[10px] uppercase hover:scale-105 transition text-white">Back to Home</a>
     </nav>
 
-    <section class="h-screen flex flex-col items-center justify-center text-center px-4">
-        <h1 id="display-hero" class="hero-glow text-7xl md:text-[10rem] font-black italic uppercase tracking-tighter mb-4">INFERNO</h1>
-        <div class="glass px-8 py-3 rounded-full mb-10 flex items-center gap-3">
-            <span class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span id="player-count" class="font-mono text-green-400 font-black tracking-widest text-xs uppercase">ONLINE</span>
-        </div>
-        <button id="copy-btn" onclick="copyIP()" class="bg-white text-black px-12 py-5 rounded-2xl font-black uppercase tracking-tight shadow-2xl hover:scale-105 transition">Copy Server IP</button>
-        <span id="display-ip" class="hidden">play.infernorealms.xyz</span>
-    </section>
-
-    <main class="max-w-6xl mx-auto px-6 space-y-24 pb-24">
-        <div id="vote" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
-
-        <div class="aspect-video glass rounded-[3rem] overflow-hidden">
-            <div id="media-content" class="w-full h-full flex items-center justify-center bg-black/20 text-xs font-black text-zinc-600">Loading Media...</div>
-        </div>
-
-        <a id="sponsor-link" href="https://sylanthosting.com" target="_blank" class="block">
-            <div id="partner-box" class="glass p-12 rounded-[3rem] border-l-[16px] border-orange-600 flex flex-col md:flex-row justify-between items-center hover:scale-[1.02] transition shadow-2xl">
-                <div>
-                    <p class="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">Official Partner</p>
-                    <h4 id="sponsor-name" class="text-4xl font-black italic uppercase tracking-tighter">Sylant Hosting</h4>
-                </div>
-                <div class="text-center md:text-right mt-6 md:mt-0">
-                    <span class="text-xs font-bold text-zinc-500 uppercase">Use Code</span>
-                    <div id="display-promo" class="text-7xl font-[1000] text-orange-600 tracking-tighter italic">INFERNO</div>
-                </div>
-            </div>
-        </a>
-
-        <div id="smps">
-            <h2 id="smp-header" class="text-4xl font-black uppercase italic mb-10 border-l-[12px] border-orange-600 pl-8 text-white">The Realms</h2>
-            <div id="smp-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-        </div>
-
-        <div id="events" class="grid md:grid-cols-2 gap-12">
-            <div class="glass p-12 rounded-[3rem]">
-                <h3 class="text-2xl font-black uppercase mb-8 text-orange-500">Upcoming Events</h3>
-                <div id="event-list" class="space-y-4"></div>
-            </div>
-            <div class="glass p-12 rounded-[3rem] flex flex-col justify-between">
-                <div>
-                    <h3 class="text-2xl font-black uppercase mb-8 text-[#f96854]">Top Supporters</h3>
-                    <div id="patreon-list" class="grid grid-cols-2 gap-4 italic text-zinc-400 font-bold uppercase text-xs"></div>
-                </div>
-                <a id="display-patreon-link" href="#" target="_blank" class="block text-center mt-12 py-5 bg-[#f96854] text-black font-black uppercase rounded-2xl hover:brightness-110 transition">Support on Patreon</a>
+    <main class="max-w-6xl mx-auto px-6 pb-24">
+        <div class="relative h-64 rounded-[3rem] overflow-hidden flex items-center mb-20 px-12 border-l-[16px] border-orange-600 glass">
+            <div class="z-10">
+                <h1 class="text-6xl font-[1000] italic uppercase tracking-tighter text-white">Meet The <span class="text-orange-600">Team</span></h1>
+                <p class="text-zinc-400 uppercase font-black tracking-[0.2em] text-xs mt-2">The staff behind the network</p>
             </div>
         </div>
+
+        <div id="staff-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
     </main>
 
     <script type="module">
@@ -96,42 +50,24 @@
 
         onValue(ref(db, 'absoluteConfigV3'), (snap) => {
             const d = snap.val(); if (!d) return;
-            const accent = d.heroBtnBg || '#ea580c';
             document.body.style.backgroundImage = d.bgImageUrl ? `url('${d.bgImageUrl}')` : "";
-            document.getElementById('display-hero').innerText = d.heroTitle || "INFERNO";
-            document.getElementById('display-ip').innerText = d.serverIp || "play.infernorealms.xyz";
-            document.getElementById('copy-btn').style.backgroundColor = accent;
-            document.getElementById('partner-box').style.borderColor = accent;
-            document.getElementById('smp-header').style.borderColor = accent;
             
-            // Sponsor Data
-            document.getElementById('sponsor-name').innerText = d.sponsorName || "Sylant Hosting";
-            document.getElementById('display-promo').innerText = d.sponsorPromo || "INFERNO";
-            document.getElementById('sponsor-link').href = d.sponsorUrl || "https://sylanthosting.com";
-
-            const render = (data, id, html) => {
-                const el = document.getElementById(id);
-                if(el) el.innerHTML = (data || "").split(',').filter(i => i.trim()).map(i => html(i.trim())).join('');
-            };
-
-            render(d.voteLinks, 'vote', (v) => {
-                const [name, url] = v.split('|');
-                return `<a href="${url}" target="_blank" class="glass p-5 rounded-2xl text-center font-black uppercase text-xs hover:border-orange-500 transition">${name}</a>`;
-            });
-            render(d.smpList, 'smp-container', (i) => `<div class="glass p-10 rounded-[2rem] font-black uppercase text-2xl text-center italic">${i}</div>`);
-            render(d.eventList, 'event-list', (i) => `<div class="p-5 bg-white/5 rounded-2xl border-l-4 font-bold uppercase text-xs" style="border-color:${accent}">${i}</div>`);
-            render(d.staffList, 'patreon-list', (i) => `<div class="py-1 opacity-70">${i}</div>`);
-            
+            if (d.staffProfiles) {
+                document.getElementById('staff-grid').innerHTML = Object.values(d.staffProfiles).map(p => `
+                    <div class="glass p-8 rounded-[3rem] border-b-8 border-orange-600/20 hover:border-orange-600 transition-all duration-500">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="h-14 w-14 bg-orange-600 rounded-2xl flex items-center justify-center font-black text-2xl italic text-white">${p.name[0]}</div>
+                            <div>
+                                <h3 class="text-2xl font-black uppercase italic tracking-tighter text-white">${p.name}</h3>
+                                <span class="text-[10px] font-bold text-orange-500 uppercase tracking-widest">${p.role}</span>
+                            </div>
+                        </div>
+                        <p class="text-zinc-400 text-sm italic leading-relaxed border-l-2 border-zinc-800 pl-4">${p.bio || 'This staff member is busy working on the server!'}</p>
+                    </div>
+                `).join('');
+            }
             lucide.createIcons();
         });
-
-        window.copyIP = () => {
-            const ip = document.getElementById('display-ip').innerText;
-            navigator.clipboard.writeText(ip);
-            const btn = document.getElementById('copy-btn');
-            btn.innerText = 'COPIED!';
-            setTimeout(() => { btn.innerText = 'Copy Server IP'; }, 2000);
-        };
     </script>
 </body>
 </html>
