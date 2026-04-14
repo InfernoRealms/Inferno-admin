@@ -2,166 +2,272 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V17.0 Ultra-Master</title>
+    <title>Inferno Dashboard | Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background: #050505; color: white; font-family: sans-serif; padding: 40px; }
-        .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
-        .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; border-left: 4px solid #ea580c; padding-left: 10px; }
-        label { font-size: 10px; font-weight: 800; color: #666; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
-        input[type="text"], textarea, select { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; transition: 0.3s; }
-        input[type="color"] { -webkit-appearance: none; border: 2px solid #333; width: 100%; height: 42px; cursor: pointer; background: #000; border-radius: 8px; padding: 2px; }
-        .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 11px; transition: 0.3s; color: #555; text-transform: uppercase; }
-        .nav-tab.active { background: #ea580c; color: white; }
-        .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 60px; border: 1px solid #222; margin-top: 8px; }
-        .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 10px 15px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; cursor: grab; }
-        .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; height: 42px; transition: 0.3s; }
-        .btn-save { background: #1a1a1a; color: #ea580c; width: 100%; padding: 12px; border-radius: 8px; font-weight: 900; font-size: 11px; text-transform: uppercase; margin-top: 10px; border: 1px solid #ea580c44; transition: 0.3s; cursor: pointer; }
-        .btn-save:hover { background: #ea580c; color: white; }
-        .icon-grid { display: grid; grid-template-cols: repeat(auto-fill, minmax(45px, 1fr)); gap: 8px; background: #000; padding: 15px; border-radius: 12px; border: 1px solid #222; max-height: 180px; overflow-y: auto; }
-        .icon-option { padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 1px solid transparent; color: #555; }
-        .icon-option.selected { background: #ea580c; border-color: #ea580c; color: white; }
-        .drop-zone { border: 2px dashed #333; border-radius: 12px; transition: 0.3s; background: #000; position: relative; }
-        .uploading::after { content: "UPLOADING..."; position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #ea580c; z-index: 50; border-radius: 12px; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        
+        body { 
+            background-color: #0a0a0a; 
+            color: #ffffff; 
+            font-family: 'Inter', sans-serif; 
+            padding: 20px;
+        }
+
+        /* Restoration of the Screenshot UI */
+        .dashboard-header {
+            font-size: 32px;
+            font-weight: 900;
+            font-style: italic;
+            color: #ea580c;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .section-card {
+            background: #111111;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #1f1f1f;
+            height: 100%;
+        }
+
+        .section-title {
+            color: #ea580c;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 10px;
+            font-weight: 800;
+            color: #444;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 6px;
+            margin-top: 12px;
+        }
+
+        input[type="text"], textarea, select {
+            background: #000000 !important;
+            border: 1px solid #1f1f1f;
+            padding: 12px;
+            border-radius: 6px;
+            color: #eee !important;
+            width: 100%;
+            font-size: 13px;
+            outline: none;
+        }
+
+        input:focus { border-color: #ea580c; }
+
+        .btn-orange {
+            background: #ea580c;
+            color: white;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 11px;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .btn-orange:hover { background: #f97316; }
+
+        .btn-outline-save {
+            background: #1a1a1a;
+            color: #ea580c;
+            border: 1px solid #ea580c44;
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 11px;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        .nav-tab {
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 11px;
+            color: #555;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        .nav-tab.active {
+            background: #ea580c;
+            color: white;
+        }
+
+        .sort-item {
+            background: #000;
+            border: 1px solid #1f1f1f;
+            margin-bottom: 5px;
+            padding: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+        }
+
+        .icon-grid {
+            display: grid;
+            grid-template-cols: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 5px;
+            background: #000;
+            padding: 10px;
+            border-radius: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
-        <div class="max-w-md w-full bg-[#111] p-10 rounded-[40px] border border-zinc-800 text-center shadow-2xl">
-            <h2 class="text-4xl font-black italic text-orange-600 mb-8 uppercase">Inferno</h2>
-            <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-2xl font-black uppercase">Sign in with Google</button>
+        <div class="max-w-md w-full bg-[#111] p-10 rounded-3xl border border-zinc-800 text-center">
+            <h2 class="dashboard-header mb-8">Inferno</h2>
+            <button id="loginBtn" class="btn-orange w-full py-4 text-sm">Sign in with Google</button>
         </div>
     </div>
 
     <div id="main-content" class="hidden">
-        <div class="flex flex-wrap justify-between items-center mb-10 gap-6">
-            <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Admin Portal</h1>
-            <div id="nav-container" class="flex flex-wrap gap-2 bg-[#111] p-2 rounded-2xl border border-zinc-800">
-                <button onclick="switchTab('profile')" id="tab-profile" class="nav-tab">Profile</button>
+        <div class="flex flex-wrap justify-between items-center mb-8">
+            <div class="dashboard-header">Inferno Dashboard</div>
+            <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
+                <button onclick="switchTab('profile')" id="tab-profile" class="nav-tab">My Profile</button>
                 <button onclick="switchTab('directory')" id="tab-directory" class="nav-tab hidden">Directory</button>
-                <button onclick="switchTab('roles')" id="tab-roles" class="nav-tab hidden">Roles</button>
-                <button onclick="switchTab('config')" id="tab-config" class="nav-tab hidden">Main Config</button>
-                <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab hidden">Votes</button>
-                <button onclick="switchTab('access')" id="tab-access" class="nav-tab hidden">Access</button>
-                <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab hidden">Logs</button>
+                <button onclick="switchTab('config')" id="tab-config" class="nav-tab hidden">Config</button>
+                <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab hidden">Voting</button>
+                <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab hidden">Activity</button>
+                <button onclick="switchTab('access')" id="tab-access" class="nav-tab hidden">Emails</button>
             </div>
         </div>
 
-        <div id="page-profile" class="max-w-3xl mx-auto">
-            <div class="section-box">
-                <h2 id="editor-title" class="section-title">Staff Bio Editor</h2>
+        <div id="page-config" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <div class="section-card">
+                    <div class="section-title">Visual Branding</div>
+                    <label>Background Image</label>
+                    <input type="text" id="bgImageUrl">
+                    <label>Logo Icon</label>
+                    <input type="text" id="logoUrl">
+                    <div class="grid grid-cols-4 gap-2 mt-4">
+                        <div><label>Nav BG</label><input type="color" id="navBg" class="h-10 w-full bg-black border border-zinc-800"></div>
+                        <div><label>Logo Col</label><input type="color" id="navLogoCol" class="h-10 w-full bg-black border border-zinc-800"></div>
+                        <div><label>Hero Text</label><input type="color" id="heroTitleCol" class="h-10 w-full bg-black border border-zinc-800"></div>
+                        <div><label>Accent</label><input type="color" id="heroBtnBg" class="h-10 w-full bg-black border border-zinc-800"></div>
+                    </div>
+                    <button onclick="saveBranding()" class="btn-outline-save">Save Visuals</button>
+                </div>
+
+                <div class="section-card">
+                    <div class="section-title">Hero & Media</div>
+                    <label>Hero Title</label>
+                    <input type="text" id="heroTitle">
+                    <label>Server IP</label>
+                    <input type="text" id="serverIp">
+                    <button onclick="saveHeroInfo()" class="btn-outline-save !mt-4">Save Hero Info</button>
+                    
+                    <label class="mt-6">Media Carousel</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="mediaInput" placeholder="URL...">
+                        <button id="mediaAdd" class="btn-orange">+</button>
+                    </div>
+                    <div id="media-list" class="sort-list mt-3"></div>
+                    <button onclick="syncList('media-list', 'mediaUrls')" class="btn-outline-save">Save Media Order</button>
+                </div>
+
+            </div>
+
+            <div class="section-card">
+                <div class="section-title">Partner & Social</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div><label>Sponsor Name</label><input type="text" id="sponsorName"></div>
+                    <div><label>Sponsor URL</label><input type="text" id="sponsorUrl"></div>
+                    <div><label>Promo Code</label><input type="text" id="promoCode"></div>
+                    <div><label>Discord Link</label><input type="text" id="discordLink"></div>
+                </div>
+                <label>Patreon Link</label>
+                <input type="text" id="patreonBtnLink">
+                <button onclick="savePartnerSocial()" class="btn-outline-save">Save Socials</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="section-card">
+                    <div class="section-title">SMP List</div>
+                    <div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-orange">+</button></div>
+                    <div id="smp-list" class="sort-list mt-3"></div>
+                    <button onclick="syncList('smp-list', 'smpList')" class="btn-outline-save">Save SMPs</button>
+                </div>
+                <div class="section-card">
+                    <div class="section-title">Events List</div>
+                    <div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-orange">+</button></div>
+                    <div id="event-list" class="sort-list mt-3"></div>
+                    <button onclick="syncList('event-list', 'eventList')" class="btn-outline-save">Save Events</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-access" class="hidden max-w-4xl mx-auto">
+            <div class="section-card">
+                <div class="section-title">Staff Access (Profile Only)</div>
+                <div class="flex gap-2">
+                    <input type="text" id="bioEmailInput" placeholder="staff@gmail.com">
+                    <button id="bioEmailAdd" class="btn-orange text-lg">+</button>
+                </div>
+                <div id="bio-email-list" class="sort-list mt-4 bg-black p-4 rounded-lg min-h-[100px]"></div>
+                <button onclick="syncList('bio-email-list', 'bioStaffEmails')" class="btn-outline-save">Save Staff Access</button>
+            </div>
+
+            <div class="section-card mt-6">
+                <div class="section-title">Admin Whitelist (Full Control)</div>
+                <div class="flex gap-2">
+                    <input type="text" id="adminEmailInput" placeholder="admin@gmail.com">
+                    <button id="adminEmailAdd" class="btn-orange">+</button>
+                </div>
+                <div id="admin-email-list" class="sort-list mt-4"></div>
+                <button onclick="syncList('admin-email-list', 'trustedEmails')" class="btn-outline-save">Save Admin Whitelist</button>
+            </div>
+        </div>
+
+        <div id="page-profile" class="hidden max-w-2xl mx-auto">
+            <div class="section-card">
+                <div class="section-title">My Profile</div>
                 <input type="hidden" id="editingStaffKey">
                 <label>Display Name</label><input type="text" id="myStaffName">
-                <label>Network Role</label><select id="myStaffRoleDropdown"><option value="">Loading...</option></select>
-                <label>Biography</label><textarea id="myStaffBio" rows="8"></textarea>
-                <button onclick="saveCurrentProfile()" class="btn-save !bg-orange-600 !text-white">Save Changes</button>
-                <button id="cancelMod" onclick="loadMyBio()" class="hidden w-full text-[10px] mt-4 font-bold text-zinc-500 uppercase tracking-widest">Return to my profile</button>
+                <label>Role</label><select id="myStaffRoleDropdown"></select>
+                <label>Bio</label><textarea id="myStaffBio" rows="6"></textarea>
+                <button onclick="saveCurrentProfile()" class="btn-orange w-full mt-4">Save Profile</button>
             </div>
         </div>
 
-        <div id="page-directory" class="hidden">
-            <div class="section-box"><h2 class="section-title">Directory</h2><div id="directory-container" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div></div>
-        </div>
-
-        <div id="page-roles" class="hidden">
-            <div class="section-box">
-                <h2 class="section-title">Role Icon Manager</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div><label>Role Name</label><input type="text" id="roleTitleInput"><label>Selected Icon: <span id="selected-icon-name" class="text-orange-500">None</span></label><button id="roleAddBtn" class="btn-add w-full mt-4">ADD ROLE</button></div>
-                    <div><label>Icon Picker</label><div class="icon-grid" id="icon-picker"></div></div>
-                </div>
-                <div id="role-list" class="sort-list mt-8"></div>
-                <button onclick="syncList('role-list', 'networkRoles')" class="btn-save">Sync Roles</button>
+        <div id="page-vote" class="hidden max-w-2xl mx-auto">
+            <div class="section-card">
+                <div class="section-title">Voting Links</div>
+                <div class="flex gap-2"><input type="text" id="voteInput" placeholder="Name|URL"><button id="voteAdd" class="btn-orange">+</button></div>
+                <div id="vote-list" class="sort-list mt-4"></div>
+                <button onclick="syncList('vote-list', 'voteLinks')" class="btn-outline-save">Save Voting Links</button>
             </div>
         </div>
 
-        <div id="page-config" class="hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="section-box">
-                    <h2 class="section-title">Visuals</h2>
-                    <label>Dashboard BG</label><div class="drop-zone p-1" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'bgImageUrl')"><input type="text" id="bgImageUrl"></div>
-                    <label>Logo URL</label><div class="drop-zone p-1" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'logoUrl')"><input type="text" id="logoUrl"></div>
-                    <div class="grid grid-cols-2 gap-4 mt-4">
-                        <div><label>Nav BG</label><input type="color" id="navBg"></div>
-                        <div><label>Accent</label><input type="color" id="heroBtnBg"></div>
-                    </div>
-                    <button onclick="saveBranding()" class="btn-save">Save Branding</button>
-                </div>
+        <div id="page-directory" class="hidden"><div id="directory-container" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div></div>
+        <div id="page-logs" class="hidden"><div id="log-container" class="bg-black p-4 rounded-xl border border-zinc-800 h-[500px] overflow-y-auto font-mono text-xs"></div></div>
 
-                <div class="section-box">
-                    <h2 class="section-title">Media & Hero</h2>
-                    <label>Hero Title</label><input type="text" id="heroTitle">
-                    <label>Server IP</label><input type="text" id="serverIp">
-                    <label>Media Carousel (URLs)</label>
-                    <div class="flex gap-2"><input type="text" id="mediaInput"><button id="mediaAdd" class="btn-add">+</button></div>
-                    <div id="media-list" class="sort-list"></div>
-                    <button onclick="syncList('media-list', 'mediaUrls')" class="btn-save">Save Media</button>
-                    <button onclick="saveHeroInfo()" class="btn-save !mt-2 border-zinc-700">Save Hero Text</button>
-                </div>
-
-                <div class="section-box">
-                    <h2 class="section-title">Partners & Socials</h2>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label>Sponsor Name</label><input type="text" id="sponsorName"></div>
-                        <div><label>Sponsor URL</label><input type="text" id="sponsorUrl"></div>
-                        <div><label>Promo Code</label><input type="text" id="promoCode"></div>
-                        <div><label>Discord Invite</label><input type="text" id="discordLink"></div>
-                    </div>
-                    <label>Patreon Link</label><input type="text" id="patreonBtnLink">
-                    <button onclick="savePartnerSocial()" class="btn-save">Save Socials</button>
-                </div>
-
-                <div class="section-box">
-                    <h2 class="section-title">SMPs & Events</h2>
-                    <label>SMP List</label>
-                    <div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div>
-                    <div id="smp-list" class="sort-list"></div>
-                    <button onclick="syncList('smp-list', 'smpList')" class="btn-save mb-6">Save SMPs</button>
-                    
-                    <label>Events List</label>
-                    <div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div>
-                    <div id="event-list" class="sort-list"></div>
-                    <button onclick="syncList('event-list', 'eventList')" class="btn-save">Save Events</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="page-vote" class="hidden">
-            <div class="section-box max-w-2xl mx-auto">
-                <h2 class="section-title">Vote Management</h2>
-                <div class="bg-black p-4 rounded-xl border border-zinc-800 mb-6">
-                    <label>Add Vote Link (Format: Name|URL)</label>
-                    <div class="flex gap-2"><input type="text" id="voteInput" placeholder="PlanetMC|https://..."><button id="voteAdd" class="btn-add">ADD</button></div>
-                </div>
-                <div id="vote-list" class="sort-list"></div>
-                <button onclick="syncList('vote-list', 'voteLinks')" class="btn-save">Save Vote Order</button>
-            </div>
-        </div>
-
-        <div id="page-access" class="hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="section-box">
-                    <h2 class="section-title">Admins</h2>
-                    <div class="flex gap-2"><input type="text" id="adminEmailInput"><button id="adminEmailAdd" class="btn-add">+</button></div>
-                    <div id="admin-email-list" class="sort-list"></div>
-                    <button onclick="syncList('admin-email-list', 'trustedEmails')" class="btn-save">Save Admins</button>
-                </div>
-                <div class="section-box">
-                    <h2 class="section-title">Staff (Bio Access)</h2>
-                    <div class="flex gap-2"><input type="text" id="bioEmailInput"><button id="bioEmailAdd" class="btn-add">+</button></div>
-                    <div id="bio-email-list" class="sort-list"></div>
-                    <button onclick="syncList('bio-email-list', 'bioStaffEmails')" class="btn-save">Save Staff</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="page-logs" class="hidden">
-            <div class="section-box"><h2 class="section-title">System Logs</h2><div id="log-container" class="bg-black p-4 rounded-xl h-[500px] overflow-y-auto space-y-2"></div></div>
-        </div>
     </div>
 
     <script type="module">
@@ -181,8 +287,7 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
         
-        let currentUser = null, userIsAdmin = false, myKey = "", selIcon = "";
-        const iconsList = ['crown', 'shield', 'shield-check', 'gavel', 'user-cog', 'star', 'code-2', 'wrench', 'hammer', 'terminal', 'swords', 'heart', 'zap', 'megaphone', 'map', 'video', 'palette'];
+        let currentUser = null, userIsAdmin = false, myKey = "";
 
         document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
 
@@ -195,59 +300,33 @@
             const email = user.email.toLowerCase();
 
             userIsAdmin = email === "abeedwehbe@gmail.com" || admins.includes(email);
-            if (!userIsAdmin && !bios.includes(email)) { alert("No Access"); auth.signOut(); return; }
+            if (!userIsAdmin && !bios.includes(email)) { alert("Access Denied."); auth.signOut(); return; }
 
             currentUser = user; myKey = email.replace(/\./g, '_');
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
 
             if (userIsAdmin) {
-                ['tab-directory', 'tab-roles', 'tab-config', 'tab-vote', 'tab-logs'].forEach(i => document.getElementById(i).classList.remove('hidden'));
-                if (email === "abeedwehbe@gmail.com") document.getElementById('tab-access').classList.remove('hidden');
-                initIconPicker(); loadDirectory(); loadLogs();
+                ['tab-directory', 'tab-config', 'tab-vote', 'tab-logs', 'tab-access'].forEach(i => document.getElementById(i).classList.remove('hidden'));
+                loadDirectory(); loadLogs();
             }
             loadMyBio(); syncEverything(d);
         });
 
-        // --- CORE PROFILE LOGIC ---
-        window.loadMyBio = async () => {
-            document.getElementById('editingStaffKey').value = myKey;
-            document.getElementById('editor-title').innerText = "My Profile";
-            document.getElementById('cancelMod').classList.add('hidden');
-            const s = await get(ref(db, `absoluteConfigV3/staffProfiles/${myKey}`));
-            if(s.exists()) fillEditor(s.val());
-        };
-        window.moderateBio = async (key) => {
-            document.getElementById('editingStaffKey').value = key;
-            document.getElementById('editor-title').innerText = "Editing: " + key.replace(/_/g,'.');
-            document.getElementById('cancelMod').classList.remove('hidden');
-            const s = await get(ref(db, `absoluteConfigV3/staffProfiles/${key}`));
-            if(s.exists()) { fillEditor(s.val()); switchTab('profile'); }
-        };
-        function fillEditor(d) {
-            document.getElementById('myStaffName').value = d.name || "";
-            document.getElementById('myStaffRoleDropdown').value = d.role || "";
-            document.getElementById('myStaffBio').value = d.bio || "";
-        }
-        window.saveCurrentProfile = async () => {
-            const key = document.getElementById('editingStaffKey').value;
-            const data = { name: document.getElementById('myStaffName').value, role: document.getElementById('myStaffRoleDropdown').value, bio: document.getElementById('myStaffBio').value, email: key.replace(/_/g, '.') };
-            await update(ref(db, `absoluteConfigV3/staffProfiles/${key}`), data);
-            logAction(`Updated bio: ${key}`); alert("Saved!");
-        };
-
-        // --- ALL CONFIG BUTTONS ---
+        // RESTORED FUNCTIONS
         window.saveBranding = () => update(ref(db, 'absoluteConfigV3'), { 
             bgImageUrl: document.getElementById('bgImageUrl').value, 
             logoUrl: document.getElementById('logoUrl').value, 
-            navBg: document.getElementById('navBg').value, 
+            navBg: document.getElementById('navBg').value,
+            navLogoCol: document.getElementById('navLogoCol').value,
+            heroTitleCol: document.getElementById('heroTitleCol').value,
             heroBtnBg: document.getElementById('heroBtnBg').value 
-        }).then(() => { logAction("Updated Visual Branding"); alert("Branding Saved!"); });
+        }).then(() => alert("Visuals Saved!"));
 
         window.saveHeroInfo = () => update(ref(db, 'absoluteConfigV3'), { 
             heroTitle: document.getElementById('heroTitle').value, 
             serverIp: document.getElementById('serverIp').value 
-        }).then(() => { logAction("Updated Hero Title/IP"); alert("Hero Info Saved!"); });
+        }).then(() => alert("Hero Info Saved!"));
 
         window.savePartnerSocial = () => update(ref(db, 'absoluteConfigV3'), { 
             sponsorName: document.getElementById('sponsorName').value, 
@@ -255,105 +334,51 @@
             promoCode: document.getElementById('promoCode').value, 
             discordLink: document.getElementById('discordLink').value, 
             patreonBtnLink: document.getElementById('patreonBtnLink').value 
-        }).then(() => { logAction("Updated Socials/Partners"); alert("Socials Saved!"); });
+        }).then(() => alert("Socials Saved!"));
 
-        // --- IMAGE DRAG & DROP ---
-        window.hOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('dragover'); };
-        window.hLeave = (e) => { e.preventDefault(); e.currentTarget.classList.remove('dragover'); };
-        window.hDrop = async (e, id) => {
-            e.preventDefault(); const zone = e.currentTarget; zone.classList.remove('dragover');
-            const file = e.dataTransfer.files[0]; if(!file) return;
-            zone.classList.add('uploading');
-            const fd = new FormData(); fd.append('file', file); fd.append('upload_preset', 'ml_default');
-            const res = await fetch('https://api.cloudinary.com/v1_1/demo/image/upload', { method: 'POST', body: fd });
-            const data = await res.json(); document.getElementById(id).value = data.secure_url;
-            zone.classList.remove('uploading');
-        };
-
-        // --- DIRECTORY & LOGS ---
-        function logAction(msg) { push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: msg, time: new Date().toISOString() }); }
-        function loadLogs() {
-            onValue(query(ref(db, 'absoluteConfigV3/logs'), limitToLast(40)), snap => {
-                const c = document.getElementById('log-container'); c.innerHTML = "";
-                if(snap.val()) Object.values(snap.val()).reverse().forEach(l => { 
-                    c.innerHTML += `<div class="text-[11px] font-mono"><span class="text-orange-500">[${new Date(l.time).toLocaleTimeString()}]</span> ${l.user}: ${l.action}</div>`; 
-                });
-            });
-        }
-        function loadDirectory() {
-            onValue(ref(db, 'absoluteConfigV3/staffProfiles'), snap => {
-                const c = document.getElementById('directory-container'); c.innerHTML = "";
-                if(snap.val()) Object.entries(snap.val()).forEach(([k, p]) => { 
-                    c.innerHTML += `<div class="bg-[#080808] p-4 rounded-2xl border border-zinc-800 flex justify-between items-center"><div><p class="text-orange-500 font-bold">${p.name || 'User'}</p></div><button onclick="moderateBio('${k}')" class="bg-zinc-900 px-3 py-1 rounded text-[10px]">EDIT</button></div>`; 
-                });
-            });
-        }
-
-        // --- ICON PICKER ---
-        function initIconPicker() {
-            const c = document.getElementById('icon-picker');
-            iconsList.forEach(i => {
-                const d = document.createElement('div'); d.className="icon-option"; d.innerHTML=`<i data-lucide="${i}"></i>`;
-                d.onclick = () => { document.querySelectorAll('.icon-option').forEach(x=>x.classList.remove('selected')); d.classList.add('selected'); selIcon=i; document.getElementById('selected-icon-name').innerText=i; };
-                c.appendChild(d);
-            });
-            lucide.createIcons();
-        }
-
-        // --- LIST ENGINE ---
         window.syncList = async (id, key) => {
             const items = Array.from(document.getElementById(id).querySelectorAll('.sort-item')).map(i => i.querySelector('.data-txt').innerText).join(',');
             await set(ref(db, `absoluteConfigV3/${key}`), items); 
-            logAction(`Synced List: ${key}`); alert("Database Updated!");
-            if(key === 'networkRoles') refreshRoleDropdown(items);
+            alert("Updated!");
         };
 
         window.addItem = (id, val) => {
             if(!val) return; const d = document.createElement('div'); d.className='sort-item';
-            d.innerHTML = `<span class="data-txt ${val.includes('|')?'text-orange-500 font-bold':''}">${val}</span><button onclick="this.parentElement.remove()">×</button>`;
+            d.innerHTML = `<span class="data-txt">${val}</span><button class="text-red-500 font-bold" onclick="this.parentElement.remove()">×</button>`;
             document.getElementById(id).appendChild(d);
         };
 
-        function refreshRoleDropdown(str) {
-            const s = document.getElementById('myStaffRoleDropdown'); s.innerHTML = '<option value="">Select Role...</option>';
-            if(str) str.split(',').forEach(r => { const name = r.split('|')[0]; s.innerHTML += `<option value="${name}">${name}</option>`; });
-        }
+        window.loadMyBio = async () => {
+            const s = await get(ref(db, `absoluteConfigV3/staffProfiles/${myKey}`));
+            if(s.exists()) {
+                const d = s.val();
+                document.getElementById('myStaffName').value = d.name || "";
+                document.getElementById('myStaffBio').value = d.bio || "";
+            }
+        };
 
-        // --- GLOBAL DATA SYNC ---
         async function syncEverything(d) {
-            if(!d) return;
-            const lists = {'role-list':'networkRoles', 'smp-list':'smpList', 'event-list':'eventList', 'media-list':'mediaUrls', 'vote-list':'voteLinks', 'admin-email-list':'trustedEmails', 'bio-email-list':'bioStaffEmails'};
-            Object.entries(lists).forEach(([id, k]) => { if(d[k] && document.getElementById(id)) { document.getElementById(id).innerHTML=""; d[k].split(',').forEach(v => addItem(id, v.trim())); } });
-            refreshRoleDropdown(d.networkRoles);
-            const fields = ['bgImageUrl', 'logoUrl', 'navBg', 'heroBtnBg', 'heroTitle', 'serverIp', 'sponsorName', 'sponsorUrl', 'promoCode', 'discordLink', 'patreonBtnLink'];
-            fields.forEach(f => { if(d[f] && document.getElementById(f)) document.getElementById(f).value = d[f]; });
+            const lists = {'smp-list':'smpList', 'event-list':'eventList', 'media-list':'mediaUrls', 'vote-list':'voteLinks', 'admin-email-list':'trustedEmails', 'bio-email-list':'bioStaffEmails'};
+            Object.entries(lists).forEach(([id, k]) => { if(d[k]) { document.getElementById(id).innerHTML=""; d[k].split(',').forEach(v => addItem(id, v.trim())); } });
+            const fields = ['bgImageUrl', 'logoUrl', 'navBg', 'navLogoCol', 'heroTitleCol', 'heroBtnBg', 'heroTitle', 'serverIp', 'sponsorName', 'sponsorUrl', 'promoCode', 'discordLink', 'patreonBtnLink'];
+            fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
         }
 
         window.switchTab = (id) => {
-            ['profile', 'directory', 'roles', 'config', 'vote', 'access', 'logs'].forEach(t => {
+            ['profile', 'directory', 'config', 'vote', 'access', 'logs'].forEach(t => {
                 if(document.getElementById('page-'+t)) document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
                 if(document.getElementById('tab-'+t)) document.getElementById('tab-'+t).classList.toggle('active', t === id);
             });
         };
 
-        // Add Logic for all dynamic lists
         ['media', 'smp', 'event', 'vote', 'adminEmail', 'bioEmail'].forEach(x => {
-            const b = document.getElementById(x+'Add');
-            if(b) b.onclick = () => { 
-                const i = document.getElementById(x+'Input'); 
-                const listId = x==='adminEmail'?'admin-email-list':x==='bioEmail'?'bio-email-list':x+'-list';
-                addItem(listId, i.value); i.value=''; 
+            document.getElementById(x+'Add').onclick = () => { 
+                const i = document.getElementById(x+'Input'); addItem(x==='adminEmail'?'admin-email-list':x==='bioEmail'?'bio-email-list':x+'-list', i.value); i.value=''; 
             };
         });
 
-        document.getElementById('roleAddBtn').onclick = () => {
-            const t = document.getElementById('roleTitleInput').value;
-            if(t && selIcon) { addItem('role-list', `${t}|${selIcon}`); document.getElementById('roleTitleInput').value=""; }
-        };
-
-        // Initialize Sortable on all lists
-        ['role-list', 'smp-list', 'event-list', 'media-list', 'vote-list', 'admin-email-list', 'bio-email-list'].forEach(id => { 
-            if(document.getElementById(id)) new Sortable(document.getElementById(id), { animation: 150 }); 
+        ['smp-list', 'event-list', 'media-list', 'vote-list', 'admin-email-list', 'bio-email-list'].forEach(id => { 
+            new Sortable(document.getElementById(id), { animation: 150 }); 
         });
     </script>
 </body>
