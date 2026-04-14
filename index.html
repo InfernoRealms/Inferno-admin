@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inferno Dashboard | Master Admin V24.0</title>
+    <title>Inferno Dashboard | Master Admin V25</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -18,20 +18,16 @@
             --input-bg: #000000;
         }
 
-        /* ========================================
-           GLOBAL STYLES & UI RESTORATION
-           ========================================
-        */
         body {
             background-color: var(--bg-dark);
             color: #ffffff;
             font-family: 'Inter', sans-serif;
             padding: 40px;
             margin: 0;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
-        /* Header Styling from image_2be4bb */
+        /* UI Headers per Screenshot 2be4bb */
         .dashboard-header {
             font-size: 38px;
             font-weight: 900;
@@ -39,7 +35,7 @@
             color: var(--orange-primary);
             text-transform: uppercase;
             letter-spacing: -2px;
-            text-shadow: 0 0 30px rgba(234, 88, 12, 0.2);
+            text-shadow: 0 0 20px rgba(234, 88, 12, 0.2);
         }
 
         .section-card {
@@ -47,11 +43,11 @@
             border-radius: 20px;
             padding: 32px;
             border: 1px solid var(--border-color);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
             margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            position: relative;
         }
 
-        /* Title with orange underline effect */
         .section-title {
             color: var(--orange-primary);
             font-weight: 900;
@@ -72,7 +68,7 @@
             opacity: 0.3;
         }
 
-        /* Form Controls Restoration */
+        /* Form Restoration */
         label {
             font-size: 11px;
             font-weight: 900;
@@ -84,9 +80,7 @@
             letter-spacing: 0.5px;
         }
 
-        input[type="text"], 
-        textarea, 
-        select {
+        input[type="text"], textarea, select {
             background: var(--input-bg) !important;
             border: 1px solid var(--border-color);
             padding: 16px;
@@ -100,7 +94,7 @@
 
         input:focus, textarea:focus, select:focus {
             border-color: var(--orange-primary);
-            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
         }
 
         input[type="color"] {
@@ -111,41 +105,45 @@
             cursor: pointer;
             background: #000;
             border-radius: 10px;
-            padding: 4px;
+            padding: 5px;
         }
 
-        /* ========================================
-           COMPACT ICON LIBRARY & ROLES
-           ========================================
-        */
-        .icon-grid {
-            display: grid;
-            grid-template-cols: repeat(auto-fill, minmax(32px, 1fr));
-            gap: 6px;
-            background: #000;
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            max-height: 160px;
-            overflow-y: auto;
-        }
-
-        .icon-box {
-            aspect-ratio: 1;
-            display: flex;
+        /* Buttons */
+        .btn-orange {
+            background: var(--orange-primary);
+            color: white;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 13px;
+            padding: 14px 28px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 6px;
-            cursor: pointer;
-            border: 1px solid transparent;
-            color: #333;
-            transition: 0.2s;
+            gap: 8px;
+            width: 100%;
         }
 
-        .icon-box i { width: 14px; height: 14px; }
-        .icon-box:hover { color: var(--orange-primary); background: #111; }
-        .icon-box.selected { background: var(--orange-primary); color: white; border-color: var(--orange-primary); }
+        .btn-orange:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
+        .btn-save-secondary {
+            background: #1a1a1a;
+            color: var(--orange-primary);
+            border: 1px solid rgba(234, 88, 12, 0.3);
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 12px;
+            margin-top: 25px;
+            cursor: pointer;
+        }
+
+        /* Role Pill Logic */
         .role-pill {
             display: inline-flex;
             align-items: center;
@@ -155,124 +153,80 @@
             font-size: 11px;
             font-weight: 900;
             text-transform: uppercase;
-            border-width: 1px;
-            transition: 0.3s;
+            border: 1px solid transparent;
         }
 
-        /* ========================================
-           BUTTONS & NAVIGATION
-           ========================================
-        */
-        .btn-orange {
-            background: var(--orange-primary);
-            color: white;
-            font-weight: 900;
-            text-transform: uppercase;
-            font-size: 13px;
-            padding: 16px 30px;
+        /* Compact Icon Selection per request 2bf769 */
+        .icon-grid {
+            display: grid;
+            grid-template-cols: repeat(auto-fill, minmax(35px, 1fr));
+            gap: 8px;
+            background: #000;
+            padding: 15px;
             border-radius: 12px;
+            border: 1px solid var(--border-color);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .icon-box {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
             cursor: pointer;
-            border: none;
-            width: 100%;
-            transition: transform 0.2s, background 0.2s;
+            color: #444;
+            transition: 0.2s;
         }
 
-        .btn-orange:hover {
-            background: #f97316;
-            transform: translateY(-2px);
-        }
+        .icon-box i { width: 16px; height: 16px; }
+        .icon-box:hover { color: var(--orange-primary); background: #111; }
+        .icon-box.selected { background: var(--orange-primary); color: white; }
 
-        .btn-save-secondary {
-            background: transparent;
-            color: var(--orange-primary);
-            border: 1px solid rgba(234, 88, 12, 0.2);
-            width: 100%;
-            padding: 14px;
-            border-radius: 10px;
-            font-weight: 900;
-            text-transform: uppercase;
-            font-size: 12px;
-            margin-top: 20px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .btn-save-secondary:hover {
-            background: rgba(234, 88, 12, 0.05);
-            border-color: var(--orange-primary);
-        }
-
+        /* Navigation */
         .nav-tab {
             padding: 12px 24px;
             border-radius: 12px;
             font-weight: 800;
             font-size: 13px;
-            color: #666;
+            color: #777;
             text-transform: uppercase;
             cursor: pointer;
             border: none;
             background: transparent;
-            transition: 0.3s;
         }
 
-        .nav-tab.active {
-            background: var(--orange-primary);
-            color: white;
-            box-shadow: 0 10px 20px rgba(234, 88, 12, 0.2);
-        }
+        .nav-tab.active { background: var(--orange-primary); color: white; }
 
-        .sort-list {
-            background: #080808;
-            border-radius: 14px;
-            padding: 15px;
-            margin-top: 15px;
-            min-height: 60px;
-            border: 1px dashed #222;
-        }
-
-        .sort-item {
-            background: #141414;
-            border: 1px solid var(--border-color);
-            margin-bottom: 10px;
-            padding: 14px 20px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 13px;
-        }
+        .sort-list { background: #080808; border-radius: 12px; padding: 15px; margin-top: 15px; min-height: 60px; border: 1px dashed #222; }
+        .sort-item { background: #141414; border: 1px solid var(--border-color); margin-bottom: 10px; padding: 14px 20px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; }
 
         .hidden { display: none !important; }
 
-        /* Scrollbar Restoration */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0a0a0a; }
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="fixed inset-0 bg-black z-[200] flex items-center justify-center">
-        <div class="max-w-md w-full bg-[#111] p-16 rounded-[50px] border border-zinc-800 text-center shadow-2xl">
+        <div class="max-w-md w-full bg-[#111] p-16 rounded-[50px] border border-zinc-800 text-center">
             <h2 class="dashboard-header mb-12">Inferno</h2>
-            <button id="loginBtn" class="btn-orange tracking-[2px]">Authorize Admin Access</button>
+            <button id="loginBtn" class="btn-orange">Authenticate with Google</button>
         </div>
     </div>
 
     <div id="main-content" class="hidden">
         
-        <div class="flex flex-wrap justify-between items-center mb-14 gap-8">
-            <div>
-                <div class="dashboard-header">Inferno Dashboard</div>
-                <p class="text-zinc-700 text-[10px] font-black uppercase tracking-[4px] mt-2">Network Control Interface</p>
-            </div>
-            
-            <nav id="nav-container" class="flex flex-wrap gap-2 bg-[#111] p-2 rounded-2xl border border-zinc-800">
+        <div class="flex flex-wrap justify-between items-center mb-12 gap-8">
+            <div class="dashboard-header">Inferno Dashboard</div>
+            <nav id="nav-container" class="flex flex-wrap gap-2 bg-[#111] p-2 rounded-2xl border border-zinc-800 shadow-xl">
                 <button onclick="switchTab('profile')" id="tab-profile" class="nav-tab active">My Profile</button>
+                <button onclick="switchTab('directory')" id="tab-directory" class="nav-tab hidden">Directory</button>
                 <button onclick="switchTab('roles')" id="tab-roles" class="nav-tab hidden">Roles</button>
                 <button onclick="switchTab('config')" id="tab-config" class="nav-tab hidden">Config</button>
                 <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab hidden">Voting</button>
-                <button onclick="switchTab('directory')" id="tab-directory" class="nav-tab hidden">Directory</button>
                 <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab hidden">Activity</button>
                 <button onclick="switchTab('access')" id="tab-access" class="nav-tab hidden">Emails</button>
             </nav>
@@ -280,144 +234,110 @@
 
         <div id="page-config" class="hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                
                 <div class="section-card">
                     <div class="section-title">Visual Branding</div>
-                    
-                    <label>Background Image</label>
-                    <input type="text" id="bgImageUrl" placeholder="https://cdn.discordapp.com/attachments/...">
-                    
-                    <label>Logo Icon</label>
-                    <input type="text" id="logoUrl" placeholder="https://cdn.discordapp.com/attachments/...">
-
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <label>Background Image URL</label><input type="text" id="bgImageUrl">
+                    <label>Logo Icon URL</label><input type="text" id="logoUrl">
+                    <div class="grid grid-cols-4 gap-4 mt-4">
                         <div><label>Nav BG</label><input type="color" id="navBg"></div>
                         <div><label>Logo Col</label><input type="color" id="navLogoCol"></div>
                         <div><label>Hero Text</label><input type="color" id="heroTitleCol"></div>
                         <div><label>Accent</label><input type="color" id="heroBtnBg"></div>
                     </div>
-                    
-                    <button onclick="saveBranding()" class="btn-orange mt-10">Save Visual Branding</button>
+                    <button onclick="saveBranding()" class="btn-save-secondary mt-8">Save Visuals</button>
                 </div>
 
                 <div class="section-card">
                     <div class="section-title">Hero & Media</div>
-                    
-                    <label>Hero Title</label>
-                    <input type="text" id="heroTitle" placeholder="Inferno Realms">
-                    
-                    <label>Server IP</label>
-                    <input type="text" id="serverIp" placeholder="Play.InfernoRealms.xyz">
-                    
-                    <button onclick="saveHeroInfo()" class="btn-save-secondary !mb-8">Save Hero Info</button>
-
-                    <label>Media Carousel</label>
-                    <div class="flex gap-3">
-                        <input type="text" id="mediaInput" placeholder="Enter image or video URL...">
-                        <button id="mediaAdd" class="btn-orange !w-14">+</button>
-                    </div>
+                    <label>Hero Title</label><input type="text" id="heroTitle">
+                    <label>Server IP</label><input type="text" id="serverIp">
+                    <button onclick="saveHeroInfo()" class="btn-save-secondary">Save Hero Info</button>
+                    <label class="mt-6">Media Carousel</label>
+                    <div class="flex gap-3"><input type="text" id="mediaInput"><button id="mediaAdd" class="btn-orange !w-12">+</button></div>
                     <div id="media-list" class="sort-list"></div>
                     <button onclick="syncList('media-list', 'mediaUrls')" class="btn-save-secondary">Save Media Order</button>
                 </div>
 
                 <div class="section-card lg:col-span-2">
                     <div class="section-title">Partner & Social</div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12">
-                        <div>
-                            <label>Sponsor Name</label>
-                            <input type="text" id="sponsorName" placeholder="Sylant Hosting">
-                            
-                            <label>Promo Code</label>
-                            <input type="text" id="promoCode" placeholder="INFERNO">
-                        </div>
-                        <div>
-                            <label>Sponsor URL</label>
-                            <input type="text" id="sponsorUrl" placeholder="https://sylant.net">
-                            
-                            <label>Discord Link</label>
-                            <input type="text" id="discordLink" placeholder="https://discord.gg/...">
-                        </div>
+                    <div class="grid grid-cols-2 gap-8">
+                        <div><label>Sponsor Name</label><input type="text" id="sponsorName"><label>Promo Code</label><input type="text" id="promoCode"></div>
+                        <div><label>Sponsor URL</label><input type="text" id="sponsorUrl"><label>Discord Link</label><input type="text" id="discordLink"></div>
                     </div>
-                    <label>Patreon / Support Link</label>
-                    <input type="text" id="patreonBtnLink">
-                    <button onclick="savePartnerSocial()" class="btn-orange mt-8">Update Partnership Settings</button>
+                    <label>Support Link</label><input type="text" id="patreonBtnLink">
+                    <button onclick="savePartnerSocial()" class="btn-orange mt-8">Update Partnerships</button>
                 </div>
             </div>
         </div>
 
         <div id="page-roles" class="hidden">
             <div class="section-card max-w-5xl mx-auto">
-                <div class="section-title">Role Configuration & Icons</div>
+                <div class="section-title">Role Configuration</div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div>
-                        <label>Role Identity Name</label>
-                        <input type="text" id="roleTitleInput" placeholder="e.g. Lead Developer" oninput="updateRolePreview()">
-                        
-                        <label>Role Theme Color</label>
-                        <input type="color" id="roleColorInput" value="#ea580c" oninput="updateRolePreview()">
-                        
+                        <label>Role Name</label><input type="text" id="roleTitleInput" oninput="updatePreview()">
+                        <label>Accent Color</label><input type="color" id="roleColorInput" value="#ea580c" oninput="updatePreview()">
                         <label>Identity Preview</label>
-                        <div class="p-10 bg-black rounded-2xl border border-zinc-900 flex justify-center">
+                        <div class="p-8 bg-black rounded-xl border border-zinc-900 flex justify-center">
                             <div id="role-preview-pill" class="role-pill" style="background: rgba(234, 88, 12, 0.1); color: #ea580c; border-color: #ea580c;">
                                 <i id="preview-icon-el" data-lucide="shield"></i>
-                                <span id="preview-text-el">Role Preview</span>
+                                <span id="preview-text-el">New Role</span>
                             </div>
                         </div>
-                        <button id="roleAddBtn" class="btn-orange mt-10">Register Role</button>
+                        <button id="roleAddBtn" class="btn-orange mt-8">Add Role</button>
                     </div>
                     <div>
                         <label>Compact Icon Library (Lucide)</label>
-                        <div class="icon-grid" id="icon-picker">
-                            </div>
+                        <div class="icon-grid" id="icon-picker"></div>
                     </div>
                 </div>
                 <div id="role-list" class="sort-list mt-10"></div>
-                <button onclick="syncList('role-list', 'networkRoles')" class="btn-save-secondary">Sync Global Role List</button>
+                <button onclick="syncList('role-list', 'networkRoles')" class="btn-save-secondary">Sync Global Roles</button>
             </div>
         </div>
 
         <div id="page-profile">
             <div class="max-w-2xl mx-auto section-card">
                 <div class="section-title">Personal Bio Editor</div>
-                <label>Public Display Name</label>
-                <input type="text" id="myStaffName" placeholder="Your Display Name">
-                
-                <label>Select Your Role</label>
-                <select id="myStaffRoleDropdown">
-                    <option value="">Choose a role...</option>
-                </select>
-                
-                <label>Biography / About Me</label>
-                <textarea id="myStaffBio" rows="12" placeholder="Tell the network about yourself..."></textarea>
-                
-                <button onclick="saveCurrentProfile()" class="btn-orange mt-12">Save My Profile Info</button>
+                <label>Display Name</label><input type="text" id="myStaffName">
+                <label>Assigned Role</label><select id="myStaffRoleDropdown"></select>
+                <label>Biography / About Me</label><textarea id="myStaffBio" rows="10"></textarea>
+                <button onclick="saveCurrentProfile()" class="btn-orange mt-10">Save My Profile</button>
             </div>
         </div>
 
-        <div id="page-vote" class="hidden max-w-2xl mx-auto section-card">
-            <div class="section-title">Network Voting Directory</div>
-            <div class="flex gap-3"><input type="text" id="voteInput" placeholder="Site Name|URL"><button id="voteAdd" class="btn-orange !w-14">+</button></div>
-            <div id="vote-list" class="sort-list mt-8"></div>
-            <button onclick="syncList('vote-list', 'voteLinks')" class="btn-orange mt-6">Update Voting List</button>
+        <div id="page-directory" class="hidden">
+            <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-8" id="directory-container"></div>
         </div>
 
-        <div id="page-access" class="hidden grid grid-cols-1 md:grid-cols-2 gap-10 max-w-6xl mx-auto">
+        <div id="page-logs" class="hidden">
             <div class="section-card">
-                <div class="section-title">Staff Bio Emails</div>
-                <div class="flex gap-3"><input type="text" id="bioEmailInput"><button id="bioEmailAdd" class="btn-orange !w-14">+</button></div>
+                <div class="section-title">Audit Log</div>
+                <div id="log-container" class="bg-black p-8 rounded-2xl h-[600px] overflow-y-auto font-mono text-[11px] text-zinc-400"></div>
+            </div>
+        </div>
+
+        <div id="page-access" class="hidden grid grid-cols-2 gap-10 max-w-6xl mx-auto">
+            <div class="section-card">
+                <div class="section-title">Staff Access</div>
+                <div class="flex gap-2"><input type="text" id="bioEmailInput"><button id="bioEmailAdd" class="btn-orange !w-12">+</button></div>
                 <div id="bio-email-list" class="sort-list"></div>
                 <button onclick="syncList('bio-email-list', 'bioStaffEmails')" class="btn-save-secondary">Sync Staff</button>
             </div>
             <div class="section-card">
-                <div class="section-title">Full-Admin Emails</div>
-                <div class="flex gap-3"><input type="text" id="adminEmailInput"><button id="adminEmailAdd" class="btn-orange !w-14">+</button></div>
+                <div class="section-title">Admin Whitelist</div>
+                <div class="flex gap-2"><input type="text" id="adminEmailInput"><button id="adminEmailAdd" class="btn-orange !w-12">+</button></div>
                 <div id="admin-email-list" class="sort-list"></div>
                 <button onclick="syncList('admin-email-list', 'trustedEmails')" class="btn-save-secondary">Sync Admins</button>
             </div>
         </div>
 
-        <div id="page-directory" class="hidden grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-8" id="directory-grid"></div>
-        <div id="page-logs" class="hidden"><div id="log-container" class="bg-black p-10 rounded-2xl h-[600px] overflow-y-auto font-mono text-xs text-zinc-500"></div></div>
+        <div id="page-vote" class="hidden max-w-2xl mx-auto section-card">
+            <div class="section-title">Voting Links</div>
+            <div class="flex gap-2"><input type="text" id="voteInput"><button id="voteAdd" class="btn-orange !w-12">+</button></div>
+            <div id="vote-list" class="sort-list"></div>
+            <button onclick="syncList('vote-list', 'voteLinks')" class="btn-save-secondary">Sync Voting</button>
+        </div>
 
     </div>
 
@@ -426,13 +346,9 @@
         import { getDatabase, ref, set, get, update, push, onValue, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // FIREBASE CONFIG
         const firebaseConfig = { 
-            apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc", 
-            authDomain: "inferno-realms.firebaseapp.com", 
-            databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/", 
-            projectId: "inferno-realms", 
-            appId: "1:669014530995:web:41fd088f6255118c9e89c6" 
+            apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc", authDomain: "inferno-realms.firebaseapp.com", 
+            databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/", projectId: "inferno-realms", appId: "1:669014530995:web:41fd088f6255118c9e89c6" 
         };
 
         const app = initializeApp(firebaseConfig);
@@ -440,27 +356,12 @@
         const auth = getAuth(app);
         
         let currentUser = null, userIsAdmin = false, myKey = "", selIcon = "shield", selColor = "#ea580c";
+        const lucideIcons = ['crown', 'shield', 'gavel', 'star', 'swords', 'zap', 'flame', 'skull', 'gem', 'wrench', 'bot', 'code', 'palette', 'globe', 'link', 'heart', 'lock', 'settings', 'info', 'alert-triangle', 'user-cog', 'users', 'terminal', 'hammer', 'rocket', 'target', 'map', 'camera', 'mic', 'music', 'ghost', 'diamond', 'sword', 'axe', 'pickaxe', 'compass', 'crosshair', 'anchor', 'database', 'cpu', 'wifi', 'activity', 'eye', 'search', 'mail', 'phone', 'gift', 'flag'];
 
-        // MASSIVE ICON LIBRARY
-        const icons = [
-            'crown', 'shield', 'gavel', 'star', 'swords', 'zap', 'flame', 'skull', 'gem', 'wrench', 'bot', 'code', 'palette', 
-            'globe', 'link', 'heart', 'lock', 'settings', 'info', 'alert-triangle', 'user-cog', 'users', 'message-square', 
-            'terminal', 'hammer', 'shield-check', 'controller', 'award', 'rocket', 'target', 'map', 'camera', 'mic', 'music', 
-            'video', 'ghost', 'diamond', 'sword', 'axe', 'pickaxe', 'compass', 'crosshair', 'anchor', 'briefcase', 'database', 
-            'cpu', 'hard-drive', 'cloud', 'wifi', 'activity', 'eye', 'search', 'mail', 'phone', 'book', 'clock', 'gift', 'flag'
-        ];
-
-        // LOGIN HANDLER
         document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
 
-        // AUTH & PERMISSIONS
         onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                document.getElementById('login-screen').classList.remove('hidden');
-                document.getElementById('main-content').classList.add('hidden');
-                return;
-            }
-
+            if (!user) return;
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const data = snap.val() || {};
             const email = user.email.toLowerCase();
@@ -468,89 +369,49 @@
             const staff = (data.bioStaffEmails || "").toLowerCase().split(',').map(e => e.trim());
 
             userIsAdmin = email === "abeedwehbe@gmail.com" || admins.includes(email);
-            if (!userIsAdmin && !staff.includes(email)) {
-                alert("Access Denied.");
-                auth.signOut();
-                return;
-            }
+            if (!userIsAdmin && !staff.includes(email)) { alert("Restricted."); auth.signOut(); return; }
 
-            currentUser = user;
-            myKey = email.replace(/\./g, '_');
+            currentUser = user; myKey = email.replace(/\./g, '_');
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
 
             if (userIsAdmin) {
-                ['tab-roles', 'tab-config', 'tab-vote', 'tab-directory', 'tab-logs', 'tab-access'].forEach(t => document.getElementById(t).classList.remove('hidden'));
-                initIconPicker();
-                loadLogs();
+                ['tab-directory', 'tab-config', 'tab-vote', 'tab-logs', 'tab-access', 'tab-roles'].forEach(t => document.getElementById(t).classList.remove('hidden'));
+                initIconPicker(); loadDirectory(); loadLogs();
             }
-            
-            loadMyBio();
-            syncEverything(data);
+            loadMyBio(); syncEverything(data);
         });
 
-        // UI SYNC ENGINE
         function syncEverything(data) {
             if(!data) return;
-
-            // Simple Inputs Mapping
-            const fields = [
-                'bgImageUrl', 'logoUrl', 'navBg', 'navLogoCol', 'heroTitleCol', 'heroBtnBg', 
-                'heroTitle', 'serverIp', 'sponsorName', 'sponsorUrl', 'promoCode', 'discordLink', 'patreonBtnLink'
-            ];
-            fields.forEach(f => {
-                const el = document.getElementById(f);
-                if(el && data[f]) el.value = data[f];
-            });
-
-            // Re-orderable Lists
-            const lists = {
-                'media-list': data.mediaUrls, 'vote-list': data.voteLinks, 
-                'admin-email-list': data.trustedEmails, 'bio-email-list': data.bioStaffEmails,
-                'role-list': data.networkRoles
-            };
-            Object.entries(lists).forEach(([id, val]) => {
-                const container = document.getElementById(id);
-                if(val && container) {
-                    container.innerHTML = "";
-                    val.split(',').forEach(item => addItem(id, item.trim()));
-                }
-            });
-
+            const fields = ['bgImageUrl', 'logoUrl', 'navBg', 'navLogoCol', 'heroTitleCol', 'heroBtnBg', 'heroTitle', 'serverIp', 'sponsorName', 'sponsorUrl', 'promoCode', 'discordLink', 'patreonBtnLink'];
+            fields.forEach(f => { if(data[f]) document.getElementById(f).value = data[f]; });
+            const lists = {'media-list': data.mediaUrls, 'vote-list': data.voteLinks, 'admin-email-list': data.trustedEmails, 'bio-email-list': data.bioStaffEmails, 'role-list': data.networkRoles};
+            Object.entries(lists).forEach(([id, val]) => { const c = document.getElementById(id); if(val && c) { c.innerHTML = ""; val.split(',').forEach(i => addItem(id, i.trim())); }});
             updateRoleSelector(data.networkRoles);
         }
 
-        // ROLE CREATOR ENGINE
         function initIconPicker() {
             const picker = document.getElementById('icon-picker');
             picker.innerHTML = "";
-            icons.forEach(icon => {
+            lucideIcons.forEach(icon => {
                 const box = document.createElement('div');
                 box.className = 'icon-box';
                 box.innerHTML = `<i data-lucide="${icon}"></i>`;
-                box.onclick = () => {
-                    document.querySelectorAll('.icon-box').forEach(el => el.classList.remove('selected'));
-                    box.classList.add('selected');
-                    selIcon = icon;
-                    updateRolePreview();
-                };
+                box.onclick = () => { document.querySelectorAll('.icon-box').forEach(el => el.classList.remove('selected')); box.classList.add('selected'); selIcon = icon; updatePreview(); };
                 picker.appendChild(box);
             });
             lucide.createIcons();
         }
 
-        window.updateRolePreview = () => {
+        window.updatePreview = () => {
             const pill = document.getElementById('role-preview-pill');
             const icon = document.getElementById('preview-icon-el');
             const text = document.getElementById('preview-text-el');
-            
             selColor = document.getElementById('roleColorInput').value;
-            pill.style.background = `${selColor}15`;
-            pill.style.color = selColor;
-            pill.style.borderColor = selColor;
-            text.innerText = document.getElementById('roleTitleInput').value || "Role Preview";
-            icon.setAttribute('data-lucide', selIcon);
-            lucide.createIcons();
+            pill.style.background = `${selColor}15`; pill.style.color = selColor; pill.style.borderColor = selColor;
+            text.innerText = document.getElementById('roleTitleInput').value || "New Role";
+            icon.setAttribute('data-lucide', selIcon); lucide.createIcons();
         }
 
         document.getElementById('roleAddBtn').onclick = () => {
@@ -561,60 +422,46 @@
         };
 
         function updateRoleSelector(rolesStr) {
-            const select = document.getElementById('myStaffRoleDropdown');
-            select.innerHTML = '<option value="">Choose your role...</option>';
+            const s = document.getElementById('myStaffRoleDropdown');
+            s.innerHTML = '<option value="">Select Role...</option>';
             if(!rolesStr) return;
-            rolesStr.split(',').forEach(r => {
-                const [name] = r.split('|');
-                const opt = document.createElement('option');
-                opt.value = name; opt.innerText = name;
-                select.appendChild(opt);
-            });
+            rolesStr.split(',').forEach(r => { const [n] = r.split('|'); const o = document.createElement('option'); o.value = n; o.innerText = n; s.appendChild(o); });
         }
 
-        // PERSISTENCE METHODS
         window.saveBranding = () => {
             update(ref(db, 'absoluteConfigV3'), {
-                bgImageUrl: document.getElementById('bgImageUrl').value,
-                logoUrl: document.getElementById('logoUrl').value,
-                navBg: document.getElementById('navBg').value,
-                navLogoCol: document.getElementById('navLogoCol').value,
-                heroTitleCol: document.getElementById('heroTitleCol').value,
-                heroBtnBg: document.getElementById('heroBtnBg').value
-            }).then(() => alert("Branding Updated!"));
+                bgImageUrl: document.getElementById('bgImageUrl').value, logoUrl: document.getElementById('logoUrl').value,
+                navBg: document.getElementById('navBg').value, navLogoCol: document.getElementById('navLogoCol').value,
+                heroTitleCol: document.getElementById('heroTitleCol').value, heroBtnBg: document.getElementById('heroBtnBg').value
+            }).then(() => { logAct("Visuals Saved"); alert("Updated!"); });
         };
 
         window.saveHeroInfo = () => {
-            update(ref(db, 'absoluteConfigV3'), {
-                heroTitle: document.getElementById('heroTitle').value,
-                serverIp: document.getElementById('serverIp').value
-            }).then(() => alert("Hero Saved!"));
+            update(ref(db, 'absoluteConfigV3'), { heroTitle: document.getElementById('heroTitle').value, serverIp: document.getElementById('serverIp').value }).then(() => { logAct("Hero Saved"); alert("Updated!"); });
         };
 
         window.savePartnerSocial = () => {
             update(ref(db, 'absoluteConfigV3'), {
-                sponsorName: document.getElementById('sponsorName').value,
-                sponsorUrl: document.getElementById('sponsorUrl').value,
-                promoCode: document.getElementById('promoCode').value,
-                discordLink: document.getElementById('discordLink').value,
+                sponsorName: document.getElementById('sponsorName').value, sponsorUrl: document.getElementById('sponsorUrl').value,
+                promoCode: document.getElementById('promoCode').value, discordLink: document.getElementById('discordLink').value,
                 patreonBtnLink: document.getElementById('patreonBtnLink').value
-            }).then(() => alert("Socials Updated!"));
+            }).then(() => { logAct("Socials Saved"); alert("Updated!"); });
         };
 
-        window.syncList = async (id, dbKey) => {
+        window.syncList = async (id, key) => {
             const items = Array.from(document.getElementById(id).querySelectorAll('.data-txt')).map(e => e.innerText).join(',');
-            await set(ref(db, `absoluteConfigV3/${dbKey}`), items);
-            alert("Database Synced!");
-            if(dbKey === 'networkRoles') location.reload();
+            await set(ref(db, `absoluteConfigV3/${key}`), items);
+            logAct(`Synced ${key}`); alert("Synced!");
+            if(key === 'networkRoles') updateRoleSelector(items);
         };
 
         window.addItem = (id, val) => {
             if(!val) return;
-            const container = document.getElementById(id);
+            const c = document.getElementById(id);
             const div = document.createElement('div');
             div.className = 'sort-item';
             div.innerHTML = `<span class="data-txt font-bold">${val}</span><span class="text-red-500 cursor-pointer" onclick="this.parentElement.remove()">×</span>`;
-            container.appendChild(div);
+            c.appendChild(div);
         };
 
         window.loadMyBio = async () => {
@@ -628,48 +475,47 @@
         };
 
         window.saveCurrentProfile = async () => {
-            const profile = {
-                name: document.getElementById('myStaffName').value,
-                role: document.getElementById('myStaffRoleDropdown').value,
-                bio: document.getElementById('myStaffBio').value,
-                email: currentUser.email
-            };
-            await update(ref(db, `absoluteConfigV3/staffProfiles/${myKey}`), profile);
-            alert("Profile Saved!");
+            const p = { name: document.getElementById('myStaffName').value, role: document.getElementById('myStaffRoleDropdown').value, bio: document.getElementById('myStaffBio').value, email: currentUser.email, lastUpdate: new Date().toISOString() };
+            await update(ref(db, `absoluteConfigV3/staffProfiles/${myKey}`), p);
+            logAct("Profile Updated"); alert("Saved!");
         };
 
-        // TAB SWITCHER
         window.switchTab = (id) => {
-            ['profile', 'roles', 'config', 'vote', 'directory', 'logs', 'access'].forEach(p => {
+            ['profile', 'directory', 'roles', 'config', 'vote', 'access', 'logs'].forEach(p => {
                 document.getElementById('page-'+p)?.classList.toggle('hidden', p !== id);
                 document.getElementById('tab-'+p)?.classList.toggle('active', p === id);
             });
         };
 
-        // LIST ADDIERS
         ['media', 'vote', 'adminEmail', 'bioEmail'].forEach(x => {
-            document.getElementById(x+'Add').onclick = () => {
-                const i = document.getElementById(x+'Input');
-                addItem(x.includes('Email') ? x+'-email-list' : x+'-list', i.value);
-                i.value = "";
-            };
+            document.getElementById(x+'Add').onclick = () => { const i = document.getElementById(x+'Input'); addItem(x.includes('Email') ? x+'-email-list' : x+'-list', i.value); i.value = ""; };
         });
 
-        // LOGGING
+        function logAct(act) {
+            push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: act, time: new Date().toISOString() });
+        }
+
         function loadLogs() {
             onValue(query(ref(db, 'absoluteConfigV3/logs'), limitToLast(30)), (s) => {
                 const c = document.getElementById('log-container');
                 c.innerHTML = "";
                 if(s.val()) Object.values(s.val()).reverse().forEach(l => {
-                    c.innerHTML += `<div>[${new Date(l.time).toLocaleTimeString()}] ${l.user}: ${l.action}</div>`;
+                    c.innerHTML += `<div class="mb-1"><span class="text-orange-900">[${new Date(l.time).toLocaleTimeString()}]</span> ${l.user}: ${l.action}</div>`;
                 });
             });
         }
 
-        // DRAG & DROP
-        ['media-list', 'vote-list', 'admin-email-list', 'bio-email-list', 'role-list'].forEach(id => {
-            new Sortable(document.getElementById(id), { animation: 150 });
-        });
+        function loadDirectory() {
+            onValue(ref(db, 'absoluteConfigV3/staffProfiles'), (s) => {
+                const c = document.getElementById('directory-container');
+                c.innerHTML = "";
+                if(s.val()) Object.entries(s.val()).forEach(([k, p]) => {
+                    c.innerHTML += `<div class="section-card !p-6"><h4 class="text-orange-500 font-black uppercase text-sm">${p.name || 'Staff'}</h4><p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">${p.role || 'Member'}</p><p class="text-[10px] text-zinc-700 mt-4 truncate">${p.email}</p></div>`;
+                });
+            });
+        }
+
+        ['media-list', 'vote-list', 'admin-email-list', 'bio-email-list', 'role-list'].forEach(id => new Sortable(document.getElementById(id), { animation: 150 }));
     </script>
 </body>
 </html>
