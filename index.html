@@ -490,7 +490,10 @@
             logAct(`Updated list order: ${key}`); 
             alert("Database Updated Successfully!");
             
-            if(key === 'networkRoles') updateRoleSelector(items);
+            if(key === 'networkRoles') {
+                updateRoleSelector(items);
+                loadDirectory(); // Refresh directory order immediately
+            }
         };
 
         window.saveBranding = () => {
@@ -626,11 +629,32 @@
         };
 
         function loadDirectory() {
-            onValue(ref(db, 'absoluteConfigV3/staffProfiles'), (s) => {
-                const c = document.getElementById('directory-container');
-                c.innerHTML = "";
-                if(s.val()) Object.entries(s.val()).forEach(([k, p]) => {
-                    c.innerHTML += `
+            // Get both roles and staff profiles
+            onValue(ref(db, 'absoluteConfigV3'), (snap) => {
+                const data = snap.val();
+                if(!data || !data.staffProfiles) return;
+                
+                const rolesOrder = (data.networkRoles || "").split(',').map(r => r.split('|')[0]);
+                const profiles = Object.entries(data.staffProfiles);
+                const container = document.getElementById('directory-container');
+                container.innerHTML = "";
+
+                // Sort the profiles based on the position of their role in the rolesOrder array
+                profiles.sort((a, b) => {
+                    const roleA = a[1].role || "";
+                    const roleB = b[1].role || "";
+                    const indexA = rolesOrder.indexOf(roleA);
+                    const indexB = rolesOrder.indexOf(roleB);
+                    
+                    // If a role isn't found in the list, put it at the end (index 999)
+                    const posA = indexA === -1 ? 999 : indexA;
+                    const posB = indexB === -1 ? 999 : indexB;
+                    
+                    return posA - posB;
+                });
+
+                profiles.forEach(([k, p]) => {
+                    container.innerHTML += `
                         <div class="section-card !p-6 flex flex-col justify-between hover:border-orange-500/50 transition">
                             <div>
                                 <h4 class="text-orange-500 font-black uppercase text-sm">${p.name || 'Staff'}</h4>
