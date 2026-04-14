@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V10.4 Staff Sync</title>
+    <title>Inferno Admin | V10.5 Secured</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -44,12 +44,12 @@
     <div id="main-content" class="hidden">
         <div class="flex justify-between items-center mb-10">
             <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
-            <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
+            <div id="nav-container" class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
                 <button onclick="switchTab('profile')" id="tab-profile" class="nav-tab">MY PROFILE</button>
                 <button onclick="switchTab('directory')" id="tab-directory" class="nav-tab hidden">DIRECTORY</button>
-                <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
-                <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab">VOTING</button>
-                <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab">ACTIVITY</button>
+                <button onclick="switchTab('config')" id="tab-config" class="nav-tab hidden">CONFIG</button>
+                <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab hidden">VOTING</button>
+                <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab hidden">ACTIVITY</button>
                 <button onclick="switchTab('access')" id="tab-access" class="nav-tab hidden">EMAILS</button>
             </div>
         </div>
@@ -67,23 +67,21 @@
         <div id="page-directory" class="hidden">
             <div class="section-box">
                 <h2 class="section-title">Staff Profile Directory</h2>
-                <p class="text-[10px] text-zinc-500 mb-4 italic">View and manage all active staff bios on the network.</p>
-                <div id="directory-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    </div>
+                <div id="directory-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"></div>
             </div>
         </div>
 
-        <div id="page-config">
+        <div id="page-config" class="hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="section-box">
                     <h2 class="section-title">Visual Branding</h2>
                     <label>Background Image</label>
                     <div class="drop-zone" id="dz-bg" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'bgImageUrl')">
-                        <input type="text" id="bgImageUrl" placeholder="Paste link or DROP file here">
+                        <input type="text" id="bgImageUrl">
                     </div>
                     <label>Logo Icon</label>
                     <div class="drop-zone" id="dz-logo" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'logoUrl')">
-                        <input type="text" id="logoUrl" placeholder="Paste link or DROP file here">
+                        <input type="text" id="logoUrl">
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                         <div><label>Nav BG</label><input type="color" id="navBg"></div>
@@ -100,7 +98,7 @@
                     <label>Server IP</label><input type="text" id="serverIp">
                     <button onclick="saveHeroInfo()" class="btn-save mb-6">Save Hero Info</button>
                     <label class="mt-4">Media Carousel</label>
-                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Add Link..."><button id="mediaAdd" class="btn-add">+</button></div>
+                    <div class="flex gap-2"><input type="text" id="mediaInput"><button id="mediaAdd" class="btn-add">+</button></div>
                     <div id="media-list" class="sort-list"></div>
                     <button onclick="syncList('media-list', 'mediaUrls')" class="btn-save">Save Media Order</button>
                 </div>
@@ -148,14 +146,13 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="section-box">
                     <h2 class="section-title">Admin Access (Full Control)</h2>
-                    <div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="email@gmail.com"><button id="emailAdd" class="btn-add">+</button></div>
+                    <div class="flex gap-2 mt-4"><input type="text" id="emailInput"><button id="emailAdd" class="btn-add">+</button></div>
                     <div id="email-list" class="sort-list"></div>
                     <button onclick="syncList('email-list', 'trustedEmails')" class="btn-save">Save Whitelist</button>
                 </div>
-
                 <div class="section-box">
                     <h2 class="section-title">Meet Staff Emails (Bio Only)</h2>
-                    <div class="flex gap-2 mt-4"><input type="text" id="bioStaffEmailInput" placeholder="staff@gmail.com"><button id="bioStaffEmailAdd" class="btn-add">+</button></div>
+                    <div class="flex gap-2 mt-4"><input type="text" id="bioStaffEmailInput"><button id="bioStaffEmailAdd" class="btn-add">+</button></div>
                     <div id="bioStaffEmail-list" class="sort-list"></div>
                     <button onclick="syncList('bioStaffEmail-list', 'bioStaffEmails')" class="btn-save">Save Bio Access</button>
                 </div>
@@ -182,6 +179,7 @@
         const ownerEmail = "abeedwehbe@gmail.com";
         let currentUser = null;
         let sKey = "";
+        let userIsAdmin = false;
 
         document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
         
@@ -190,38 +188,44 @@
                 const snap = await get(ref(db, 'absoluteConfigV3'));
                 const d = snap.val() || {};
                 
-                // Whitelist verification
-                const trusted = (d.trustedEmails || "").split(',').map(e => e.trim().toLowerCase());
-                const biosOnly = (d.bioStaffEmails || "").split(',').map(e => e.trim().toLowerCase());
+                const trusted = (d.trustedEmails || "").toLowerCase().split(',').map(e => e.trim());
+                const biosOnly = (d.bioStaffEmails || "").toLowerCase().split(',').map(e => e.trim());
                 const userEmail = user.email.toLowerCase();
 
-                const isAdmin = userEmail === ownerEmail || trusted.includes(userEmail);
+                userIsAdmin = userEmail === ownerEmail || trusted.includes(userEmail);
                 const isBioStaff = biosOnly.includes(userEmail);
 
-                if (isAdmin || isBioStaff) {
+                if (userIsAdmin || isBioStaff) {
                     currentUser = user;
                     sKey = userEmail.replace(/\./g, '_');
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
                     
-                    if (isAdmin) {
-                        ['config', 'vote', 'logs', 'directory'].forEach(t => document.getElementById('tab-'+t).classList.remove('hidden'));
+                    if (userIsAdmin) {
+                        // Show all admin tabs
+                        ['tab-config', 'tab-vote', 'tab-logs', 'tab-directory'].forEach(id => document.getElementById(id).classList.remove('hidden'));
                         if (userEmail === ownerEmail) document.getElementById('tab-access').classList.remove('hidden');
                         switchTab('config');
                         loadDirectory();
+                        setupLogs();
                     } else {
+                        // HARD LOCK for Bio Staff
+                        document.getElementById('tab-config').remove();
+                        document.getElementById('tab-vote').remove();
+                        document.getElementById('tab-logs').remove();
+                        document.getElementById('tab-directory').remove();
+                        document.getElementById('tab-access')?.remove();
                         switchTab('profile');
                     }
-                    syncEverything(); setupLogs(); loadBio();
+                    syncEverything();
+                    loadBio();
                 } else { 
-                    alert("Access Denied: " + user.email + " is not on the whitelist."); 
+                    alert("Access Denied."); 
                     auth.signOut(); 
-                    location.reload();
                 }
             }
         });
 
-        // Bio Logic
         async function loadBio() {
             const snap = await get(ref(db, `absoluteConfigV3/staffProfiles/${sKey}`));
             if(snap.exists()){
@@ -241,44 +245,35 @@
             };
             await update(ref(db, `absoluteConfigV3/staffProfiles/${sKey}`), data);
             logAction("Updated personal bio");
-            alert("Bio Saved!");
+            alert("Profile Updated!");
         };
 
-        // Directory Logic
         window.loadDirectory = () => {
+            if(!userIsAdmin) return;
             onValue(ref(db, 'absoluteConfigV3/staffProfiles'), (snap) => {
                 const container = document.getElementById('directory-container');
                 container.innerHTML = "";
                 if (!snap.exists()) return;
-                
                 Object.entries(snap.val()).forEach(([key, profile]) => {
                     const card = document.createElement('div');
                     card.className = "bg-[#080808] border border-zinc-800 p-4 rounded-xl flex justify-between items-start";
-                    card.innerHTML = `
-                        <div>
-                            <div class="text-orange-500 font-black text-xs uppercase">${profile.name || 'No Name'}</div>
-                            <div class="text-white font-bold text-[10px] opacity-60">${profile.role || 'No Role'}</div>
-                            <div class="text-zinc-500 text-[9px] mt-1">${profile.email}</div>
-                        </div>
-                        <button onclick="deleteProfile('${key}')" class="btn-danger">Delete</button>
-                    `;
+                    card.innerHTML = `<div><div class="text-orange-500 font-black text-xs uppercase">${profile.name || 'Unknown'}</div><div class="text-zinc-500 text-[9px]">${profile.email}</div></div><button onclick="deleteProfile('${key}')" class="btn-danger">Delete</button>`;
                     container.appendChild(card);
                 });
             });
         };
 
         window.deleteProfile = async (key) => {
-            if(confirm("Permanently delete this staff profile?")) {
+            if(confirm("Delete this staff profile?")) {
                 await remove(ref(db, `absoluteConfigV3/staffProfiles/${key}`));
-                logAction(`Deleted staff profile: ${key}`);
+                logAction(`Deleted profile: ${key}`);
             }
         };
 
-        // Helper functions
-        window.hOver = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('dragover'); };
-        window.hLeave = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('dragover'); };
+        window.hOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('dragover'); };
+        window.hLeave = (e) => { e.preventDefault(); e.currentTarget.classList.remove('dragover'); };
         window.hDrop = async (e, inputId) => {
-            e.preventDefault(); e.stopPropagation();
+            e.preventDefault();
             const zone = e.currentTarget;
             zone.classList.remove('dragover');
             const file = e.dataTransfer.files[0];
@@ -290,12 +285,13 @@
             try {
                 const res = await fetch('https://api.cloudinary.com/v1_1/demo/image/upload', { method: 'POST', body: formData });
                 const data = await res.json();
-                if(data.secure_url) { document.getElementById(inputId).value = data.secure_url; logAction(`Uploaded ${inputId}`); }
+                if(data.secure_url) { document.getElementById(inputId).value = data.secure_url; }
             } catch (err) { alert("Upload failed."); }
             finally { zone.classList.remove('uploading'); }
         };
 
         window.saveBranding = async () => {
+            if(!userIsAdmin) return;
             const data = {
                 bgImageUrl: document.getElementById('bgImageUrl').value,
                 logoUrl: document.getElementById('logoUrl').value,
@@ -310,6 +306,7 @@
         };
 
         window.saveHeroInfo = async () => {
+            if(!userIsAdmin) return;
             const data = { heroTitle: document.getElementById('heroTitle').value, serverIp: document.getElementById('serverIp').value };
             await update(ref(db, 'absoluteConfigV3'), data);
             logAction("Updated Hero Info");
@@ -317,6 +314,7 @@
         };
 
         window.savePartnerSocial = async () => {
+            if(!userIsAdmin) return;
             const data = {
                 sponsorName: document.getElementById('sponsorName').value,
                 sponsorUrl: document.getElementById('sponsorUrl').value,
@@ -326,15 +324,15 @@
             };
             await update(ref(db, 'absoluteConfigV3'), data);
             logAction("Updated Partner & Social");
-            alert("Partner/Social Saved!");
+            alert("Saved!");
         };
 
         const logAction = (action) => {
-            if(!currentUser) return;
             push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: action, time: new Date().toISOString() });
         };
 
         window.syncList = async (listId, key) => {
+            if(!userIsAdmin && key !== 'bioStaffEmails') return;
             let items = Array.from(document.getElementById(listId).querySelectorAll('.sort-item')).map(item => {
                 const siteName = item.querySelector('.site-name');
                 return siteName ? `${siteName.innerText}|${item.querySelector('.site-url').innerText}` : item.querySelector('span').innerText;
@@ -356,16 +354,22 @@
         const syncEverything = async () => {
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const d = snap.val(); if (!d) return;
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "discordLink"];
-            fields.forEach(f => { if(d[f] && document.getElementById(f)) document.getElementById(f).value = d[f]; });
-            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks', 'bioStaffEmail-list': 'bioStaffEmails' };
-            Object.entries(listMap).forEach(([id, key]) => {
-                const el = document.getElementById(id);
-                if(el) { el.innerHTML = ""; if(d[key]) d[key].split(',').forEach(v => v.trim() && addItem(id, v.trim())); }
-            });
+            
+            // Only populate admin fields if user is admin
+            if(userIsAdmin) {
+                const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "discordLink"];
+                fields.forEach(f => { if(d[f] && document.getElementById(f)) document.getElementById(f).value = d[f]; });
+                
+                const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks', 'bioStaffEmail-list': 'bioStaffEmails' };
+                Object.entries(listMap).forEach(([id, key]) => {
+                    const el = document.getElementById(id);
+                    if(el) { el.innerHTML = ""; if(d[key]) d[key].split(',').forEach(v => v.trim() && addItem(id, v.trim())); }
+                });
+            }
         };
 
         const setupLogs = () => {
+            if(!userIsAdmin) return;
             onValue(query(ref(db, 'absoluteConfigV3/logs'), limitToLast(50)), (snap) => {
                 const container = document.getElementById('log-container');
                 if(!container) return;
@@ -378,20 +382,21 @@
         };
 
         window.switchTab = (id) => {
-            ['profile', 'config', 'vote', 'logs', 'access', 'directory'].forEach(t => {
-                if(document.getElementById('page-'+t)) document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
-                if(document.getElementById('tab-'+t)) document.getElementById('tab-'+t).classList.toggle('active', t === id);
+            const pages = ['profile', 'config', 'vote', 'logs', 'access', 'directory'];
+            pages.forEach(t => {
+                const page = document.getElementById('page-'+t);
+                const tab = document.getElementById('tab-'+t);
+                if(page) page.classList.toggle('hidden', t !== id);
+                if(tab) tab.classList.toggle('active', t === id);
             });
         };
 
-        // FIXED + BUTTONS
         ['media', 'smp', 'event', 'staff', 'email', 'bioStaffEmail'].forEach(x => {
             const btn = document.getElementById(x + 'Add');
             if(btn) {
                 btn.onclick = () => {
                     const input = document.getElementById(x + 'Input');
-                    const listId = x + '-list';
-                    addItem(listId, input.value); 
+                    addItem(x + '-list', input.value); 
                     input.value = ''; 
                 };
             }
