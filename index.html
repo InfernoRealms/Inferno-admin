@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inferno Dashboard | Master Admin V26.2</title>
+    <title>Inferno Dashboard | Master Admin V26.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -201,7 +201,7 @@
         #edit-hud {
             background: #ea580c10;
             border: 1px solid var(--orange-primary);
-            padding: 10px;
+            padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
             font-size: 12px;
@@ -220,7 +220,7 @@
 <body>
 
     <div id="login-screen" class="fixed inset-0 bg-black z-[200] flex items-center justify-center">
-        <div class="max-w-md w-full bg-[#111] p-16 rounded-[50px] border border-zinc-800 text-center">
+        <div class="max-w-md w-full bg-[#111] p-16 rounded-[50px] border border-zinc-800 text-center shadow-[0_0_100px_rgba(234,88,12,0.1)]">
             <h2 class="dashboard-header mb-12">Inferno</h2>
             <button id="loginBtn" class="btn-orange">Authenticate with Google</button>
         </div>
@@ -235,6 +235,7 @@
                 <button onclick="switchTab('directory')" id="tab-directory" class="nav-tab hidden">Directory</button>
                 <button onclick="switchTab('roles')" id="tab-roles" class="nav-tab hidden">Roles</button>
                 <button onclick="switchTab('config')" id="tab-config" class="nav-tab hidden">Config</button>
+                <button onclick="switchTab('content')" id="tab-content" class="nav-tab hidden">SMP/Events</button>
                 <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab hidden">Voting</button>
                 <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab hidden">Activity</button>
                 <button onclick="switchTab('access')" id="tab-access" class="nav-tab hidden">Emails</button>
@@ -244,14 +245,38 @@
         <div id="page-profile">
             <div class="max-w-2xl mx-auto section-card">
                 <div id="edit-hud" class="hidden">
-                    <span>MODE: OVERRIDE STAFF ENTRY</span>
-                    <button onclick="cancelOverride()" class="text-white bg-red-600 px-3 py-1 rounded">X</button>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase tracking-widest opacity-60">Admin Override Mode</span>
+                        <span id="override-target-name">Target: Loading...</span>
+                    </div>
+                    <button onclick="cancelOverride()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase">Cancel</button>
                 </div>
                 <div class="section-title" id="profile-title-text">Personal Bio Editor</div>
                 <label>Display Name</label><input type="text" id="myStaffName">
                 <label>Assigned Role</label><select id="myStaffRoleDropdown"></select>
-                <label>Biography / About Me</label><textarea id="myStaffBio" rows="10"></textarea>
+                <label>Biography / About Me</label><textarea id="myStaffBio" rows="8" placeholder="Tell the network about yourself..."></textarea>
                 <button onclick="saveCurrentProfile()" class="btn-orange mt-10" id="save-profile-btn">Save My Profile</button>
+            </div>
+        </div>
+
+        <div id="page-content" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div class="section-card">
+                <div class="section-title">SMP Management</div>
+                <div class="flex gap-2">
+                    <input type="text" id="smpInput" placeholder="Enter SMP name (e.g. LifeSteal)...">
+                    <button onclick="handleBtnAdd('smpInput', 'smp-list')" class="btn-orange !w-12">+</button>
+                </div>
+                <div id="smp-list" class="sort-list"></div>
+                <button onclick="syncList('smp-list', 'smpList')" class="btn-save-secondary">Save Realms List</button>
+            </div>
+            <div class="section-card">
+                <div class="section-title">Active Network Events</div>
+                <div class="flex gap-2">
+                    <input type="text" id="eventInput" placeholder="Event description...">
+                    <button onclick="handleBtnAdd('eventInput', 'event-list')" class="btn-orange !w-12">+</button>
+                </div>
+                <div id="event-list" class="sort-list"></div>
+                <button onclick="syncList('event-list', 'eventList')" class="btn-save-secondary">Save Event List</button>
             </div>
         </div>
 
@@ -274,8 +299,8 @@
                     <label>Hero Title</label><input type="text" id="heroTitle">
                     <label>Server IP</label><input type="text" id="serverIp">
                     <button onclick="saveHeroInfo()" class="btn-save-secondary">Save Hero Info</button>
-                    <label class="mt-6">Media Carousel</label>
-                    <div class="flex gap-3"><input type="text" id="mediaInput"><button id="mediaAdd" class="btn-orange !w-12">+</button></div>
+                    <label class="mt-6">Media Carousel (Images or YT Links)</label>
+                    <div class="flex gap-3"><input type="text" id="mediaInput"><button onclick="handleBtnAdd('mediaInput', 'media-list')" class="btn-orange !w-12">+</button></div>
                     <div id="media-list" class="sort-list"></div>
                     <button onclick="syncList('media-list', 'mediaUrls')" class="btn-save-secondary">Save Media Order</button>
                 </div>
@@ -285,7 +310,7 @@
                         <div><label>Sponsor Name</label><input type="text" id="sponsorName"><label>Promo Code</label><input type="text" id="promoCode"></div>
                         <div><label>Sponsor URL</label><input type="text" id="sponsorUrl"><label>Discord Link</label><input type="text" id="discordLink"></div>
                     </div>
-                    <label>Support Link</label><input type="text" id="patreonBtnLink">
+                    <label>Support / Patreon Link</label><input type="text" id="patreonBtnLink">
                     <button onclick="savePartnerSocial()" class="btn-orange mt-8">Update Partnerships</button>
                 </div>
             </div>
@@ -305,7 +330,7 @@
                                 <span id="preview-text-el">New Role</span>
                             </div>
                         </div>
-                        <button id="roleAddBtn" class="btn-orange mt-8">Add Role</button>
+                        <button onclick="addRoleToList()" class="btn-orange mt-8">Add Role to List</button>
                     </div>
                     <div>
                         <label>Compact Icon Library (Lucide)</label>
@@ -330,19 +355,19 @@
 
         <div id="page-access" class="hidden grid grid-cols-1 md:grid-cols-2 gap-10 max-w-6xl mx-auto">
             <div class="section-card">
-                <div class="section-title">Staff Access</div>
+                <div class="section-title">Staff Access (Can edit own bio)</div>
                 <div class="flex gap-2">
                     <input type="text" id="bioEmailInput" placeholder="Enter staff email...">
-                    <button id="bioEmailAdd" class="btn-orange !w-12">+</button>
+                    <button onclick="handleBtnAdd('bioEmailInput', 'bio-email-list')" class="btn-orange !w-12">+</button>
                 </div>
                 <div id="bio-email-list" class="sort-list"></div>
                 <button onclick="syncList('bio-email-list', 'bioStaffEmails')" class="btn-save-secondary">Sync Staff</button>
             </div>
             <div class="section-card">
-                <div class="section-title">Admin Whitelist</div>
+                <div class="section-title">Admin Whitelist (Full Control)</div>
                 <div class="flex gap-2">
                     <input type="text" id="adminEmailInput" placeholder="Enter admin email...">
-                    <button id="adminEmailAdd" class="btn-orange !w-12">+</button>
+                    <button onclick="handleBtnAdd('adminEmailInput', 'admin-email-list')" class="btn-orange !w-12">+</button>
                 </div>
                 <div id="admin-email-list" class="sort-list"></div>
                 <button onclick="syncList('admin-email-list', 'trustedEmails')" class="btn-save-secondary">Sync Admins</button>
@@ -351,7 +376,11 @@
 
         <div id="page-vote" class="hidden max-w-2xl mx-auto section-card">
             <div class="section-title">Voting Links</div>
-            <div class="flex gap-2"><input type="text" id="voteInput"><button id="voteAdd" class="btn-orange !w-12">+</button></div>
+            <label>Format: Site Name|URL</label>
+            <div class="flex gap-2">
+                <input type="text" id="voteInput" placeholder="PMC|https://...">
+                <button onclick="handleBtnAdd('voteInput', 'vote-list')" class="btn-orange !w-12">+</button>
+            </div>
             <div id="vote-list" class="sort-list"></div>
             <button onclick="syncList('vote-list', 'voteLinks')" class="btn-save-secondary">Sync Voting</button>
         </div>
@@ -397,15 +426,15 @@
             document.getElementById('main-content').classList.remove('hidden');
 
             if (userIsAdmin) {
-                ['tab-directory', 'tab-config', 'tab-vote', 'tab-logs', 'tab-access', 'tab-roles'].forEach(t => document.getElementById(t).classList.remove('hidden'));
+                ['tab-directory', 'tab-config', 'tab-vote', 'tab-logs', 'tab-access', 'tab-roles', 'tab-content'].forEach(t => document.getElementById(t).classList.remove('hidden'));
                 initIconPicker(); loadDirectory(); loadLogs();
             }
             loadMyBio(); syncEverything(data);
         });
 
-        // --- UI LOGIC ---
+        // --- UI & TAB LOGIC ---
         window.switchTab = (id) => {
-            ['profile', 'directory', 'roles', 'config', 'vote', 'access', 'logs'].forEach(p => {
+            ['profile', 'directory', 'roles', 'config', 'vote', 'access', 'logs', 'content'].forEach(p => {
                 const el = document.getElementById('page-'+p);
                 const tab = document.getElementById('tab-'+p);
                 if(el) el.classList.toggle('hidden', p !== id);
@@ -422,27 +451,18 @@
             c.appendChild(div);
         };
 
-        // --- BUTTON HANDLING ---
-        const btnMap = [
-            { btn: 'mediaAdd', input: 'mediaInput', list: 'media-list' },
-            { btn: 'voteAdd', input: 'voteInput', list: 'vote-list' },
-            { btn: 'adminEmailAdd', input: 'adminEmailInput', list: 'admin-email-list' },
-            { btn: 'bioEmailAdd', input: 'bioEmailInput', list: 'bio-email-list' }
-        ];
+        window.handleBtnAdd = (inputId, listId) => {
+            const input = document.getElementById(inputId);
+            if (!input.value) return;
+            addItem(listId, input.value);
+            input.value = "";
+        };
 
-        btnMap.forEach(conf => {
-            document.getElementById(conf.btn).onclick = () => {
-                const input = document.getElementById(conf.input);
-                addItem(conf.list, input.value);
-                input.value = "";
-            };
-        });
-
-        // --- FIREBASE SYNC ---
+        // --- DATA SYNCING ---
         window.syncList = async (id, key) => {
             const items = Array.from(document.getElementById(id).querySelectorAll('.data-txt')).map(e => e.innerText).join(',');
             await set(ref(db, `absoluteConfigV3/${key}`), items);
-            logAct(`Synced ${key}`); alert("Synced!");
+            logAct(`Synced list: ${key}`); alert("Network Synced!");
             if(key === 'networkRoles') updateRoleSelector(items);
         };
 
@@ -451,11 +471,11 @@
                 bgImageUrl: document.getElementById('bgImageUrl').value, logoUrl: document.getElementById('logoUrl').value,
                 navBg: document.getElementById('navBg').value, navLogoCol: document.getElementById('navLogoCol').value,
                 heroTitleCol: document.getElementById('heroTitleCol').value, heroBtnBg: document.getElementById('heroBtnBg').value
-            }).then(() => { logAct("Visuals Saved"); alert("Updated!"); });
+            }).then(() => { logAct("Branding Updated"); alert("Visuals Saved!"); });
         };
 
         window.saveHeroInfo = () => {
-            update(ref(db, 'absoluteConfigV3'), { heroTitle: document.getElementById('heroTitle').value, serverIp: document.getElementById('serverIp').value }).then(() => { logAct("Hero Saved"); alert("Updated!"); });
+            update(ref(db, 'absoluteConfigV3'), { heroTitle: document.getElementById('heroTitle').value, serverIp: document.getElementById('serverIp').value }).then(() => { logAct("Hero Text Updated"); alert("Text Saved!"); });
         };
 
         window.savePartnerSocial = () => {
@@ -463,10 +483,10 @@
                 sponsorName: document.getElementById('sponsorName').value, sponsorUrl: document.getElementById('sponsorUrl').value,
                 promoCode: document.getElementById('promoCode').value, discordLink: document.getElementById('discordLink').value,
                 patreonBtnLink: document.getElementById('patreonBtnLink').value
-            }).then(() => { logAct("Socials Saved"); alert("Updated!"); });
+            }).then(() => { logAct("Partners/Socials Updated"); alert("Socials Saved!"); });
         };
 
-        // --- ROLES & ICONS ---
+        // --- ROLE ICON LOGIC ---
         function initIconPicker() {
             const picker = document.getElementById('icon-picker');
             picker.innerHTML = "";
@@ -493,7 +513,7 @@
             icon.setAttribute('data-lucide', selIcon); lucide.createIcons();
         };
 
-        document.getElementById('roleAddBtn').onclick = () => {
+        window.addRoleToList = () => {
             const title = document.getElementById('roleTitleInput').value;
             if(!title) return;
             addItem('role-list', `${title}|${selIcon}|${selColor}`);
@@ -510,7 +530,7 @@
             });
         }
 
-        // --- STAFF OVERRIDE SYSTEM ---
+        // --- STAFF BIO OVERRIDE LOGIC ---
         window.loadMyBio = async () => {
             const snap = await get(ref(db, `absoluteConfigV3/staffProfiles/${myKey}`));
             if(snap.exists()) {
@@ -522,7 +542,7 @@
         };
 
         window.editStaffMember = async (key) => {
-            if (currentUser.email.toLowerCase() !== MASTER_EMAIL) return;
+            if (!userIsAdmin) return;
             const snap = await get(ref(db, `absoluteConfigV3/staffProfiles/${key}`));
             if (snap.exists()) {
                 targetOverrideKey = key;
@@ -531,9 +551,11 @@
                 document.getElementById('myStaffBio').value = d.bio || "";
                 document.getElementById('myStaffRoleDropdown').value = d.role || "";
                 document.getElementById('edit-hud').classList.remove('hidden');
-                document.getElementById('profile-title-text').innerText = "STAFF OVERRIDE: " + (d.email || "Unknown");
-                document.getElementById('save-profile-btn').innerText = "SAVE STAFF OVERRIDE";
+                document.getElementById('override-target-name').innerText = "Target: " + (d.email || d.name);
+                document.getElementById('profile-title-text').innerText = "Admin Override Mode";
+                document.getElementById('save-profile-btn').innerText = "Update Staff Member Data";
                 switchTab('profile');
+                window.scrollTo(0,0);
             }
         };
 
@@ -547,37 +569,37 @@
 
         window.saveCurrentProfile = async () => {
             const finalKey = targetOverrideKey ? targetOverrideKey : myKey;
+            const snap = await get(ref(db, `absoluteConfigV3/staffProfiles/${finalKey}`));
+            const existingData = snap.exists() ? snap.val() : {};
+
             const p = { 
                 name: document.getElementById('myStaffName').value, 
                 role: document.getElementById('myStaffRoleDropdown').value, 
                 bio: document.getElementById('myStaffBio').value, 
-                lastUpdate: new Date().toISOString() 
+                lastUpdate: new Date().toISOString(),
+                email: existingData.email || (targetOverrideKey ? "" : currentUser.email)
             };
-            const snap = await get(ref(db, `absoluteConfigV3/staffProfiles/${finalKey}`));
-            if(snap.exists()) p.email = snap.val().email;
-            else if(!targetOverrideKey) p.email = currentUser.email;
 
             await update(ref(db, `absoluteConfigV3/staffProfiles/${finalKey}`), p);
-            logAct(targetOverrideKey ? `Overrode profile ${finalKey}` : "Updated own profile");
-            alert("Success!");
+            logAct(targetOverrideKey ? `Admin modified profile for ${finalKey}` : "User updated own profile");
+            alert("Database Updated Successfully.");
             if(targetOverrideKey) cancelOverride();
         };
 
-        // --- DIRECTORY & LOGS ---
+        // --- DIRECTORY & AUDIT LOGS ---
         function loadDirectory() {
             onValue(ref(db, 'absoluteConfigV3/staffProfiles'), (s) => {
                 const c = document.getElementById('directory-container');
                 c.innerHTML = "";
                 if(s.val()) Object.entries(s.val()).forEach(([k, p]) => {
-                    const isMaster = currentUser.email.toLowerCase() === MASTER_EMAIL;
                     c.innerHTML += `
-                        <div class="section-card directory-card !p-6 flex flex-col justify-between">
+                        <div class="section-card !p-6 flex flex-col justify-between hover:border-orange-500/50 transition">
                             <div>
                                 <h4 class="text-orange-500 font-black uppercase text-sm">${p.name || 'Staff'}</h4>
                                 <p class="text-[10px] text-zinc-500 font-bold uppercase mt-1">${p.role || 'Member'}</p>
-                                <p class="text-[9px] text-zinc-700 mt-4 break-all">${p.email || 'No Email'}</p>
+                                <p class="text-[9px] text-zinc-700 mt-4 break-all">${p.email || 'No Email Registered'}</p>
                             </div>
-                            ${isMaster ? `<button onclick="editStaffMember('${k}')" class="mt-4 bg-zinc-800 text-orange-500 text-[10px] font-bold py-2 rounded border border-orange-500/20 hover:bg-orange-600 hover:text-white transition">EDIT DATA</button>` : ''}
+                            <button onclick="editStaffMember('${k}')" class="mt-4 bg-zinc-900 border border-zinc-800 text-orange-500 text-[10px] font-black py-3 rounded-xl hover:bg-orange-600 hover:text-white transition uppercase">Edit Entry</button>
                         </div>`;
                 });
             });
@@ -586,25 +608,45 @@
         function logAct(act) { push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: act, time: new Date().toISOString() }); }
 
         function loadLogs() {
-            onValue(query(ref(db, 'absoluteConfigV3/logs'), limitToLast(30)), (s) => {
+            onValue(query(ref(db, 'absoluteConfigV3/logs'), limitToLast(40)), (s) => {
                 const c = document.getElementById('log-container');
                 c.innerHTML = "";
                 if(s.val()) Object.values(s.val()).reverse().forEach(l => {
-                    c.innerHTML += `<div class="mb-1"><span class="text-orange-900 font-bold">[${new Date(l.time).toLocaleTimeString()}]</span> ${l.user}: ${l.action}</div>`;
+                    c.innerHTML += `<div class="mb-1 py-1 border-b border-white/5"><span class="text-orange-600 font-bold">[${new Date(l.time).toLocaleTimeString()}]</span> <span class="text-white">${l.user}</span>: ${l.action}</div>`;
                 });
             });
         }
 
         function syncEverything(data) {
             if(!data) return;
+            // Visuals
             const fields = ['bgImageUrl', 'logoUrl', 'navBg', 'navLogoCol', 'heroTitleCol', 'heroBtnBg', 'heroTitle', 'serverIp', 'sponsorName', 'sponsorUrl', 'promoCode', 'discordLink', 'patreonBtnLink'];
             fields.forEach(f => { if(data[f]) document.getElementById(f).value = data[f]; });
-            const lists = {'media-list': data.mediaUrls, 'vote-list': data.voteLinks, 'admin-email-list': data.trustedEmails, 'bio-email-list': data.bioStaffEmails, 'role-list': data.networkRoles};
-            Object.entries(lists).forEach(([id, val]) => { const c = document.getElementById(id); if(val && c) { c.innerHTML = ""; val.split(',').forEach(i => addItem(id, i.trim())); }});
+            
+            // Lists
+            const lists = {
+                'media-list': data.mediaUrls, 
+                'vote-list': data.voteLinks, 
+                'admin-email-list': data.trustedEmails, 
+                'bio-email-list': data.bioStaffEmails, 
+                'role-list': data.networkRoles,
+                'smp-list': data.smpList,
+                'event-list': data.eventList
+            };
+            Object.entries(lists).forEach(([id, val]) => { 
+                const c = document.getElementById(id); 
+                if(val && c) { 
+                    c.innerHTML = ""; 
+                    val.split(',').forEach(i => addItem(id, i.trim())); 
+                }
+            });
+            
+            // Populate Role Dropdown
             updateRoleSelector(data.networkRoles);
         }
 
-        ['media-list', 'vote-list', 'admin-email-list', 'bio-email-list', 'role-list'].forEach(id => {
+        // Initialize Sortable on all lists
+        ['media-list', 'vote-list', 'admin-email-list', 'bio-email-list', 'role-list', 'smp-list', 'event-list'].forEach(id => {
             const el = document.getElementById(id);
             if(el) new Sortable(el, { animation: 150 });
         });
