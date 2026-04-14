@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V10.3 Fix</title>
+    <title>Inferno Admin | V10.4 Staff Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -19,6 +19,8 @@
         .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; height: 42px; }
         .btn-save { background: #222; color: #ea580c; width: 100%; padding: 10px; border-radius: 8px; font-weight: 900; font-size: 11px; text-transform: uppercase; margin-top: 20px; border: 1px solid #ea580c33; transition: 0.3s; }
         .btn-save:hover { background: #ea580c; color: white; }
+        .btn-danger { background: #450a0a; color: #f87171; padding: 5px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; border: 1px solid #7f1d1d; }
+        .btn-danger:hover { background: #991b1b; color: white; }
         .hidden { display: none !important; }
         
         .drop-zone { border: 2px dashed #333; border-radius: 12px; padding: 5px; transition: 0.3s; background: #000; position: relative; }
@@ -44,6 +46,7 @@
             <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
             <div class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
                 <button onclick="switchTab('profile')" id="tab-profile" class="nav-tab">MY PROFILE</button>
+                <button onclick="switchTab('directory')" id="tab-directory" class="nav-tab hidden">DIRECTORY</button>
                 <button onclick="switchTab('config')" id="tab-config" class="nav-tab active">CONFIG</button>
                 <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab">VOTING</button>
                 <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab">ACTIVITY</button>
@@ -58,6 +61,15 @@
                 <label>Network Role</label><input type="text" id="myStaffRole">
                 <label>About Me (Bio)</label><textarea id="myStaffBio" rows="5"></textarea>
                 <button onclick="saveMyBio()" class="btn-save">Update Profile</button>
+            </div>
+        </div>
+
+        <div id="page-directory" class="hidden">
+            <div class="section-box">
+                <h2 class="section-title">Staff Profile Directory</h2>
+                <p class="text-[10px] text-zinc-500 mb-4 italic">View and manage all active staff bios on the network.</p>
+                <div id="directory-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    </div>
             </div>
         </div>
 
@@ -142,10 +154,10 @@
                 </div>
 
                 <div class="section-box">
-                    <h2 class="section-title">Staff Access (Profile Only)</h2>
-                    <div class="flex gap-2 mt-4"><input type="text" id="staffEmailInput" placeholder="staff@gmail.com"><button id="staffEmailAdd" class="btn-add">+</button></div>
-                    <div id="staff-email-list" class="sort-list"></div>
-                    <button onclick="syncList('staff-email-list', 'bioStaffEmails')" class="btn-save">Save Staff Access</button>
+                    <h2 class="section-title">Meet Staff Emails (Bio Only)</h2>
+                    <div class="flex gap-2 mt-4"><input type="text" id="bioStaffEmailInput" placeholder="staff@gmail.com"><button id="bioStaffEmailAdd" class="btn-add">+</button></div>
+                    <div id="bioStaffEmail-list" class="sort-list"></div>
+                    <button onclick="syncList('bioStaffEmail-list', 'bioStaffEmails')" class="btn-save">Save Bio Access</button>
                 </div>
             </div>
         </div>
@@ -153,7 +165,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get, update, push, onValue, limitToLast, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, get, update, push, onValue, remove, limitToLast, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -177,30 +189,39 @@
             if (user) {
                 const snap = await get(ref(db, 'absoluteConfigV3'));
                 const d = snap.val() || {};
-                const trusted = (d.trustedEmails || "").split(',').filter(e => e.trim());
-                const biosOnly = (d.bioStaffEmails || "").split(',').filter(e => e.trim());
+                
+                // Whitelist verification
+                const trusted = (d.trustedEmails || "").split(',').map(e => e.trim().toLowerCase());
+                const biosOnly = (d.bioStaffEmails || "").split(',').map(e => e.trim().toLowerCase());
+                const userEmail = user.email.toLowerCase();
 
-                const isAdmin = user.email === ownerEmail || trusted.includes(user.email);
-                const isBioStaff = biosOnly.includes(user.email);
+                const isAdmin = userEmail === ownerEmail || trusted.includes(userEmail);
+                const isBioStaff = biosOnly.includes(userEmail);
 
                 if (isAdmin || isBioStaff) {
                     currentUser = user;
-                    sKey = user.email.replace(/\./g, '_');
+                    sKey = userEmail.replace(/\./g, '_');
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
                     
                     if (isAdmin) {
-                        ['config', 'vote', 'logs'].forEach(t => document.getElementById('tab-'+t).classList.remove('hidden'));
-                        if (user.email === ownerEmail) document.getElementById('tab-access').classList.remove('hidden');
+                        ['config', 'vote', 'logs', 'directory'].forEach(t => document.getElementById('tab-'+t).classList.remove('hidden'));
+                        if (userEmail === ownerEmail) document.getElementById('tab-access').classList.remove('hidden');
                         switchTab('config');
+                        loadDirectory();
                     } else {
                         switchTab('profile');
                     }
                     syncEverything(); setupLogs(); loadBio();
-                } else { alert("Access Denied."); auth.signOut(); }
+                } else { 
+                    alert("Access Denied: " + user.email + " is not on the whitelist."); 
+                    auth.signOut(); 
+                    location.reload();
+                }
             }
         });
 
+        // Bio Logic
         async function loadBio() {
             const snap = await get(ref(db, `absoluteConfigV3/staffProfiles/${sKey}`));
             if(snap.exists()){
@@ -215,13 +236,45 @@
             const data = {
                 name: document.getElementById('myStaffName').value,
                 role: document.getElementById('myStaffRole').value,
-                bio: document.getElementById('myStaffBio').value
+                bio: document.getElementById('myStaffBio').value,
+                email: currentUser.email
             };
             await update(ref(db, `absoluteConfigV3/staffProfiles/${sKey}`), data);
             logAction("Updated personal bio");
             alert("Bio Saved!");
         };
 
+        // Directory Logic
+        window.loadDirectory = () => {
+            onValue(ref(db, 'absoluteConfigV3/staffProfiles'), (snap) => {
+                const container = document.getElementById('directory-container');
+                container.innerHTML = "";
+                if (!snap.exists()) return;
+                
+                Object.entries(snap.val()).forEach(([key, profile]) => {
+                    const card = document.createElement('div');
+                    card.className = "bg-[#080808] border border-zinc-800 p-4 rounded-xl flex justify-between items-start";
+                    card.innerHTML = `
+                        <div>
+                            <div class="text-orange-500 font-black text-xs uppercase">${profile.name || 'No Name'}</div>
+                            <div class="text-white font-bold text-[10px] opacity-60">${profile.role || 'No Role'}</div>
+                            <div class="text-zinc-500 text-[9px] mt-1">${profile.email}</div>
+                        </div>
+                        <button onclick="deleteProfile('${key}')" class="btn-danger">Delete</button>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+        };
+
+        window.deleteProfile = async (key) => {
+            if(confirm("Permanently delete this staff profile?")) {
+                await remove(ref(db, `absoluteConfigV3/staffProfiles/${key}`));
+                logAction(`Deleted staff profile: ${key}`);
+            }
+        };
+
+        // Helper functions
         window.hOver = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('dragover'); };
         window.hLeave = (e) => { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('dragover'); };
         window.hDrop = async (e, inputId) => {
@@ -277,6 +330,7 @@
         };
 
         const logAction = (action) => {
+            if(!currentUser) return;
             push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: action, time: new Date().toISOString() });
         };
 
@@ -303,8 +357,8 @@
             const snap = await get(ref(db, 'absoluteConfigV3'));
             const d = snap.val(); if (!d) return;
             const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp", "sponsorName", "sponsorUrl", "promoCode", "patreonBtnLink", "discordLink"];
-            fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
-            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks', 'staff-email-list': 'bioStaffEmails' };
+            fields.forEach(f => { if(d[f] && document.getElementById(f)) document.getElementById(f).value = d[f]; });
+            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'vote-list': 'voteLinks', 'bioStaffEmail-list': 'bioStaffEmails' };
             Object.entries(listMap).forEach(([id, key]) => {
                 const el = document.getElementById(id);
                 if(el) { el.innerHTML = ""; if(d[key]) d[key].split(',').forEach(v => v.trim() && addItem(id, v.trim())); }
@@ -324,19 +378,19 @@
         };
 
         window.switchTab = (id) => {
-            ['profile', 'config', 'vote', 'logs', 'access'].forEach(t => {
-                document.getElementById('page-'+t)?.classList.toggle('hidden', t !== id);
-                document.getElementById('tab-'+t)?.classList.toggle('active', t === id);
+            ['profile', 'config', 'vote', 'logs', 'access', 'directory'].forEach(t => {
+                if(document.getElementById('page-'+t)) document.getElementById('page-'+t).classList.toggle('hidden', t !== id);
+                if(document.getElementById('tab-'+t)) document.getElementById('tab-'+t).classList.toggle('active', t === id);
             });
         };
 
-        // FIXED + BUTTONS LOGIC
-        ['media', 'smp', 'event', 'staff', 'email', 'staffEmail'].forEach(x => {
+        // FIXED + BUTTONS
+        ['media', 'smp', 'event', 'staff', 'email', 'bioStaffEmail'].forEach(x => {
             const btn = document.getElementById(x + 'Add');
             if(btn) {
                 btn.onclick = () => {
                     const input = document.getElementById(x + 'Input');
-                    const listId = x === 'staffEmail' ? 'staff-email-list' : x + '-list';
+                    const listId = x + '-list';
                     addItem(listId, input.value); 
                     input.value = ''; 
                 };
@@ -348,7 +402,7 @@
             if(n && u) { addItem('vote-list', `${n}|${u}`); document.getElementById('voteNameInput').value = ''; document.getElementById('voteInput').value = ''; }
         };
 
-        ['media-list', 'smp-list', 'event-list', 'staff-list', 'vote-list', 'email-list', 'staff-email-list'].forEach(id => {
+        ['media-list', 'smp-list', 'event-list', 'staff-list', 'vote-list', 'email-list', 'bioStaffEmail-list'].forEach(id => {
             const el = document.getElementById(id); if(el) new Sortable(el, { animation: 150 });
         });
     </script>
