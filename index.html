@@ -2,144 +2,88 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Inferno Admin | V10.3 Fix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inferno Realms | Official</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background: #050505; color: white; font-family: sans-serif; padding: 40px; }
-        .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; position: relative; }
-        .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
-        label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
-        input[type="text"], textarea { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white !important; width: 100%; font-size: 13px; outline: none; }
-        input[type="color"] { -webkit-appearance: none; border: 2px solid #333; width: 100%; height: 40px; cursor: pointer; background: #000; border-radius: 8px; padding: 2px; }
-        .nav-tab { cursor: pointer; padding: 10px 20px; border-radius: 10px; font-weight: 900; font-size: 12px; transition: 0.3s; color: #555; }
-        .nav-tab.active { background: #ea580c; color: white; }
-        .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 80px; border: 1px solid #222; margin-top: 8px; }
-        .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; font-size: 11px; }
-        .btn-add { background: #ea580c; color: white; padding: 0 20px; border-radius: 8px; font-weight: 900; cursor: pointer; height: 42px; }
-        .btn-save { background: #222; color: #ea580c; width: 100%; padding: 10px; border-radius: 8px; font-weight: 900; font-size: 11px; text-transform: uppercase; margin-top: 20px; border: 1px solid #ea580c33; transition: 0.3s; cursor:pointer; }
-        .btn-save:hover { background: #ea580c; color: white; }
-        .hidden { display: none !important; }
-        .drop-zone { border: 2px dashed #333; border-radius: 12px; padding: 5px; transition: 0.3s; background: #000; position: relative; }
-        .drop-zone.dragover { border-color: #ea580c; background: #ea580c15; }
-        .uploading::after { content: "UPLOADING..."; position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; color: #ea580c; border-radius: 12px; z-index: 10; }
-        .log-entry { font-family: monospace; font-size: 11px; padding: 6px 0; border-bottom: 1px solid #222; }
-        .log-time { color: #ea580c; opacity: 0.6; }
-        .log-user { color: #3b82f6; font-weight: bold; margin: 0 5px; }
-        .log-action { color: #22c55e; }
+        body { background: #0a0a0a no-repeat center center fixed; background-size: cover; color: #eee; font-family: sans-serif; scroll-behavior: smooth; }
+        .glass { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .nav-glass { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); }
+        .hero-glow { text-shadow: 0 0 60px rgba(0,0,0,1); }
+        .inferno-gradient { background: linear-gradient(135deg, #8b0000 0%, #ff4500 100%); }
+        .copy-success { animation: copy-glow 0.5s ease-in-out infinite alternate; background: #22c55e !important; color: white !important; transform: scale(1.1); }
+        @keyframes copy-glow { from { box-shadow: 0 0 10px #22c55e; } to { box-shadow: 0 0 30px #22c55e; } }
     </style>
 </head>
 <body>
-    <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
-        <div class="max-w-md w-full bg-[#111] p-10 rounded-[30px] border border-zinc-800 text-center shadow-2xl">
-            <h2 class="text-3xl font-black italic text-orange-600 mb-6 uppercase">Inferno Auth</h2>
-            <button id="loginBtn" class="w-full py-4 bg-orange-600 rounded-xl font-black uppercase">Sign in with Google</button>
+    <nav class="fixed w-full z-50 nav-glass py-4 px-6 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div id="logo-wrap"><i data-lucide="flame" class="text-orange-500 fill-orange-500"></i></div>
+            <span class="font-black text-xl tracking-tighter uppercase italic">Inferno <span class="text-orange-500">Realms</span></span>
         </div>
-    </div>
-
-    <div id="main-content" class="hidden">
-        <div class="flex justify-between items-center mb-10">
-            <h1 class="text-4xl font-black italic text-orange-600 uppercase tracking-tighter">Inferno Dashboard</h1>
-            <div id="tab-container" class="flex gap-2 bg-[#111] p-1.5 rounded-xl border border-zinc-800">
-                <button onclick="switchTab('bio')" id="tab-bio" class="nav-tab active">MY BIO</button>
-                <button onclick="switchTab('config')" id="tab-config" class="nav-tab hidden">CONFIG</button>
-                <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab hidden">VOTING</button>
-                <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab hidden">ACTIVITY</button>
-                <button onclick="switchTab('access')" id="tab-access" class="nav-tab hidden">EMAILS</button>
-            </div>
+        <div class="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+            <a href="index.html" class="text-white">Home</a>
+            <a href="#vote" class="hover:text-white transition">Vote</a>
+            <a href="staff.html" class="hover:text-orange-500 transition font-bold">STAFF PAGE</a>
+            <a href="#events" class="hover:text-white transition">Events</a>
         </div>
+        <a id="display-discord" href="#" target="_blank" class="inferno-gradient px-8 py-2.5 rounded-full font-black text-xs hover:scale-105 transition">JOIN DISCORD</a>
+    </nav>
 
-        <div id="page-bio">
-            <div class="section-box max-w-2xl mx-auto">
-                <h2 class="section-title">My Staff Paragraph</h2>
-                <p class="text-zinc-500 text-[10px] mb-4 uppercase font-bold">Write your own info below to appear on the site.</p>
-                <label>Display Name</label>
-                <input type="text" id="myStaffName" placeholder="Minecraft Username">
-                <label>Staff Role</label>
-                <input type="text" id="myStaffRole" placeholder="e.g. Senior Admin">
-                <label>Bio Paragraph</label>
-                <textarea id="myStaffBio" rows="5" placeholder="Write about yourself..."></textarea>
-                <button onclick="saveMyBio()" class="btn-save">Update My Paragraph</button>
-            </div>
+    <section class="h-screen flex flex-col items-center justify-center text-center px-4">
+        <h1 id="display-hero" class="hero-glow text-7xl md:text-[10rem] font-black italic uppercase tracking-tighter mb-4">INFERNO</h1>
+        <div class="glass px-8 py-3 rounded-full mb-10 flex items-center gap-3">
+            <span class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span id="player-count" class="font-mono text-green-400 font-black tracking-widest text-xs uppercase">ONLINE</span>
+        </div>
+        <button id="copy-btn" onclick="copyIP()" class="bg-white text-black px-12 py-5 rounded-2xl font-black uppercase tracking-tight shadow-2xl hover:scale-105 transition">Copy Server IP</button>
+        <span id="display-ip" class="hidden">play.infernorealms.xyz</span>
+    </section>
+
+    <main class="max-w-6xl mx-auto px-6 space-y-24 pb-24">
+        <div id="vote" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+
+        <div class="aspect-video glass rounded-[3rem] overflow-hidden">
+            <div id="media-content" class="w-full h-full flex items-center justify-center bg-black/20 text-xs font-black text-zinc-600">Loading...</div>
         </div>
 
-        <div id="page-config" class="hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="section-box">
-                    <h2 class="section-title">Visual Branding</h2>
-                    <label>Background Image</label>
-                    <div class="drop-zone" id="dz-bg" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'bgImageUrl')">
-                        <input type="text" id="bgImageUrl" placeholder="Paste link or DROP file here">
-                    </div>
-                    <label>Logo Icon</label>
-                    <div class="drop-zone" id="dz-logo" ondragover="hOver(event)" ondragleave="hLeave(event)" ondrop="hDrop(event, 'logoUrl')">
-                        <input type="text" id="logoUrl" placeholder="Paste link or DROP file here">
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                        <div><label>Nav BG</label><input type="color" id="navBg"></div>
-                        <div><label>Logo Col</label><input type="color" id="navLogoCol"></div>
-                        <div><label>Hero Text</label><input type="color" id="heroTitleCol"></div>
-                        <div><label>Accent</label><input type="color" id="heroBtnBg"></div>
-                    </div>
-                    <button onclick="saveBranding()" class="btn-save">Save Visuals</button>
+        <div id="smps">
+            <h2 id="smp-header" class="text-4xl font-black uppercase italic mb-10 border-l-[12px] border-orange-600 pl-8">The Realms</h2>
+            <div id="smp-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </div>
+
+        <a id="sponsor-link" href="#" target="_blank" class="block">
+            <div id="partner-box" class="glass p-12 rounded-[3rem] border-l-[16px] border-orange-600 flex flex-col md:flex-row justify-between items-center hover:scale-[1.02] transition shadow-2xl">
+                <div>
+                    <p class="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">Partner</p>
+                    <h4 id="sponsor-name" class="text-4xl font-black italic uppercase tracking-tighter">Sylant Hosting</h4>
                 </div>
-                <div class="section-box">
-                    <h2 class="section-title">Hero & Media</h2>
-                    <label>Hero Title</label><input type="text" id="heroTitle">
-                    <label>Server IP</label><input type="text" id="serverIp">
-                    <button onclick="saveHeroInfo()" class="btn-save mb-6">Save Hero Info</button>
-                    <label class="mt-4">Media Carousel</label>
-                    <div class="flex gap-2"><input type="text" id="mediaInput" placeholder="Add Link..."><button id="mediaAdd" class="btn-add">+</button></div>
-                    <div id="media-list" class="sort-list"></div>
-                    <button onclick="syncList('media-list', 'mediaUrls')" class="btn-save">Save Media Order</button>
+                <div class="text-center md:text-right mt-6 md:mt-0">
+                    <span class="text-xs font-bold text-zinc-500 uppercase">Use Code</span>
+                    <div id="display-promo" class="text-7xl font-[1000] text-orange-600 tracking-tighter italic">INFERNO</div>
                 </div>
             </div>
-            <div class="section-box">
-                <h2 class="section-title">Public Lists</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div><label>SMPs</label><div class="flex gap-2"><input type="text" id="smpInput"><button id="smpAdd" class="btn-add">+</button></div><div id="smp-list" class="sort-list"></div><button onclick="syncList('smp-list', 'smpList')" class="btn-save">Save SMPs</button></div>
-                    <div><label>Events</label><div class="flex gap-2"><input type="text" id="eventInput"><button id="eventAdd" class="btn-add">+</button></div><div id="event-list" class="sort-list"></div><button onclick="syncList('event-list', 'eventList')" class="btn-save">Save Events</button></div>
-                    <div><label>Staff (Simple)</label><div class="flex gap-2"><input type="text" id="staffInput"><button id="staffAdd" class="btn-add">+</button></div><div id="staff-list" class="sort-list"></div><button onclick="syncList('staff-list', 'staffList')" class="btn-save">Save Staff</button></div>
-                    <div>
-                        <label>Meet Staff Emails (Bio Only)</label>
-                        <div class="flex gap-2"><input type="text" id="bioEmailInput" placeholder="bio@gmail.com"><button id="bioEmailAdd" class="btn-add">+</button></div>
-                        <div id="bio-email-list" class="sort-list"></div>
-                        <button onclick="syncList('bio-email-list', 'bioStaffEmails')" class="btn-save">Save Bio Access</button>
-                    </div>
+        </a>
+
+        <div id="events" class="grid md:grid-cols-2 gap-12">
+            <div class="glass p-12 rounded-[3rem]">
+                <h3 class="text-2xl font-black uppercase mb-8 text-orange-500">Events</h3>
+                <div id="event-list" class="space-y-4"></div>
+            </div>
+            <div class="glass p-12 rounded-[3rem] flex flex-col justify-between">
+                <div>
+                    <h3 class="text-2xl font-black uppercase mb-8 text-[#f96854]">Supporters</h3>
+                    <div id="patreon-list" class="grid grid-cols-2 gap-4 italic text-zinc-400 font-bold uppercase text-xs"></div>
                 </div>
+                <a id="display-patreon-link" href="#" target="_blank" class="block text-center mt-12 py-5 bg-[#f96854] text-black font-black uppercase rounded-2xl hover:brightness-110 transition">Patreon</a>
             </div>
         </div>
-
-        <div id="page-vote" class="hidden">
-            <div class="section-box">
-                <h2 class="section-title">Vote Management</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div><label>Site Name</label><input type="text" id="voteNameInput"></div>
-                    <div><label>URL</label><div class="flex gap-2"><input type="text" id="voteInput"><button id="voteAdd" class="btn-add">ADD</button></div></div>
-                </div>
-                <div id="vote-list" class="sort-list"></div>
-                <button onclick="syncList('vote-list', 'voteLinks')" class="btn-save">Save Votes</button>
-            </div>
-        </div>
-
-        <div id="page-logs" class="hidden">
-            <div class="section-box"><h2 class="section-title">Activity Log</h2><div id="log-container" class="bg-black p-6 rounded-xl border border-zinc-800 h-[500px] overflow-y-auto mt-4"></div></div>
-        </div>
-
-        <div id="page-access" class="hidden">
-            <div class="section-box">
-                <h2 class="section-title">Admin Access (Main)</h2>
-                <div class="flex gap-2 mt-4"><input type="text" id="emailInput" placeholder="admin@gmail.com"><button id="emailAdd" class="btn-add">+</button></div>
-                <div id="email-list" class="sort-list"></div>
-                <button onclick="syncList('email-list', 'trustedEmails')" class="btn-save">Save Admin Whitelist</button>
-            </div>
-        </div>
-    </div>
+    </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get, update, push, onValue, limitToLast, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
@@ -151,149 +95,39 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const auth = getAuth(app);
-        const ownerEmail = "abeedwehbe@gmail.com";
-        let currentUser = null;
-        let sanitizedEmail = "";
 
-        document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
-        
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await get(ref(db, 'absoluteConfigV3'));
-                const d = snap.val();
-                const admins = (d.trustedEmails || "").split(',').filter(e => e.trim());
-                const bioStaff = (d.bioStaffEmails || "").split(',').filter(e => e.trim());
-                
-                const isAdmin = user.email === ownerEmail || admins.includes(user.email);
-                const isBioStaff = bioStaff.includes(user.email);
-
-                if (isAdmin || isBioStaff) {
-                    currentUser = user;
-                    sanitizedEmail = user.email.replace(/\./g, '_');
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('main-content').classList.remove('hidden');
-                    
-                    if (isAdmin) {
-                        ['config', 'vote', 'logs', 'access'].forEach(id => document.getElementById('tab-'+id)?.classList.remove('hidden'));
-                        if (user.email === ownerEmail) document.getElementById('tab-access').classList.remove('hidden');
-                    }
-                    syncEverything(); setupLogs(); loadBio();
-                } else { alert("Access Denied."); auth.signOut(); }
-            }
-        });
-
-        async function loadBio() {
-            const snap = await get(ref(db, `absoluteConfigV3/staffProfiles/${sanitizedEmail}`));
-            if(snap.exists()){
-                const d = snap.val();
-                document.getElementById('myStaffName').value = d.name || "";
-                document.getElementById('myStaffRole').value = d.role || "";
-                document.getElementById('myStaffBio').value = d.bio || "";
-            }
-        }
-
-        window.saveMyBio = async () => {
-            const data = {
-                name: document.getElementById('myStaffName').value,
-                role: document.getElementById('myStaffRole').value,
-                bio: document.getElementById('myStaffBio').value
-            };
-            await update(ref(db, `absoluteConfigV3/staffProfiles/${sanitizedEmail}`), data);
-            logAction("Updated personal staff paragraph");
-            alert("Bio Updated!");
-        };
-
-        window.switchTab = (id) => {
-            ['bio', 'config', 'vote', 'logs', 'access'].forEach(t => {
-                document.getElementById('page-'+t)?.classList.toggle('hidden', t !== id);
-                document.getElementById('tab-'+t)?.classList.toggle('active', t === id);
-            });
-        };
-
-        window.hOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('dragover'); };
-        window.hLeave = (e) => { e.preventDefault(); e.currentTarget.classList.remove('dragover'); };
-        window.hDrop = async (e, inputId) => {
-            e.preventDefault(); const zone = e.currentTarget; zone.classList.remove('dragover');
-            const file = e.dataTransfer.files[0]; if (!file || !file.type.startsWith('image/')) return;
-            zone.classList.add('uploading');
-            const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', 'ml_default');
-            try {
-                const res = await fetch('https://api.cloudinary.com/v1_1/demo/image/upload', { method: 'POST', body: formData });
-                const data = await res.json();
-                if(data.secure_url) { document.getElementById(inputId).value = data.secure_url; logAction(`Uploaded ${inputId}`); }
-            } catch (err) { alert("Upload failed."); } finally { zone.classList.remove('uploading'); }
-        };
-
-        window.saveBranding = async () => {
-            const data = {
-                bgImageUrl: document.getElementById('bgImageUrl').value,
-                logoUrl: document.getElementById('logoUrl').value,
-                navBg: document.getElementById('navBg').value,
-                navLogoCol: document.getElementById('navLogoCol').value,
-                heroTitleCol: document.getElementById('heroTitleCol').value,
-                heroBtnBg: document.getElementById('heroBtnBg').value
-            };
-            await update(ref(db, 'absoluteConfigV3'), data); alert("Saved!");
-        };
-
-        window.saveHeroInfo = async () => {
-            const data = { heroTitle: document.getElementById('heroTitle').value, serverIp: document.getElementById('serverIp').value };
-            await update(ref(db, 'absoluteConfigV3'), data); alert("Saved!");
-        };
-
-        const logAction = (action) => { push(ref(db, 'absoluteConfigV3/logs'), { user: currentUser.email, action: action, time: new Date().toISOString() }); };
-
-        window.syncList = async (listId, key) => {
-            let items = Array.from(document.getElementById(listId).querySelectorAll('.sort-item')).map(item => {
-                const siteName = item.querySelector('.site-name');
-                return siteName ? `${siteName.innerText}|${item.querySelector('.site-url').innerText}` : item.querySelector('span').innerText;
-            }).join(',');
-            await set(ref(db, `absoluteConfigV3/${key}`), items); alert("List Saved!");
-        };
-
-        const addItem = (listId, val) => {
-            if(!val) return; const div = document.createElement('div'); div.className = 'sort-item';
-            let content = val.includes('|') ? `<span class="site-name font-bold text-orange-500">${val.split('|')[0]}</span> <span class="site-url opacity-40 ml-2">${val.split('|')[1]}</span>` : `<span>${val}</span>`;
-            div.innerHTML = `<div>${content}</div><button class="text-red-500 font-bold px-2" onclick="this.parentElement.remove()">×</button>`;
-            document.getElementById(listId).appendChild(div);
-        };
-
-        const syncEverything = async () => {
-            const snap = await get(ref(db, 'absoluteConfigV3'));
+        onValue(ref(db, 'absoluteConfigV3'), (snap) => {
             const d = snap.val(); if (!d) return;
-            const fields = ["bgImageUrl", "logoUrl", "navBg", "navLogoCol", "heroTitleCol", "heroBtnBg", "heroTitle", "serverIp"];
-            fields.forEach(f => { if(d[f]) document.getElementById(f).value = d[f]; });
-            const listMap = { 'media-list': 'mediaUrls', 'smp-list': 'smpList', 'event-list': 'eventList', 'staff-list': 'staffList', 'email-list': 'trustedEmails', 'bio-email-list': 'bioStaffEmails', 'vote-list': 'voteLinks' };
-            Object.entries(listMap).forEach(([id, key]) => {
-                document.getElementById(id).innerHTML = "";
-                if(d[key]) d[key].split(',').forEach(v => v.trim() && addItem(id, v.trim()));
-            });
-        };
+            const accent = d.heroBtnBg || '#ea580c';
+            document.body.style.backgroundImage = d.bgImageUrl ? `url('${d.bgImageUrl}')` : "";
+            document.getElementById('display-hero').innerText = d.heroTitle || "INFERNO";
+            document.getElementById('display-ip').innerText = d.serverIp || "play.infernorealms.xyz";
+            document.getElementById('copy-btn').style.backgroundColor = accent;
+            document.getElementById('partner-box').style.borderColor = accent;
+            document.getElementById('smp-header').style.borderColor = accent;
+            
+            document.getElementById('sponsor-name').innerText = d.sponsorName || "Sylant Hosting";
+            document.getElementById('display-promo').innerText = d.sponsorPromo || "INFERNO";
+            document.getElementById('sponsor-link').href = d.sponsorUrl || "#";
+            document.getElementById('display-discord').href = d.discordLink || "#";
 
-        const setupLogs = () => {
-            onValue(query(ref(db, 'absoluteConfigV3/logs'), limitToLast(50)), (snap) => {
-                const container = document.getElementById('log-container'); container.innerHTML = "";
-                if (snap.val()) Object.values(snap.val()).reverse().forEach(log => {
-                    const t = new Date(log.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    container.innerHTML += `<div class="log-entry"><span class="log-time">[${t}]</span><span class="log-user">${log.user.split('@')[0]}</span><span class="log-action">→ ${log.action}</span></div>`;
-                });
-            });
-        };
-
-        ['media', 'smp', 'event', 'staff', 'email', 'bioEmail'].forEach(x => {
-            const btn = document.getElementById(x + 'Add');
-            if(btn) btn.onclick = () => { addItem(x + '-list', document.getElementById(x + 'Input').value); document.getElementById(x + 'Input').value = ''; };
+            const render = (data, id, html) => {
+                document.getElementById(id).innerHTML = (data || "").split(',').filter(i => i.trim()).map(i => html(i.trim())).join('');
+            };
+            render(d.voteLinks, 'vote', (v) => `<a href="${v.split('|')[1]}" class="glass p-5 rounded-2xl text-center font-black uppercase text-xs hover:border-orange-500 transition">${v.split('|')[0]}</a>`);
+            render(d.smpList, 'smp-container', (i) => `<div class="glass p-10 rounded-[2rem] font-black uppercase text-2xl text-center">${i}</div>`);
+            render(d.eventList, 'event-list', (i) => `<div class="p-5 bg-white/5 rounded-2xl border-l-4 font-bold uppercase text-xs" style="border-color:${accent}">${i}</div>`);
+            lucide.createIcons();
         });
 
-        document.getElementById('voteAdd').onclick = () => {
-            const n = document.getElementById('voteNameInput').value, u = document.getElementById('voteInput').value;
-            if(n && u) { addItem('vote-list', `${n}|${u}`); document.getElementById('voteNameInput').value = ''; document.getElementById('voteInput').value = ''; }
+        window.copyIP = () => {
+            const ip = document.getElementById('display-ip').innerText;
+            navigator.clipboard.writeText(ip);
+            const btn = document.getElementById('copy-btn');
+            btn.innerText = 'COPIED!';
+            btn.classList.add('copy-success');
+            setTimeout(() => { btn.innerText = 'Copy Server IP'; btn.classList.remove('copy-success'); }, 2000);
         };
-
-        ['media-list', 'smp-list', 'event-list', 'staff-list', 'vote-list', 'email-list', 'bio-email-list'].forEach(id => {
-            const el = document.getElementById(id); if(el) new Sortable(el, { animation: 150 });
-        });
     </script>
 </body>
 </html>
