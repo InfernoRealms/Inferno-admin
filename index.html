@@ -393,8 +393,11 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = { 
-            apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc", authDomain: "inferno-realms.firebaseapp.com", 
-            databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/", projectId: "inferno-realms", appId: "1:669014530995:web:41fd088f6255118c9e89c6" 
+            apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc", 
+            authDomain: "inferno-realms.firebaseapp.com", 
+            databaseURL: "https://inferno-realms-default-rtdb.firebaseio.com/", 
+            projectId: "inferno-realms", 
+            appId: "1:669014530995:web:41fd088f6255118c9e89c6" 
         };
 
         const app = initializeApp(firebaseConfig);
@@ -427,12 +430,30 @@
 
             if (userIsAdmin) {
                 ['tab-directory', 'tab-config', 'tab-vote', 'tab-logs', 'tab-access', 'tab-roles', 'tab-content'].forEach(t => document.getElementById(t).classList.remove('hidden'));
-                initIconPicker(); loadDirectory(); loadLogs();
+                initIconPicker(); 
+                loadDirectory(); 
+                loadLogs();
+                initSortables();
             }
-            loadMyBio(); syncEverything(data);
+            loadMyBio(); 
+            syncEverything(data);
         });
 
-        // --- UI & TAB LOGIC ---
+        function initSortables() {
+            const listIds = ['media-list', 'vote-list', 'admin-email-list', 'bio-email-list', 'role-list', 'smp-list', 'event-list'];
+            listIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    new Sortable(el, {
+                        animation: 150,
+                        ghostClass: 'bg-orange-500/20',
+                        handle: '.sort-item',
+                        forceFallback: true
+                    });
+                }
+            });
+        }
+
         window.switchTab = (id) => {
             ['profile', 'directory', 'roles', 'config', 'vote', 'access', 'logs', 'content'].forEach(p => {
                 const el = document.getElementById('page-'+p);
@@ -446,8 +467,8 @@
             if(!val) return;
             const c = document.getElementById(id);
             const div = document.createElement('div');
-            div.className = 'sort-item';
-            div.innerHTML = `<span class="data-txt font-bold">${val}</span><span class="text-red-500 cursor-pointer" onclick="this.parentElement.remove()">×</span>`;
+            div.className = 'sort-item cursor-move hover:border-orange-500/30 transition-colors';
+            div.innerHTML = `<span class="data-txt font-bold">${val}</span><span class="text-red-500 cursor-pointer p-2 hover:bg-red-500/10 rounded" onclick="this.parentElement.remove()">×</span>`;
             c.appendChild(div);
         };
 
@@ -458,35 +479,48 @@
             input.value = "";
         };
 
-        // --- DATA SYNCING ---
         window.syncList = async (id, key) => {
-            const items = Array.from(document.getElementById(id).querySelectorAll('.data-txt')).map(e => e.innerText).join(',');
+            const container = document.getElementById(id);
+            const items = Array.from(container.querySelectorAll('.data-txt'))
+                               .map(e => e.innerText.trim())
+                               .filter(v => v !== "")
+                               .join(',');
+
             await set(ref(db, `absoluteConfigV3/${key}`), items);
-            logAct(`Synced list: ${key}`); alert("Network Synced!");
+            logAct(`Updated list order: ${key}`); 
+            alert("Database Updated Successfully!");
+            
             if(key === 'networkRoles') updateRoleSelector(items);
         };
 
         window.saveBranding = () => {
             update(ref(db, 'absoluteConfigV3'), {
-                bgImageUrl: document.getElementById('bgImageUrl').value, logoUrl: document.getElementById('logoUrl').value,
-                navBg: document.getElementById('navBg').value, navLogoCol: document.getElementById('navLogoCol').value,
-                heroTitleCol: document.getElementById('heroTitleCol').value, heroBtnBg: document.getElementById('heroBtnBg').value
+                bgImageUrl: document.getElementById('bgImageUrl').value, 
+                logoUrl: document.getElementById('logoUrl').value,
+                navBg: document.getElementById('navBg').value, 
+                navLogoCol: document.getElementById('navLogoCol').value,
+                heroTitleCol: document.getElementById('heroTitleCol').value, 
+                heroBtnBg: document.getElementById('heroBtnBg').value
             }).then(() => { logAct("Branding Updated"); alert("Visuals Saved!"); });
         };
 
         window.saveHeroInfo = () => {
-            update(ref(db, 'absoluteConfigV3'), { heroTitle: document.getElementById('heroTitle').value, serverIp: document.getElementById('serverIp').value }).then(() => { logAct("Hero Text Updated"); alert("Text Saved!"); });
+            update(ref(db, 'absoluteConfigV3'), { 
+                heroTitle: document.getElementById('heroTitle').value, 
+                serverIp: document.getElementById('serverIp').value 
+            }).then(() => { logAct("Hero Text Updated"); alert("Text Saved!"); });
         };
 
         window.savePartnerSocial = () => {
             update(ref(db, 'absoluteConfigV3'), {
-                sponsorName: document.getElementById('sponsorName').value, sponsorUrl: document.getElementById('sponsorUrl').value,
-                promoCode: document.getElementById('promoCode').value, discordLink: document.getElementById('discordLink').value,
+                sponsorName: document.getElementById('sponsorName').value, 
+                sponsorUrl: document.getElementById('sponsorUrl').value,
+                promoCode: document.getElementById('promoCode').value, 
+                discordLink: document.getElementById('discordLink').value,
                 patreonBtnLink: document.getElementById('patreonBtnLink').value
             }).then(() => { logAct("Partners/Socials Updated"); alert("Socials Saved!"); });
         };
 
-        // --- ROLE ICON LOGIC ---
         function initIconPicker() {
             const picker = document.getElementById('icon-picker');
             picker.innerHTML = "";
@@ -508,9 +542,12 @@
             const icon = document.getElementById('preview-icon-el');
             const text = document.getElementById('preview-text-el');
             selColor = document.getElementById('roleColorInput').value;
-            pill.style.background = `${selColor}15`; pill.style.color = selColor; pill.style.borderColor = selColor;
+            pill.style.background = `${selColor}15`; 
+            pill.style.color = selColor; 
+            pill.style.borderColor = selColor;
             text.innerText = document.getElementById('roleTitleInput').value || "New Role";
-            icon.setAttribute('data-lucide', selIcon); lucide.createIcons();
+            icon.setAttribute('data-lucide', selIcon); 
+            lucide.createIcons();
         };
 
         window.addRoleToList = () => {
@@ -525,12 +562,14 @@
             s.innerHTML = '<option value="">Select Role...</option>';
             if(!rolesStr) return;
             rolesStr.split(',').forEach(r => {
-                const [n] = r.split('|'); const o = document.createElement('option');
-                o.value = n; o.innerText = n; s.appendChild(o);
+                const [n] = r.split('|'); 
+                if(n) {
+                    const o = document.createElement('option');
+                    o.value = n; o.innerText = n; s.appendChild(o);
+                }
             });
         }
 
-        // --- STAFF BIO OVERRIDE LOGIC ---
         window.loadMyBio = async () => {
             const snap = await get(ref(db, `absoluteConfigV3/staffProfiles/${myKey}`));
             if(snap.exists()) {
@@ -586,7 +625,6 @@
             if(targetOverrideKey) cancelOverride();
         };
 
-        // --- DIRECTORY & AUDIT LOGS ---
         function loadDirectory() {
             onValue(ref(db, 'absoluteConfigV3/staffProfiles'), (s) => {
                 const c = document.getElementById('directory-container');
@@ -619,11 +657,9 @@
 
         function syncEverything(data) {
             if(!data) return;
-            // Visuals
             const fields = ['bgImageUrl', 'logoUrl', 'navBg', 'navLogoCol', 'heroTitleCol', 'heroBtnBg', 'heroTitle', 'serverIp', 'sponsorName', 'sponsorUrl', 'promoCode', 'discordLink', 'patreonBtnLink'];
             fields.forEach(f => { if(data[f]) document.getElementById(f).value = data[f]; });
             
-            // Lists
             const lists = {
                 'media-list': data.mediaUrls, 
                 'vote-list': data.voteLinks, 
@@ -640,16 +676,8 @@
                     val.split(',').forEach(i => addItem(id, i.trim())); 
                 }
             });
-            
-            // Populate Role Dropdown
             updateRoleSelector(data.networkRoles);
         }
-
-        // Initialize Sortable on all lists
-        ['media-list', 'vote-list', 'admin-email-list', 'bio-email-list', 'role-list', 'smp-list', 'event-list'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) new Sortable(el, { animation: 150 });
-        });
     </script>
 </body>
 </html>
