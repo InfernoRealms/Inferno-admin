@@ -12,8 +12,6 @@
         .nav-glass { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); }
         .hero-glow { text-shadow: 0 0 60px rgba(0,0,0,1); }
         .inferno-gradient { background: linear-gradient(135deg, #8b0000 0%, #ff4500 100%); }
-        .copy-success { animation: copy-glow 0.5s ease-in-out infinite alternate; background: #22c55e !important; color: white !important; transform: scale(1.1); }
-        @keyframes copy-glow { from { box-shadow: 0 0 10px #22c55e; } to { box-shadow: 0 0 30px #22c55e; } }
     </style>
 </head>
 <body>
@@ -25,7 +23,7 @@
         <div class="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-widest text-zinc-400">
             <a href="index.html" class="text-white">Home</a>
             <a href="#vote" class="hover:text-white transition">Vote</a>
-            <a href="staff.html" class="hover:text-orange-500 transition font-bold">STAFF PAGE</a>
+            <a href="staff.html" class="text-orange-500 font-black hover:scale-110 transition">STAFF PAGE</a>
             <a href="#events" class="hover:text-white transition">Events</a>
         </div>
         <a id="display-discord" href="#" target="_blank" class="inferno-gradient px-8 py-2.5 rounded-full font-black text-xs hover:scale-105 transition">JOIN DISCORD</a>
@@ -45,18 +43,13 @@
         <div id="vote" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
 
         <div class="aspect-video glass rounded-[3rem] overflow-hidden">
-            <div id="media-content" class="w-full h-full flex items-center justify-center bg-black/20 text-xs font-black text-zinc-600">Loading...</div>
+            <div id="media-content" class="w-full h-full flex items-center justify-center bg-black/20 text-xs font-black text-zinc-600">Loading Media...</div>
         </div>
 
-        <div id="smps">
-            <h2 id="smp-header" class="text-4xl font-black uppercase italic mb-10 border-l-[12px] border-orange-600 pl-8">The Realms</h2>
-            <div id="smp-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-        </div>
-
-        <a id="sponsor-link" href="#" target="_blank" class="block">
+        <a id="sponsor-link" href="https://sylanthosting.com" target="_blank" class="block">
             <div id="partner-box" class="glass p-12 rounded-[3rem] border-l-[16px] border-orange-600 flex flex-col md:flex-row justify-between items-center hover:scale-[1.02] transition shadow-2xl">
                 <div>
-                    <p class="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">Partner</p>
+                    <p class="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">Official Partner</p>
                     <h4 id="sponsor-name" class="text-4xl font-black italic uppercase tracking-tighter">Sylant Hosting</h4>
                 </div>
                 <div class="text-center md:text-right mt-6 md:mt-0">
@@ -66,17 +59,22 @@
             </div>
         </a>
 
+        <div id="smps">
+            <h2 id="smp-header" class="text-4xl font-black uppercase italic mb-10 border-l-[12px] border-orange-600 pl-8 text-white">The Realms</h2>
+            <div id="smp-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+        </div>
+
         <div id="events" class="grid md:grid-cols-2 gap-12">
             <div class="glass p-12 rounded-[3rem]">
-                <h3 class="text-2xl font-black uppercase mb-8 text-orange-500">Events</h3>
+                <h3 class="text-2xl font-black uppercase mb-8 text-orange-500">Upcoming Events</h3>
                 <div id="event-list" class="space-y-4"></div>
             </div>
             <div class="glass p-12 rounded-[3rem] flex flex-col justify-between">
                 <div>
-                    <h3 class="text-2xl font-black uppercase mb-8 text-[#f96854]">Supporters</h3>
+                    <h3 class="text-2xl font-black uppercase mb-8 text-[#f96854]">Top Supporters</h3>
                     <div id="patreon-list" class="grid grid-cols-2 gap-4 italic text-zinc-400 font-bold uppercase text-xs"></div>
                 </div>
-                <a id="display-patreon-link" href="#" target="_blank" class="block text-center mt-12 py-5 bg-[#f96854] text-black font-black uppercase rounded-2xl hover:brightness-110 transition">Patreon</a>
+                <a id="display-patreon-link" href="#" target="_blank" class="block text-center mt-12 py-5 bg-[#f96854] text-black font-black uppercase rounded-2xl hover:brightness-110 transition">Support on Patreon</a>
             </div>
         </div>
     </main>
@@ -106,17 +104,24 @@
             document.getElementById('partner-box').style.borderColor = accent;
             document.getElementById('smp-header').style.borderColor = accent;
             
+            // Sponsor Data
             document.getElementById('sponsor-name').innerText = d.sponsorName || "Sylant Hosting";
             document.getElementById('display-promo').innerText = d.sponsorPromo || "INFERNO";
-            document.getElementById('sponsor-link').href = d.sponsorUrl || "#";
-            document.getElementById('display-discord').href = d.discordLink || "#";
+            document.getElementById('sponsor-link').href = d.sponsorUrl || "https://sylanthosting.com";
 
             const render = (data, id, html) => {
-                document.getElementById(id).innerHTML = (data || "").split(',').filter(i => i.trim()).map(i => html(i.trim())).join('');
+                const el = document.getElementById(id);
+                if(el) el.innerHTML = (data || "").split(',').filter(i => i.trim()).map(i => html(i.trim())).join('');
             };
-            render(d.voteLinks, 'vote', (v) => `<a href="${v.split('|')[1]}" class="glass p-5 rounded-2xl text-center font-black uppercase text-xs hover:border-orange-500 transition">${v.split('|')[0]}</a>`);
-            render(d.smpList, 'smp-container', (i) => `<div class="glass p-10 rounded-[2rem] font-black uppercase text-2xl text-center">${i}</div>`);
+
+            render(d.voteLinks, 'vote', (v) => {
+                const [name, url] = v.split('|');
+                return `<a href="${url}" target="_blank" class="glass p-5 rounded-2xl text-center font-black uppercase text-xs hover:border-orange-500 transition">${name}</a>`;
+            });
+            render(d.smpList, 'smp-container', (i) => `<div class="glass p-10 rounded-[2rem] font-black uppercase text-2xl text-center italic">${i}</div>`);
             render(d.eventList, 'event-list', (i) => `<div class="p-5 bg-white/5 rounded-2xl border-l-4 font-bold uppercase text-xs" style="border-color:${accent}">${i}</div>`);
+            render(d.staffList, 'patreon-list', (i) => `<div class="py-1 opacity-70">${i}</div>`);
+            
             lucide.createIcons();
         });
 
@@ -125,8 +130,7 @@
             navigator.clipboard.writeText(ip);
             const btn = document.getElementById('copy-btn');
             btn.innerText = 'COPIED!';
-            btn.classList.add('copy-success');
-            setTimeout(() => { btn.innerText = 'Copy Server IP'; btn.classList.remove('copy-success'); }, 2000);
+            setTimeout(() => { btn.innerText = 'Copy Server IP'; }, 2000);
         };
     </script>
 </body>
