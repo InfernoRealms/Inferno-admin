@@ -2,40 +2,127 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meet the Staff | Inferno Realms</title>
+    <title>Inferno Admin | Full Control</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
-        body { background: #0a0a0a no-repeat center center fixed; background-size: cover; color: #eee; font-family: sans-serif; }
-        .glass { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .nav-glass { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px); }
+        body { background: #050505; color: white; font-family: sans-serif; padding: 40px; }
+        .section-box { background: #111; padding: 24px; border-radius: 20px; border: 1px solid #222; margin-bottom: 24px; }
+        .section-title { font-size: 14px; font-weight: 900; color: #ea580c; text-transform: uppercase; letter-spacing: 1px; }
+        label { font-size: 10px; font-weight: 800; color: #555; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px; }
+        input, textarea { background: #000 !important; border: 1px solid #333; padding: 12px; border-radius: 8px; color: white; width: 100%; font-size: 13px; outline: none; transition: border 0.3s; }
+        input:focus { border-color: #ea580c; }
+        .nav-tab { cursor: pointer; padding: 12px 24px; border-radius: 12px; font-weight: 900; font-size: 12px; color: #555; transition: all 0.3s; }
+        .nav-tab.active { background: #ea580c; color: white; shadow: 0 4px 15px rgba(234, 88, 12, 0.3); }
+        .btn-add { background: #ea580c; color: white; width: 45px; border-radius: 8px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-save { background: #222; color: #ea580c; width: 100%; padding: 14px; border-radius: 12px; font-weight: 900; margin-top: 20px; border: 1px solid #ea580c33; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-save:hover { background: #ea580c; color: white; }
+        .sort-item { background: #1a1a1a; margin-bottom: 8px; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; border: 1px solid #333; align-items: center; font-size: 13px; }
+        .sort-item button { color: #ff4444; font-weight: bold; padding: 0 10px; }
+        .sort-list { background: #080808; border-radius: 12px; padding: 10px; min-height: 60px; border: 1px solid #222; margin-top: 10px; }
+        .hidden { display: none !important; }
     </style>
 </head>
-<body class="pt-32">
-    <nav class="fixed top-0 w-full z-50 nav-glass py-4 px-6 flex justify-between items-center">
-        <a href="index.html" class="flex items-center gap-3">
-            <i data-lucide="flame" class="text-orange-500"></i>
-            <span class="font-black text-xl tracking-tighter uppercase italic text-white">Inferno <span class="text-orange-500">Realms</span></span>
-        </a>
-        <a href="index.html" class="px-6 py-2 bg-orange-600 rounded-full font-black text-[10px] uppercase hover:scale-105 transition text-white">Back to Home</a>
-    </nav>
+<body>
+    <div id="login-screen" class="fixed inset-0 bg-black z-[100] flex items-center justify-center">
+        <div class="text-center">
+            <h1 class="text-4xl font-black italic mb-8 uppercase tracking-tighter">Inferno <span class="text-orange-600">Admin</span></h1>
+            <button id="loginBtn" class="px-12 py-4 bg-orange-600 rounded-2xl font-black uppercase hover:scale-105 transition shadow-2xl">Login with Google</button>
+        </div>
+    </div>
 
-    <main class="max-w-6xl mx-auto px-6 pb-24">
-        <div class="relative h-64 rounded-[3rem] overflow-hidden flex items-center mb-20 px-12 border-l-[16px] border-orange-600 glass">
-            <div class="z-10">
-                <h1 class="text-6xl font-[1000] italic uppercase tracking-tighter text-white">Meet The <span class="text-orange-600">Team</span></h1>
-                <p class="text-zinc-400 uppercase font-black tracking-[0.2em] text-xs mt-2">The staff behind the network</p>
+    <div id="main-content" class="hidden max-w-5xl mx-auto">
+        <div class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-black italic text-white uppercase tracking-tighter">Dashboard</h1>
+                <p id="user-welcome" class="text-orange-600 font-bold text-[10px] uppercase tracking-widest mt-1"></p>
+            </div>
+            <div id="tab-container" class="flex gap-2 bg-[#111] p-1.5 rounded-2xl border border-zinc-800">
+                <button onclick="switchTab('bio')" id="tab-bio" class="nav-tab active">MY PROFILE</button>
+                <button onclick="switchTab('config')" id="tab-config" class="nav-tab hidden">SITE CONFIG</button>
             </div>
         </div>
 
-        <div id="staff-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div id="page-bio">
+            <div class="section-box max-w-2xl mx-auto">
+                <h2 class="section-title">Edit Personal Bio</h2>
+                <p class="text-zinc-500 text-[10px] mt-1 mb-6">This information appears on the public Staff Team page.</p>
+                
+                <label>Display Name</label>
+                <input type="text" id="myStaffName" placeholder="Minecraft Username">
+                
+                <label>Network Role</label>
+                <input type="text" id="myStaffRole" placeholder="e.g. Senior Admin">
+                
+                <label>Bio Description</label>
+                <textarea id="myStaffBio" rows="5" placeholder="Write a short paragraph about yourself..."></textarea>
+                
+                <button onclick="saveMyBio()" class="btn-save">Update My Bio</button>
             </div>
-    </main>
+        </div>
+
+        <div id="page-config" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="section-box">
+                    <h2 class="section-title">Branding & Server</h2>
+                    <label>Hero Title</label><input type="text" id="heroTitle">
+                    <label>Server IP</label><input type="text" id="serverIp">
+                    <label>Logo Image URL</label><input type="text" id="logoUrl">
+                    <button onclick="saveGlobal('branding')" class="btn-save">Save Info</button>
+                </div>
+
+                <div class="section-box">
+                    <h2 class="section-title">Sponsor (Sylant)</h2>
+                    <label>Sponsor Name</label><input type="text" id="sponsorName">
+                    <label>Promo Code</label><input type="text" id="sponsorPromo">
+                    <label>Affiliate URL</label><input type="text" id="sponsorUrl">
+                    <button onclick="saveGlobal('sponsor')" class="btn-save">Save Sponsor</button>
+                </div>
+            </div>
+
+            <div class="section-box">
+                <h2 class="section-title">Whitelists & Lists</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
+                    
+                    <div>
+                        <label>Main Admins (Full Control)</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="emailInput" placeholder="admin@gmail.com">
+                            <button id="emailAdd" class="btn-add">+</button>
+                        </div>
+                        <div id="email-list" class="sort-list"></div>
+                        <button onclick="syncList('email-list', 'trustedEmails')" class="btn-save">Save Admins</button>
+                    </div>
+
+                    <div>
+                        <label>Bio Access (Staff Only)</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="bioEmailInput" placeholder="staff@gmail.com">
+                            <button id="bioEmailAdd" class="btn-add">+</button>
+                        </div>
+                        <div id="bio-email-list" class="sort-list"></div>
+                        <button onclick="syncList('bio-email-list', 'bioStaffEmails')" class="btn-save">Save Staff</button>
+                    </div>
+
+                    <div>
+                        <label>Public SMP Realms</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="smpInput" placeholder="SMP Name">
+                            <button id="smpAdd" class="btn-add">+</button>
+                        </div>
+                        <div id="smp-list" class="sort-list"></div>
+                        <button onclick="syncList('smp-list', 'smpList')" class="btn-save">Save SMPs</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBlQCSwnsipkEV7ZYYEa3bcO-DoNxvWdtc",
@@ -47,27 +134,120 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app);
+        const ownerEmail = "abeedwehbe@gmail.com";
+        let sanitizedEmail = "";
 
-        onValue(ref(db, 'absoluteConfigV3'), (snap) => {
-            const d = snap.val(); if (!d) return;
-            document.body.style.backgroundImage = d.bgImageUrl ? `url('${d.bgImageUrl}')` : "";
-            
-            if (d.staffProfiles) {
-                document.getElementById('staff-grid').innerHTML = Object.values(d.staffProfiles).map(p => `
-                    <div class="glass p-8 rounded-[3rem] border-b-8 border-orange-600/20 hover:border-orange-600 transition-all duration-500">
-                        <div class="flex items-center gap-4 mb-6">
-                            <div class="h-14 w-14 bg-orange-600 rounded-2xl flex items-center justify-center font-black text-2xl italic text-white">${p.name[0]}</div>
-                            <div>
-                                <h3 class="text-2xl font-black uppercase italic tracking-tighter text-white">${p.name}</h3>
-                                <span class="text-[10px] font-bold text-orange-500 uppercase tracking-widest">${p.role}</span>
-                            </div>
-                        </div>
-                        <p class="text-zinc-400 text-sm italic leading-relaxed border-l-2 border-zinc-800 pl-4">${p.bio || 'This staff member is busy working on the server!'}</p>
-                    </div>
-                `).join('');
+        document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await get(ref(db, 'absoluteConfigV3'));
+                const d = snap.val() || {};
+                const isAdmin = user.email === ownerEmail || (d.trustedEmails || "").includes(user.email);
+                const isBioStaff = (d.bioStaffEmails || "").includes(user.email);
+
+                if (isAdmin || isBioStaff) {
+                    sanitizedEmail = user.email.replace(/\./g, '_');
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+                    document.getElementById('user-welcome').innerText = `Logged in as: ${user.email}`;
+                    if (isAdmin) document.getElementById('tab-config').classList.remove('hidden');
+                    
+                    loadBio(); syncEverything();
+                } else { alert("Access Denied: Not Whitelisted."); auth.signOut(); }
             }
-            lucide.createIcons();
         });
+
+        // TABS
+        window.switchTab = (id) => {
+            document.getElementById('page-bio').classList.toggle('hidden', id !== 'bio');
+            document.getElementById('page-config').classList.toggle('hidden', id !== 'config');
+            document.getElementById('tab-bio').classList.toggle('active', id === 'bio');
+            document.getElementById('tab-config').classList.toggle('active', id === 'config');
+        };
+
+        // BIO MANAGEMENT
+        async function loadBio() {
+            const snap = await get(ref(db, `absoluteConfigV3/staffProfiles/${sanitizedEmail}`));
+            if(snap.exists()) {
+                const d = snap.val();
+                document.getElementById('myStaffName').value = d.name || "";
+                document.getElementById('myStaffRole').value = d.role || "";
+                document.getElementById('myStaffBio').value = d.bio || "";
+            }
+        }
+
+        window.saveMyBio = async () => {
+            const data = {
+                name: document.getElementById('myStaffName').value,
+                role: document.getElementById('myStaffRole').value,
+                bio: document.getElementById('myStaffBio').value
+            };
+            await update(ref(db, `absoluteConfigV3/staffProfiles/${sanitizedEmail}`), data);
+            alert("Profile Updated Successfully!");
+        };
+
+        // GLOBAL BRANDING
+        window.saveGlobal = async (type) => {
+            let data = {};
+            if(type === 'branding') {
+                data = {
+                    heroTitle: document.getElementById('heroTitle').value,
+                    serverIp: document.getElementById('serverIp').value,
+                    logoUrl: document.getElementById('logoUrl').value
+                };
+            } else {
+                data = {
+                    sponsorName: document.getElementById('sponsorName').value,
+                    sponsorPromo: document.getElementById('sponsorPromo').value,
+                    sponsorUrl: document.getElementById('sponsorUrl').value
+                };
+            }
+            await update(ref(db, 'absoluteConfigV3'), data);
+            alert("Settings Saved!");
+        };
+
+        // LIST LOGIC
+        window.addItem = (listId, val) => {
+            if(!val) return;
+            const div = document.createElement('div'); div.className = 'sort-item';
+            div.innerHTML = `<span>${val}</span><button onclick="this.parentElement.remove()">×</button>`;
+            document.getElementById(listId).appendChild(div);
+        };
+
+        window.syncList = async (listId, key) => {
+            const items = Array.from(document.getElementById(listId).querySelectorAll('span')).map(s => s.innerText).join(',');
+            await set(ref(db, `absoluteConfigV3/${key}`), items);
+            alert("List Synced to Website!");
+        };
+
+        const syncEverything = async () => {
+            const snap = await get(ref(db, 'absoluteConfigV3'));
+            const d = snap.val(); if(!d) return;
+            
+            document.getElementById('heroTitle').value = d.heroTitle || "";
+            document.getElementById('serverIp').value = d.serverIp || "";
+            document.getElementById('logoUrl').value = d.logoUrl || "";
+            document.getElementById('sponsorName').value = d.sponsorName || "";
+            document.getElementById('sponsorPromo').value = d.sponsorPromo || "";
+            document.getElementById('sponsorUrl').value = d.sponsorUrl || "";
+
+            const map = { 'email-list': 'trustedEmails', 'bio-email-list': 'bioStaffEmails', 'smp-list': 'smpList' };
+            Object.entries(map).forEach(([id, key]) => {
+                document.getElementById(id).innerHTML = "";
+                if(d[key]) d[key].split(',').forEach(v => addItem(id, v.trim()));
+            });
+        };
+
+        // BUTTON CLICK HANDLERS (Fixed IDs)
+        document.getElementById('emailAdd').onclick = () => { addItem('email-list', document.getElementById('emailInput').value); document.getElementById('emailInput').value = ''; };
+        document.getElementById('bioEmailAdd').onclick = () => { addItem('bio-email-list', document.getElementById('bioEmailInput').value); document.getElementById('bioEmailInput').value = ''; };
+        document.getElementById('smpAdd').onclick = () => { addItem('smp-list', document.getElementById('smpInput').value); document.getElementById('smpInput').value = ''; };
+
+        new Sortable(document.getElementById('email-list'), { animation: 150 });
+        new Sortable(document.getElementById('bio-email-list'), { animation: 150 });
+        new Sortable(document.getElementById('smp-list'), { animation: 150 });
     </script>
 </body>
 </html>
