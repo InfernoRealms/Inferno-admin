@@ -235,7 +235,7 @@
                 <button onclick="switchTab('directory')" id="tab-directory" class="nav-tab hidden">Directory</button>
                 <button onclick="switchTab('roles')" id="tab-roles" class="nav-tab hidden">Roles</button>
                 <button onclick="switchTab('config')" id="tab-config" class="nav-tab hidden">Config</button>
-                <button onclick="switchTab('content')" id="tab-content" class="nav-tab hidden">SMP/Events</button>
+                <button onclick="switchTab('content')" id="tab-content" class="nav-tab hidden">SMP/Events/Patreon</button>
                 <button onclick="switchTab('vote')" id="tab-vote" class="nav-tab hidden">Voting</button>
                 <button onclick="switchTab('logs')" id="tab-logs" class="nav-tab hidden">Activity</button>
                 <button onclick="switchTab('access')" id="tab-access" class="nav-tab hidden">Emails</button>
@@ -259,7 +259,7 @@
             </div>
         </div>
 
-        <div id="page-content" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div id="page-content" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div class="section-card">
                 <div class="section-title">SMP Management</div>
                 <div class="flex gap-2">
@@ -277,6 +277,15 @@
                 </div>
                 <div id="event-list" class="sort-list"></div>
                 <button onclick="syncList('event-list', 'eventList')" class="btn-save-secondary">Save Event List</button>
+            </div>
+            <div class="section-card">
+                <div class="section-title">Patreon Supporters</div>
+                <div class="flex gap-2">
+                    <input type="text" id="patreonInput" placeholder="Supporter name...">
+                    <button onclick="handleBtnAdd('patreonInput', 'patreon-list')" class="btn-orange !w-12">+</button>
+                </div>
+                <div id="patreon-list" class="sort-list"></div>
+                <button onclick="syncList('patreon-list', 'patreonList')" class="btn-save-secondary">Save Supporters List</button>
             </div>
         </div>
 
@@ -440,7 +449,7 @@
         });
 
         function initSortables() {
-            const listIds = ['media-list', 'vote-list', 'admin-email-list', 'bio-email-list', 'role-list', 'smp-list', 'event-list'];
+            const listIds = ['media-list', 'vote-list', 'admin-email-list', 'bio-email-list', 'role-list', 'smp-list', 'event-list', 'patreon-list'];
             listIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -629,7 +638,6 @@
         };
 
         function loadDirectory() {
-            // Get both roles and staff profiles
             onValue(ref(db, 'absoluteConfigV3'), (snap) => {
                 const data = snap.val();
                 if(!data || !data.staffProfiles) return;
@@ -639,14 +647,12 @@
                 const container = document.getElementById('directory-container');
                 container.innerHTML = "";
 
-                // Sort the profiles based on the position of their role in the rolesOrder array
                 profiles.sort((a, b) => {
                     const roleA = a[1].role || "";
                     const roleB = b[1].role || "";
                     const indexA = rolesOrder.indexOf(roleA);
                     const indexB = rolesOrder.indexOf(roleB);
                     
-                    // If a role isn't found in the list, put it at the end (index 999)
                     const posA = indexA === -1 ? 999 : indexA;
                     const posB = indexB === -1 ? 999 : indexB;
                     
@@ -691,7 +697,8 @@
                 'bio-email-list': data.bioStaffEmails, 
                 'role-list': data.networkRoles,
                 'smp-list': data.smpList,
-                'event-list': data.eventList
+                'event-list': data.eventList,
+                'patreon-list': data.patreonList
             };
             Object.entries(lists).forEach(([id, val]) => { 
                 const c = document.getElementById(id); 
